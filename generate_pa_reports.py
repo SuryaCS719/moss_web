@@ -16,6 +16,157 @@ PA_FILE_TYPES = {
     # Add more PAs as needed
 }
 
+def generate_student_index(student_folder, pa_folder, reports):
+    """Generate individual student index page with all their matches"""
+    student_path = os.path.join(pa_folder, student_folder)
+    os.makedirs(student_path, exist_ok=True)
+    
+    # Sort reports for better readability
+    reports = sorted(reports, key=lambda x: os.path.basename(x))
+    
+    # Modern student page template
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{student_folder} - {pa_folder.upper()} Reports</title>
+    <style>
+        :root {{
+            --primary: #2c3e50;       /* Dark Blue */
+            --secondary: #3498db;     /* Bright Blue */
+            --accent: #e74c3c;        /* Red */
+            --light: #ecf0f1;         /* Light Gray */
+            --dark: #2c3e50;          /* Dark Blue */
+            --success: #2ecc71;       /* Green */
+            --warning: #f1c40f;       /* Yellow */
+        }}
+
+        * {{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }}
+
+        body {{
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 1rem;
+        }}
+
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+        }}
+
+        .header {{
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }}
+
+        .header h1 {{
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }}
+
+        .back-link {{
+            color: var(--light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 1rem;
+        }}
+
+        .back-link:hover {{
+            text-decoration: underline;
+        }}
+
+        .report-list {{
+            list-style: none;
+            padding: 0;
+            margin-top: 2rem;
+        }}
+
+        .report-item {{
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 1.5rem;
+        }}
+
+        .report-item:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }}
+
+        .report-item h3 {{
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }}
+
+        .report-link {{
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--secondary);
+            color: white !important;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+        }}
+
+        .report-link:hover {{
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+
+        @media (max-width: 768px) {{
+            .header {{
+                padding: 1.5rem;
+            }}
+
+            .report-item {{
+                padding: 1rem;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 {student_folder}'s {pa_folder.upper()} Reports</h1>
+            <a href="../index.html" class="back-link">← Back to {pa_folder.upper()} Overview</a>
+        </div>
+
+        <ul class="report-list">
+            {"".join([
+                f'''<li class="report-item">
+                    <h3>Report {i + 1}: {os.path.basename(report)}</h3>
+                    <a class="report-link" href="{os.path.basename(report)}">View Full Report</a>
+                </li>'''
+                for i, report in enumerate(reports)
+            ])}
+        </ul>
+    </div>
+</body>
+</html>"""
+
+    # Write to student's index.html
+    output_path = os.path.join(student_path, "index.html")
+    with open(output_path, "w") as f:
+        f.write(html_content)
+    print(f"Generated student index for {student_folder} at {output_path}")
+
 def generate_pa_index(pa_folder):
     """Generates a modern index.html for PA folders with enhanced UI/UX"""
     
@@ -228,9 +379,11 @@ def generate_pa_index(pa_folder):
     for student_folder in os.listdir(pa_folder):
         student_path = os.path.join(pa_folder, student_folder)
         if os.path.isdir(student_path):
+            print(f"Processing student: {student_folder}")
             valid_student_folders.append(student_folder)
             for item in os.listdir(student_path):
                 if item.startswith("Matches for") and item.endswith(".html"):
+                    print(f"Found report: {item}")
                     file_type = extract_file_type(item)
                     if file_type:
                         active_report_types.add(file_type)
@@ -261,7 +414,7 @@ def generate_pa_index(pa_folder):
         # Add row to table
         html_content += f"""                    <tr>
                         <td>{serial_no}</td>
-                        <td>{student_folder}</td>"""
+                        <td><a href="{student_folder}/index.html">{student_folder}</a></td>"""
         
         for ft in columns:
             links = report_links[ft]
@@ -289,6 +442,18 @@ def generate_pa_index(pa_folder):
     with open(output_path, "w") as f:
         f.write(html_content)
     print(f"Successfully generated modern report index at {output_path}")
+
+    # Generate individual student index pages
+    for student_folder in valid_student_folders:
+        student_path = os.path.join(pa_folder, student_folder)
+        student_reports = [
+            os.path.join(student_path, item) 
+            for item in os.listdir(student_path) 
+            if item.startswith("Matches for") and item.endswith(".html")
+        ]
+        
+        # Generate individual student index
+        generate_student_index(student_folder, pa_folder, student_reports)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>edjgreen - PA1 Reports</title>
+    <style>
+        :root {
+            --primary: #2c3e50;       /* Dark Blue */
+            --secondary: #3498db;     /* Bright Blue */
+            --accent: #e74c3c;        /* Red */
+            --light: #ecf0f1;         /* Light Gray */
+            --dark: #2c3e50;          /* Dark Blue */
+            --success: #2ecc71;       /* Green */
+            --warning: #f1c40f;       /* Yellow */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .back-link {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .report-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 2rem;
+        }
+
+        .report-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .report-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .report-item h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .report-link {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--secondary);
+            color: white !important;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+        }
+
+        .report-link:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1.5rem;
+            }
+
+            .report-item {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 edjgreen's PA1 Reports</h1>
+            <a href="../index.html" class="back-link">← Back to PA1 Overview</a>
+        </div>
+
+        <ul class="report-list">
+            <li class="report-item">
+                    <h3>Report 1: Matches for _winter25_apdas_pa1_Lex.c and _winter25_edjgreen_pa1_Lex.c.html</h3>
+                    <a class="report-link" href="Matches for _winter25_apdas_pa1_Lex.c and _winter25_edjgreen_pa1_Lex.c.html">View Full Report</a>
+                </li><li class="report-item">
+                    <h3>Report 2: Matches for _winter25_apdas_pa1_List.c and _winter25_edjgreen_pa1_List.c.html</h3>
+                    <a class="report-link" href="Matches for _winter25_apdas_pa1_List.c and _winter25_edjgreen_pa1_List.c.html">View Full Report</a>
+                </li>
+        </ul>
+    </div>
+</body>
+</html>
