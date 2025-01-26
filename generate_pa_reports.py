@@ -1,11 +1,26 @@
-# generate_pa_reports.py
+#!/usr/bin/env python3
 import os
 import argparse
-from collections import defaultdict
-from datetime import datetime
+
+# Centralized PA file type configurations
+PA_FILE_TYPES = {
+    "PA1": {
+        "List.c": ["list"],
+        "Lex.c": ["lex"],
+    },
+    "PA2": {
+        "List.c": ["list"],
+        "FindPath.c": ["findpath"],
+        "Graph.c": ["graph"],
+    },
+    # Add more PAs as needed
+}
 
 def generate_pa_index(pa_folder):
     """Generates a modern index.html for PA folders with enhanced UI/UX"""
+    
+    # Dynamically get file types for this PA
+    file_types = PA_FILE_TYPES.get(pa_folder.upper(), {})
     
     # HTML template with dynamic content
     html_content = f"""<!DOCTYPE html>
@@ -85,12 +100,14 @@ def generate_pa_index(pa_folder):
             width: 100%;
             border-collapse: collapse;
             min-width: 800px;
+            border: 2px solid var(--primary);
         }}
 
         th, td {{
             padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid var(--primary);
+            border-right: 1px solid #ddd;
         }}
 
         th {{
@@ -99,6 +116,11 @@ def generate_pa_index(pa_folder):
             position: sticky;
             top: 0;
             white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }}
+
+        th:last-child, td:last-child {{
+            border-right: none;
         }}
 
         tr:hover {{
@@ -189,13 +211,7 @@ def generate_pa_index(pa_folder):
                         <th>#</th>
                         <th>Student CruzID</th>"""
 
-    # File type detection logic
     def extract_file_type(filename):
-        file_types = {
-            "List.c": ["list", "linkedlist"],
-            "Lex.c": ["lex", "lexer"],
-            "Matrix.c": ["matrix", "mat"]
-        }
         for ft, keywords in file_types.items():
             if any(kw in filename.lower() for kw in keywords):
                 return ft
@@ -276,16 +292,14 @@ def generate_pa_index(pa_folder):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Generate modern MOSS report index for programming assignments',
-        epilog='Examples:\n  Individual: python generate_pa_reports.py --pa PA1\n  All PAs:    python generate_pa_reports.py --all'
+        description='Generate modern MOSS report index for programming assignments'
     )
     parser.add_argument('--pa', help='PA folder to process (e.g., PA1, PA2)')
-    parser.add_argument('--all', action='store_true',
-                      help='Process all PA directories (PA1, PA2, etc.)')
+    parser.add_argument('--all', action='store_true', help='Process all PA directories')
     args = parser.parse_args()
     
     if args.all:
-        # Process all PA folders
+        # Process all PA folders with file type configs
         for folder in os.listdir():
             if os.path.isdir(folder) and folder.upper().startswith("PA"):
                 generate_pa_index(folder)

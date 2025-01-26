@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOSS Reports Dashboard</title>
+    <title>MOSS Reports Dashboard - CSE101 Winter 2025</title>
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
+            --background: #f8f9fa; /* Light Gray */
+            --text: #202124; /* Dark Gray */
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
 
         * {
@@ -20,14 +20,16 @@
 
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--light);
+            background: var(--background);
             min-height: 100vh;
             padding: 2rem;
+            color: var(--text);
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            display: none; /* Hide main content by default */
         }
 
         .header {
@@ -36,127 +38,276 @@
         }
 
         h1 {
-            color: var(--primary);
+            color: #1a73e8; /* Google Blue */
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
-        }
-
-        .pa-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            padding: 1rem;
-        }
-
-        .pa-card {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .pa-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-
-        .pa-card h2 {
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
+            font-weight: 700;
         }
 
         .auth-modal {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
 
         .auth-box {
             background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            width: 90%;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: 100%;
             max-width: 400px;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .auth-box h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            color: #1a73e8; /* Google Blue */
         }
 
         .auth-input {
             width: 100%;
             padding: 0.8rem;
-            margin: 0.8rem 0;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 8px;
             font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .auth-input:focus {
+            border-color: #1a73e8; /* Google Blue */
+            box-shadow: 0 0 8px rgba(26, 115, 232, 0.3);
         }
 
         .auth-button {
-            background: var(--secondary);
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #1a73e8, #4285f4); /* Google Blue Gradient */
             color: white;
             border: none;
-            padding: 1rem 2rem;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
+            border-radius: 8px;
             font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-button:hover {
+            background: linear-gradient(135deg, #34a853, #0f9d58); /* Google Green Gradient */
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #fbbc05; /* Google Yellow */
+            text-align: center;
             margin-top: 1rem;
+        }
+
+        .dashboard {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard h2 {
+            color: #1a73e8; /* Google Blue */
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pa-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pa-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        /* Unique color schemes for each PA */
+        .pa-link.pa1 {
+            background: linear-gradient(135deg, #1a73e8, #4285f4); /* Google Blue Gradient */
+        }
+        .pa-link.pa1:hover {
+            background: linear-gradient(135deg, #4285f4, #1a73e8);
+        }
+
+        .pa-link.pa2 {
+            background: linear-gradient(135deg, #34a853, #0f9d58); /* Google Green Gradient */
+        }
+        .pa-link.pa2:hover {
+            background: linear-gradient(135deg, #0f9d58, #34a853);
+        }
+
+        .pa-link.pa3 {
+            background: linear-gradient(135deg, #fbbc05, #f9ab00); /* Google Yellow Gradient */
+        }
+        .pa-link.pa3:hover {
+            background: linear-gradient(135deg, #f9ab00, #fbbc05);
+        }
+
+        .pa-link.pa4 {
+            background: linear-gradient(135deg, #ea4335, #d93025); /* Google Red Gradient */
+        }
+        .pa-link.pa4:hover {
+            background: linear-gradient(135deg, #d93025, #ea4335);
+        }
+
+        .pa-link.pa5 {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2); /* Purple Gradient */
+        }
+        .pa-link.pa5:hover {
+            background: linear-gradient(135deg, #7b1fa2, #9c27b0);
+        }
+
+        .pa-link.pa6 {
+            background: linear-gradient(135deg, #ff9800, #f57c00); /* Orange Gradient */
+        }
+        .pa-link.pa6:hover {
+            background: linear-gradient(135deg, #f57c00, #ff9800);
+        }
+
+        .pa-link.pa7 {
+            background: linear-gradient(135deg, #009688, #00695c); /* Teal Gradient */
+        }
+        .pa-link.pa7:hover {
+            background: linear-gradient(135deg, #00695c, #009688);
+        }
+
+        .pa-link.pa8 {
+            background: linear-gradient(135deg, #673ab7, #512da8); /* Deep Purple Gradient */
+        }
+        .pa-link.pa8:hover {
+            background: linear-gradient(135deg, #512da8, #673ab7);
+        }
+
+        .pa-link i {
+            margin-right: 0.8rem;
+            font-size: 1.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--text);
+            font-size: 0.9rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .footer p {
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #1a73e8; /* Google Blue */
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .highlight:hover {
+            color: #34a853; /* Google Green */
+            cursor: pointer;
         }
     </style>
     <script>
         function checkCredentials() {
             const enteredUser = document.getElementById('username').value;
             const enteredPass = document.getElementById('password').value;
-            
-            if(enteredUser === "cse101-admin-w25" && enteredPass === "Admin@cse101-w25") {
-                window.location.href = window.location.href + "?auth=true";
-                localStorage.setItem('authenticated', 'true');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (enteredUser === "cse101-admin-w25" && enteredPass === "admin@cse101-w25") {
+                // Store login state in session storage
+                sessionStorage.setItem('loggedIn', 'true');
+                // Show content and hide modal
+                document.querySelector('.container').style.display = 'block';
+                document.getElementById('authModal').style.display = 'none';
             } else {
-                alert('Invalid credentials');
+                errorMsg.textContent = "Invalid username or password";
             }
         }
 
-        // Check URL parameter for auth
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('auth') || localStorage.getItem('authenticated') === 'true') {
-            document.body.style.display = 'block';
-        } else {
-            document.getElementById('authModal').style.display = 'flex';
-        }
+        // Check login state on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            const isLoggedIn = sessionStorage.getItem('loggedIn');
+            if (isLoggedIn === 'true') {
+                document.querySelector('.container').style.display = 'block';
+                document.getElementById('authModal').style.display = 'none';
+            } else {
+                document.getElementById('authModal').style.display = 'flex';
+            }
+        });
     </script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔍 MOSS Reports Dashboard</h1>
-            <p>Select a programming assignment to view reports</p>
-        </div>
-        
-        <div class="pa-grid">
-            <a href="./PA1/index.html" class="pa-card">
-                <h2>PA1 Reports</h2>
-                <p>View similarity analysis</p>
-            </a>
-            <a href="./PA2/index.html" class="pa-card">
-                <h2>PA2 Reports</h2>
-                <p>View similarity analysis</p>
-            </a>
-            <!-- Add more PA cards as needed -->
-        </div>
-    </div>
-
+    <!-- Authentication Modal -->
     <div id="authModal" class="auth-modal">
         <div class="auth-box">
-            <h2 style="margin-bottom: 1.5rem;">🔒 Admin Login</h2>
+            <h2>🔒 Admin Login</h2>
             <input type="text" id="username" class="auth-input" placeholder="Username">
             <input type="password" id="password" class="auth-input" placeholder="Password">
             <button onclick="checkCredentials()" class="auth-button">Continue</button>
+            <p id="errorMsg" class="error-message"></p>
+        </div>
+    </div>
+
+    <!-- Main Content (hidden by default) -->
+    <div class="container">
+        <div class="dashboard">
+            <h2>📊 MOSS Reports Dashboard</h2>
+            <div class="pa-links">
+                <a href="PA1/index.html" class="pa-link pa1"><i>📁</i> PA1 Reports</a>
+                <a href="PA2/index.html" class="pa-link pa2"><i>📁</i> PA2 Reports</a>
+                <a href="PA3/index.html" class="pa-link pa3"><i>📁</i> PA3 Reports</a>
+                <a href="PA4/index.html" class="pa-link pa4"><i>📁</i> PA4 Reports</a>
+                <a href="PA5/index.html" class="pa-link pa5"><i>📁</i> PA5 Reports</a>
+                <a href="PA6/index.html" class="pa-link pa6"><i>📁</i> PA6 Reports</a>
+                <a href="PA7/index.html" class="pa-link pa7"><i>📁</i> PA7 Reports</a>
+                <a href="PA8/index.html" class="pa-link pa8"><i>📁</i> PA8 Reports</a>
+                <!-- Add more PA links as needed -->
+            </div>
+        </div>
+        <div class="footer">
+            <p>
+                © 2025 Winter <span class="highlight">CSE101</span>. 
+                Developed by <span class="highlight">Suryakiran Valavala</span>, 
+                Teaching Assistant.
+            </p>
         </div>
     </div>
 </body>

@@ -75,12 +75,14 @@
             width: 100%;
             border-collapse: collapse;
             min-width: 800px;
+            border: 2px solid var(--primary);
         }
 
         th, td {
             padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid var(--primary);
+            border-right: 1px solid #ddd;
         }
 
         th {
@@ -89,6 +91,11 @@
             position: sticky;
             top: 0;
             white-space: nowrap;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th:last-child, td:last-child {
+            border-right: none;
         }
 
         tr:hover {
