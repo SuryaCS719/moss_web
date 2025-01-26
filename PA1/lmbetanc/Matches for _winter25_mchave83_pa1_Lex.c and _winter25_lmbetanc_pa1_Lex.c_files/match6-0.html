@@ -1,0 +1,93 @@
+
+<!-- saved from url=(0115)file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match6-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/mchave83/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/mchave83/pa1/Lex.c<p></p><pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "List.h"
+#define MAX_LENGTH 1024
+
+
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match6-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_57.gif"></a>
+
+int main(int argc, char* argv[]){
+    //command line args
+    if(argc != 3){
+        fprintf(stderr, "Error: %s &lt;input_file&gt; and &lt;output_file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+
+    //open files
+    char* inpN = argv[1]; 
+    char* outN = argv[2];
+    FILE* inputFile = fopen(inpN, "r"); //read file
+    if(inputFile == NULL){ //checking if the file is empty
+        fprintf(stderr, "Error: Not able to open input file %s\n", inpN);
+        exit(EXIT_FAILURE);
+    }
+    //counting the lines in the file
+    char** lines = NULL;
+    int numLines = 0;
+    char buffer[MAX_LENGTH];
+//read each line usign while llop 
+    while(fgets(buffer, MAX_LENGTH, inputFile) != NULL){ //check file is not NULL
+        numLines++;//checks number of lines
+        lines = realloc(lines, numLines * sizeof(char*)); //reallocating the lines
+        lines[numLines - 1] = malloc(strlen(buffer) + 1);
+        strcpy(lines[numLines - 1], buffer);//copying  lines into the buffer, these are new allocated strings
+    }
+    fclose(inputFile);
+
+    //sorti elements 
+    List L = newList();
+    append(L, 0);
+    for(int i = 1; i &lt;numLines; i++){
+        moveFront(L);//going to the front of the list
+        while(index(L) &gt;= 0){
+</font>            int currentI = get(L);//finding the current index
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match6-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_25.gif"></a>
+
+            if(strcmp(lines[i], lines[currentI]) &lt; 0){
+                insertBefore(L, i);
+                break;
+                            }
+            moveNext(L); //move to next element
+        }
+        if(index(L) &lt; 0){
+            append(L, i);
+        }
+    }
+
+// write into the outputfile
+    FILE* outputFile = fopen(outN, "w");
+    if(outputFile == NULL){
+        fprintf(stderr, "Error: Not able to open file output %s \n", outN);
+        exit(EXIT_FAILURE);
+    }
+   
+    moveFront(L);
+    while(index(L) &gt; 0){
+        fprintf(outputFile, "%s", lines[get(L)]);
+        moveNext(L);
+    }
+    fclose(outputFile);
+</font>
+
+    //freeing the memory
+    for(int i = 0; i &lt; numLines; i++){
+        free(lines[i]);
+    }
+    free(lines);
+    freeList(&amp;L);
+   
+    return 0;
+}
+</pre>
+
+
+</body></html>

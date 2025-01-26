@@ -1,0 +1,147 @@
+
+<!-- saved from url=(0115)file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match3-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/rbishoyi/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/mtarever/pa1/Lex.c<p></p><pre>/***
+* Mary Tarevern 
+* mtarever 
+* 2024 Fall CSE101 PA1 
+* Lex.c
+* Implementation of Lex.c
+***/
+//-----------------------------------------------------------------------------
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+#include "List.h"
+
+#define MAX_LINE_LEN 1024
+
+// count number of lines and return total count
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match3-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_8.gif"></a>
+
+int get_line_count(char *file_name) {
+    //open the file for reading
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL) {
+        // if the file cannot be opened
+        fprintf(stderr, "error: cannot open file '%s'\n", file_name);
+        exit(1);
+    }
+
+    int line_count = 0; // variable to store number of lines 
+</font>    int ch; //hold each character read 
+
+    // read file character by character until EOF
+    while ((ch = getc(file)) != EOF) {
+        // check if the character is a newline ('\n')
+        // a newline indicates the end of a line
+        if (ch == '\n') {
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match3-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_53.gif"></a>
+
+            line_count++; // increment the line count for each newline
+        }
+    }
+
+    // close the file after reading is complete
+    fclose(file);
+
+    // return total number of lines
+    return line_count;
+}
+
+
+// reads line from a file into an array
+void load_file_lines(char *file_name, char **line_array, int total_lines) {
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL) {
+        fprintf(stderr, "error: cannot open file '%s'\n", file_name);
+        exit(1);
+    }
+
+    char buffer[MAX_LINE_LEN];
+    int index = 0;
+    // copy each line into the allocated array
+    while (fgets(buffer, MAX_LINE_LEN, file) != NULL &amp;&amp; index &lt; total_lines) {
+        line_array[index] = malloc((strlen(buffer) + 1) * sizeof(char));
+        strcpy(line_array[index], buffer);
+        index++;
+    }
+
+    fclose(file);
+}
+
+int main(int argc, char **argv) {
+    // validate program arguments
+    if (argc != 3) {
+        fprintf(stderr, "usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // get total number of lines in  input file
+    int total_lines = get_line_count(argv[1]);
+
+    // allocate memory for array that will hold the file lines
+    char **file_lines = malloc(total_lines * sizeof(char *));
+    if (file_lines == NULL) {
+        fprintf(stderr, "error: memory allocation failed for line array\n");
+        exit(1);
+    }
+
+    // load all lines from the input file into array
+    load_file_lines(argv[1], file_lines, total_lines);
+
+    // initialize a list to hold indices of lines in sorted order
+    List sorted_indices = newList();
+    append(sorted_indices, 0); // add index of  first line to list
+
+    // sort indices of lines lexicographically
+    for (int curr_index = 1; curr_index &lt; total_lines; curr_index++) {
+        moveFront(sorted_indices); // move to start of list
+        while (index(sorted_indices) &gt;= 0 &amp;&amp; strcmp(file_lines[curr_index], file_lines[get(sorted_indices)]) &gt; 0) {
+</font><a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match3-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_24.gif"></a>
+
+            moveNext(sorted_indices); // find right position for the current index
+        }
+        if (index(sorted_indices) &gt;= 0) {
+            insertBefore(sorted_indices, curr_index); // insert current index in the correct spot
+        } else {
+            append(sorted_indices, curr_index); // append if no valid position is found
+        }
+    }
+
+    // open the output file for writing the sorted lines
+    FILE *output_file = fopen(argv[2], "w");
+    if (output_file == NULL) {
+        fprintf(stderr, "error: cannot open file '%s' for writing\n", argv[2]);
+        exit(1);
+    }
+
+    // write lines in sorted order to output file
+    
+moveFront(sorted_indices); // start at the beginning of the list
+    while (index(sorted_indices) &gt;= 0) {
+        fprintf(output_file, "%s", file_lines[get(sorted_indices)]);
+        moveNext(sorted_indices); // move to the next index
+    }
+
+    fclose(output_file);
+
+    // free allocated memory for  list and file lines
+    freeList(&amp;sorted_indices); // free the list structure
+    for (int i = 0; i &lt; total_lines; i++) {
+</font>        free(file_lines[i]); // free each line's memory
+    }
+    free(file_lines); // free array itself
+
+    return 0;
+}
+</pre>
+
+
+</body></html>

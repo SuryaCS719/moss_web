@@ -1,0 +1,129 @@
+
+<!-- saved from url=(0115)file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match4-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/ksteven/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/amunoz45/pa1/Lex.c<p></p><pre>/********************************************************
+* Andrew Munoz
+* amunoz45
+* 2025 Winter CSE101 PA{1}  
+* Lex.c
+* Client Module, takes input file and gives output file arranged lexicographically 
+********************************************************/ 
+// Built from FileIO.c example
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+#include"List.h"
+
+#define MAX_LEN 300
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match4-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_15.gif"></a>
+
+int main(int argc, char * argv[]){
+    // Track the number of lines in the input file
+    int line_count =0;
+    FILE *inputFile, *outputFile;
+    char line[MAX_LEN];
+    
+    // check command line for correct number of arguments
+    if( argc != 3 ){
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+    
+    // open files for reading and writing 
+    inputFile = fopen(argv[1], "r");
+</font>    if( inputFile==NULL ){
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match4-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_76.gif"></a>
+
+        printf("Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+    
+    outputFile = fopen(argv[2], "w");
+    if( outputFile==NULL ){
+        printf("Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+    // read each line of input file, then count and print tokens
+    
+    // Well count the number of lines in the input file w/ numLines
+    int NumOfLines = 0;
+    while( fgets(line, MAX_LEN, inputFile) != NULL)  {
+        NumOfLines++;
+    }
+
+    // Reset input file ptr to reread lines again
+    rewind(inputFile);
+    // Allocate memory to store each line of the file
+    char **lines = (char**)malloc(NumOfLines*sizeof(char*));
+
+    // Read the lines into the allocated array
+    while( fgets(line, MAX_LEN, inputFile)!=NULL ){
+        // Allocate memory for each line
+        lines[line_count] = (char*)malloc(MAX_LEN*sizeof(char)*strlen(line));
+        // Copy the line into the allocated space
+        strcpy(lines[line_count], line);
+        line_count++;
+    }
+
+    // Create a new list to store indices in sorted order
+    List indices = newList();
+    // Add the first line index to the list
+    append(indices, 0);
+    moveFront(indices);
+
+    // Insert the remaining lines into the list in lexicographic order
+    for( int i =1; i&lt;line_count; i++ ){
+        while( index(indices)&gt;=0 ){
+            if( strcmp(lines[i], lines[get(indices)])&gt;0 ){
+                // Move to next index if current line is smaller
+                moveNext(indices);
+            }
+            else{
+                break;  // Stop if the current line is larger or equal
+            }
+        }
+        if( index(indices)&gt;=0 ){
+            // Insert before the current position
+            insertBefore(indices, i);
+        }
+        else{
+            // Add to the end if theres no larger element found
+            append(indices, i);
+        } 
+        // Reset to the front of the list
+        moveFront(indices);
+    }
+
+    // Now well write the lines to the output file in sorted order
+    while( index(indices)&gt;=0 ){
+        fprintf(outputFile, "%s", lines[get(indices)]);
+        moveNext(indices);
+    }
+
+    // CLOSE DA FILES
+    fclose(inputFile);
+    fclose(outputFile);
+
+    // After closing the files, we have to FREE DA MEMORY
+    for( int i=0; i&lt;line_count; i++ ){
+        // Free each lines memory
+        free(lines[i]);    
+    }
+    // Free the array of ptrs
+    freeList(&amp;indices);
+    // Free the list as well
+    free(lines);
+
+    return(0);
+</font>}
+
+</pre>
+
+
+</body></html>

@@ -1,0 +1,159 @@
+
+<!-- saved from url=(0115)file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match1-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/apdas/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/apdas/pa1/Lex.c<p></p><pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include &lt;ctype.h&gt;
+#include "List.h"
+
+#define MAX_STR_LEN 300
+
+int main(int argc, char* argv[]) {
+
+    FILE *in, *out;
+    char** str = NULL;  // Declaration of a string array "str"
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match1-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_92.gif"></a>
+
+    char line[MAX_STR_LEN];
+    List L = newList();
+    int i, j, s_len, line_count = 0;
+
+    // Check command line for correct number of arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open "in" file for reading
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    // While you are successfully reading in "line" (up to MAX_STR_LEN characters)
+    // increment your line_count for each successful read
+    while (fgets(line, MAX_STR_LEN, in) != NULL) {
+        line_count++;
+    }
+
+    // Close the "in" file
+    fclose(in);
+
+    // Open input file again
+    in = fopen(argv[1], "r");
+    if (in == NULL) {
+        fprintf(stderr, "Unable to reopen file %s for reading\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Allocate memory to "str" (line_count elements, each a char*)
+    str = (char**)malloc(line_count * sizeof(char*));
+    if (str == NULL) {
+        fprintf(stderr, "Error: unable to allocate memory for string array\n");
+        fclose(in);
+        exit(EXIT_FAILURE);
+    }
+
+    // Read the lines again
+    for (i = 0; i &lt; line_count; i++) {
+        if (fgets(line, MAX_STR_LEN, in) != NULL) {
+            s_len = strlen(line);
+
+            // Strip newline or carriage return characters
+            while ((s_len &gt; 0) &amp;&amp; (line[s_len - 1] == '\n' || line[s_len - 1] == '\r')) {
+                line[s_len - 1] = '\0';
+                s_len--;
+            }
+
+            // Allocate space for str[i]
+            str[i] = (char*)malloc((s_len + 1) * sizeof(char));
+            if (str[i] == NULL) {
+                fprintf(stderr, "Error: unable to allocate memory for line %d\n", i);
+                fclose(in);
+                // Free any previously allocated lines
+                for (j = 0; j &lt; i; j++) {
+                    free(str[j]);
+                }
+                free(str);
+                exit(EXIT_FAILURE);
+            }
+
+            // Copy line into str[i]
+            strcpy(str[i], line);
+        }
+    }
+
+    // Close the "in" file
+    fclose(in);
+
+    // Now append a 0 to the list L (as an initial step)
+    if (line_count &gt; 0) {
+        append(L, 0);
+    }
+
+    // Sort array str by inserting indices into List L (Insertion sort approach)
+    // i starts from 1 since index 0 is already appended
+    for (i = 1; i &lt; line_count; i++) {
+        // Move cursor to the front each time we insert
+        moveFront(L);
+
+        // While cursor is valid and str[i] &gt;= str[get(L)], moveNext
+        while (index(L) &gt;= 0 &amp;&amp; strcmp(str[i], str[get(L)]) &gt;= 0) {
+            moveNext(L);
+        }
+
+        // If we ran off the end, append
+        if (index(L) &lt; 0) {
+            append(L, i);
+        } else {
+            // Otherwise, insert before cursor
+            insertBefore(L, i);
+        }
+    }
+
+    // Open "out" file for writing
+    out = fopen(argv[2], "w");
+    if (out == NULL) {
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        // Clean up before exiting
+        for (i = 0; i &lt; line_count; i++) {
+            free(str[i]);
+        }
+        free(str);
+        freeList(&amp;L);
+        exit(EXIT_FAILURE);
+    }
+
+    // Iterate through the list L from front to back
+    // Print the data's of each element in your string array "str"
+    moveFront(L);
+    while (index(L) &gt;= 0) {
+        fprintf(out, "%s\n", str[get(L)]);
+        moveNext(L);
+    }
+
+    // Close "out" file
+    fclose(out);
+
+    // Free the "str" array
+    for (i = 0; i &lt; line_count; i++) {
+        free(str[i]);
+    }
+    free(str);
+
+    // Free L
+    freeList(&amp;L);
+</font>
+    return 0;
+}
+</pre>
+
+
+</body></html>
