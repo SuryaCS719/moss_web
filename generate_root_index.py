@@ -1,98 +1,165 @@
 # generate_root_index.py
-
 html_content = """<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MOSS Reports Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            color: #0056b3;
-        }
-        .pa-list {
-            list-style: none;
             padding: 0;
         }
-        .pa-list li {
-            margin: 15px 0;
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--light);
+            min-height: 100vh;
+            padding: 2rem;
         }
-        .pa-list a {
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        .pa-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
             text-decoration: none;
-            color: #007BFF;
-            font-size: 20px;
-            transition: color 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .pa-list a:hover {
-            color: #0056b3;
-            text-decoration: underline;
+
+        .pa-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .pa-card h2 {
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.8rem 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .auth-button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            margin-top: 1rem;
         }
     </style>
     <script>
-        // Password protection
-        const username = "cse101-admin-w25"; // Set your username here
-        const password = "Admin@cse101-w25"; // Set your password here
-        const maxAttempts = 3; // Maximum number of password attempts
-        let attempts = 0; // Counter for password attempts
-
-        function checkPassword() {
-            // Check if the user is already authenticated
-            if (localStorage.getItem("authenticated") === "true") {
-                document.body.style.display = "block"; // Show the content
-                return;
-            }
-
-            // Prompt for username and password together
-            const credentials = prompt("Enter your username and password (format: username:password):");
-            if (!credentials) {
-                // User clicked "Cancel" or closed the prompt
-                window.location.href = "about:blank"; // Redirect to a blank page
-                return;
-            }
-
-            // Split the input into username and password
-            const [enteredUsername, enteredPassword] = credentials.split(":");
-
-            // Check if the username and password are correct
-            if (enteredUsername === username && enteredPassword === password) {
-                // Password is correct, show the content
-                document.body.style.display = "block";
-                localStorage.setItem("authenticated", "true"); // Store authentication status
+        function checkCredentials() {
+            const enteredUser = document.getElementById('username').value;
+            const enteredPass = document.getElementById('password').value;
+            
+            if(enteredUser === "cse101-admin-w25" && enteredPass === "Admin@cse101-w25") {
+                window.location.href = window.location.href + "?auth=true";
+                localStorage.setItem('authenticated', 'true');
             } else {
-                // Increment the attempt counter
-                attempts++;
-
-                // Check if the user has exceeded the maximum number of attempts
-                if (attempts < maxAttempts) {
-                    alert(`Incorrect username or password. You have ${maxAttempts - attempts} attempts remaining.`);
-                    checkPassword(); // Retry
-                } else {
-                    // Redirect to a blank page after max attempts
-                    alert("Maximum attempts reached. Access denied.");
-                    window.location.href = "about:blank"; // Redirect to a blank page
-                }
+                alert('Invalid credentials');
             }
         }
 
-        // Hide the body content initially
-        document.addEventListener("DOMContentLoaded", function () {
-            document.body.style.display = "none";
-            checkPassword();
-        });
+        // Check URL parameter for auth
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.has('auth') || localStorage.getItem('authenticated') === 'true') {
+            document.body.style.display = 'block';
+        } else {
+            document.getElementById('authModal').style.display = 'flex';
+        }
     </script>
 </head>
 <body>
-    <h1>MOSS Reports Dashboard</h1>
-    <ul class="pa-list">
-        <li><a href="./PA1/index.html">PA1 Reports</a></li>
-        <li><a href="./PA2/index.html">PA2 Reports</a></li>
-        <!-- Add more PAs as needed -->
-    </ul>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 MOSS Reports Dashboard</h1>
+            <p>Select a programming assignment to view reports</p>
+        </div>
+        
+        <div class="pa-grid">
+            <a href="./PA1/index.html" class="pa-card">
+                <h2>PA1 Reports</h2>
+                <p>View similarity analysis</p>
+            </a>
+            <a href="./PA2/index.html" class="pa-card">
+                <h2>PA2 Reports</h2>
+                <p>View similarity analysis</p>
+            </a>
+            <!-- Add more PA cards as needed -->
+        </div>
+    </div>
+
+    <div id="authModal" class="auth-modal">
+        <div class="auth-box">
+            <h2 style="margin-bottom: 1.5rem;">🔒 Admin Login</h2>
+            <input type="text" id="username" class="auth-input" placeholder="Username">
+            <input type="password" id="password" class="auth-input" placeholder="Password">
+            <button onclick="checkCredentials()" class="auth-button">Continue</button>
+        </div>
+    </div>
 </body>
 </html>
 """

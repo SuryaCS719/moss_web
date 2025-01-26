@@ -1,244 +1,240 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MOSS Reports - PA1</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 20px;
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
         }
-        h1 {
-            color: #0056b3;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin: 20px 0;
+
+        * {
             box-sizing: border-box;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            margin: 0;
+            padding: 0;
         }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid var(--secondary);
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(52,152,219,0.3);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            min-width: 800px;
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 1rem;
             text-align: left;
+            border-bottom: 1px solid #eee;
         }
+
         th {
-            background-color: #0056b3;
+            background: var(--primary);
             color: white;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
         }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+
         tr:hover {
-            background-color: #f1f1f1;
+            background: #f8f9fa;
         }
-        a {
-            text-decoration: none;
-            color: #007BFF;
+
+        .report-link {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: var(--secondary);
+            color: white !important;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+            margin: 2px;
         }
-        a:hover {
-            text-decoration: underline;
+
+        .report-link:hover {
+            background: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .na {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: #95a5a6;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            th, td {
+                padding: 0.8rem;
+            }
         }
     </style>
     <script>
         function filterTable() {
             const input = document.getElementById("searchBar").value.toLowerCase();
             const rows = document.querySelectorAll("#reportTable tbody tr");
+            let visibleCount = 0;
+            
             rows.forEach(row => {
                 const name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
-                row.style.display = name.includes(input) ? "" : "none";
+                const isVisible = name.includes(input);
+                row.style.display = isVisible ? "" : "none";
+                if(isVisible) visibleCount++;
             });
+            
+            document.getElementById("noResults").style.display = visibleCount ? "none" : "block";
         }
     </script>
 </head>
 <body>
-    <h1>MOSS Reports for PA1</h1>
-    <p>Search for a student's CruzID:</p>
-    <input type="text" id="searchBar" placeholder="Type to search..." onkeyup="filterTable()">
-    <table id="reportTable">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Student CruzID</th>                <th>Lex.c Report 1</th>
-                <th>Lex.c Report 2</th>
-                <th>List.c Report 1</th>
-                <th>List.c Report 2</th>
-                <th>List.c Report 3</th>
-                <th>List.c Report 4</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>amunoz45</td>
-                <td><a href="./amunoz45/Matches for _winter25_ksteven_pa1_Lex.c and _winter25_amunoz45_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>2</td>
-                <td>apdas</td>
-                <td><a href="./apdas/Matches for _winter25_apdas_pa1_Lex.c and _winter25_edjgreen_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td><a href="./apdas/Matches for _winter25_apdas_pa1_List.c and _winter25_edjgreen_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>3</td>
-                <td>asee1</td>
-                <td><a href="./asee1/Matches for _winter25_asee1_pa1_Lex.c and _winter24_topau_pa1_Lex.c.html">View Report</a></td>
-                <td><a href="./asee1/Matches for _winter25_asee1_pa1_Lex.c and _winter25_mboo_pa1_Lex.c.html">View Report</a></td>
-                <td><a href="./asee1/Matches for _winter25_asee1_pa1_List.c and _fall24_bcurielm_pa1_List.c.html">View Report</a></td>
-                <td><a href="./asee1/Matches for _winter25_asee1_pa1_List.c and _winter24_qbhoang_pa1_List.c.html">View Report</a></td>
-                <td><a href="./asee1/Matches for _winter25_asee1_pa1_List.c and _winter24_topau_pa1_List.c.html">View Report</a></td>
-                <td><a href="./asee1/Matches for _winter25_asee1_pa1_List.c and _winter25_mboo_pa1_List.c.html">View Report</a></td>
-            </tr>
-            <tr>
-                <td>4</td>
-                <td>edjgreen</td>
-                <td><a href="./edjgreen/Matches for _winter25_apdas_pa1_Lex.c and _winter25_edjgreen_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td><a href="./edjgreen/Matches for _winter25_apdas_pa1_List.c and _winter25_edjgreen_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>5</td>
-                <td>hravikop</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td><a href="./hravikop/Matches for _winter25_hravikop_pa1_List.c and _winter23_laaliu_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>6</td>
-                <td>jerzimme</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td><a href="./jerzimme/Matches for _winter25_rbishoyi_pa1_List.c and _winter25_jerzimme_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>7</td>
-                <td>ksteven</td>
-                <td><a href="./ksteven/Matches for _winter25_ksteven_pa1_Lex.c and _winter25_amunoz45_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td><a href="./ksteven/Matches for _winter25_ksteven_pa1_List.c and _winter25_pagrawa5_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>8</td>
-                <td>lmbetanc</td>
-                <td><a href="./lmbetanc/Matches for _winter25_mchave83_pa1_Lex.c and _winter25_lmbetanc_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td><a href="./lmbetanc/Matches for _winter25_mchave83_pa1_List.c and _winter25_lmbetanc_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>9</td>
-                <td>mboo</td>
-                <td><a href="./mboo/Matches for _winter25_mboo_pa1_Lex.c and _winter24_topau_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td><a href="./mboo/Matches for _winter25_mboo_pa1_List.c and _fall24_bcurielm_pa1_List.c.html">View Report</a></td>
-                <td><a href="./mboo/Matches for _winter25_mboo_pa1_List.c and _winter24_qbhoang_pa1_List.c.html">View Report</a></td>
-                <td><a href="./mboo/Matches for _winter25_mboo_pa1_List.c and _winter24_topau_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>10</td>
-                <td>mchave83</td>
-                <td><a href="./mchave83/Matches for _winter25_mchave83_pa1_Lex.c and _winter25_lmbetanc_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td><a href="./mchave83/Matches for _winter25_mchave83_pa1_List.c and _winter25_lmbetanc_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>11</td>
-                <td>mtarever</td>
-                <td><a href="./mtarever/Matches for _winter25_rbishoyi_pa1_Lex.c and _winter25_mtarever_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>12</td>
-                <td>naskinne</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td><a href="./naskinne/Matches for _winter25_naskinne_pa1_List.c and _winter23_jhawes_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>13</td>
-                <td>pagrawa5</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td><a href="./pagrawa5/Matches for _winter25_ksteven_pa1_List.c and _winter25_pagrawa5_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>14</td>
-                <td>rbishoyi</td>
-                <td><a href="./rbishoyi/Matches for _winter25_rbishoyi_pa1_Lex.c and _winter25_mtarever_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td><a href="./rbishoyi/Matches for _winter25_rbishoyi_pa1_List.c and _winter25_jerzimme_pa1_List.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>15</td>
-                <td>srhsenth</td>
-                <td><a href="./srhsenth/Matches for _winter25_srhsenth_pa1_Lex.c and _winter25_hravikop_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td>16</td>
-                <td>svo8</td>
-                <td><a href="./svo8/Matches for _winter25_svo8_pa1_Lex.c and _winter25_hravikop_pa1_Lex.c.html">View Report</a></td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-                <td>N/A</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="container">
+        <div class="header">
+            <h1>📊 PA1 MOSS Reports</h1>
+        </div>
+
+        <div class="search-container">
+            <input type="text" 
+                   id="searchBar" 
+                   class="search-box"
+                   placeholder="Search by CruzID..."
+                   onkeyup="filterTable()"
+                   aria-label="Search student reports">
+        </div>
+
+        <div class="table-wrapper">
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student CruzID</th>                <th>Lex.c</th>
+                <th>List.c</th>
+                    </tr>
+                </thead>
+                <tbody>                    <tr>
+                        <td>1</td>
+                        <td>amunoz45</td><td><a class="report-link" href="amunoz45/Matches%20for%20_winter25_ksteven_pa1_Lex.c%20and%20_winter25_amunoz45_pa1_Lex.c.html">View</a></td><td class="na">-</td>                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>apdas</td><td><a class="report-link" href="apdas/Matches%20for%20_winter25_apdas_pa1_Lex.c%20and%20_winter25_edjgreen_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="apdas/Matches%20for%20_winter25_apdas_pa1_List.c%20and%20_winter25_edjgreen_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>asee1</td><td><a class="report-link" href="asee1/Matches%20for%20_winter25_asee1_pa1_Lex.c%20and%20_winter24_topau_pa1_Lex.c.html">View</a>, <a class="report-link" href="asee1/Matches%20for%20_winter25_asee1_pa1_Lex.c%20and%20_winter25_mboo_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="asee1/Matches%20for%20_winter25_asee1_pa1_List.c%20and%20_winter25_mboo_pa1_List.c.html">View</a>, <a class="report-link" href="asee1/Matches%20for%20_winter25_asee1_pa1_List.c%20and%20_fall24_bcurielm_pa1_List.c.html">View</a>, <a class="report-link" href="asee1/Matches%20for%20_winter25_asee1_pa1_List.c%20and%20_winter24_qbhoang_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>edjgreen</td><td><a class="report-link" href="edjgreen/Matches%20for%20_winter25_apdas_pa1_Lex.c%20and%20_winter25_edjgreen_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="edjgreen/Matches%20for%20_winter25_apdas_pa1_List.c%20and%20_winter25_edjgreen_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>hravikop</td><td class="na">-</td><td><a class="report-link" href="hravikop/Matches%20for%20_winter25_hravikop_pa1_List.c%20and%20_winter23_laaliu_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>jerzimme</td><td class="na">-</td><td><a class="report-link" href="jerzimme/Matches%20for%20_winter25_rbishoyi_pa1_List.c%20and%20_winter25_jerzimme_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>ksteven</td><td><a class="report-link" href="ksteven/Matches%20for%20_winter25_ksteven_pa1_Lex.c%20and%20_winter25_amunoz45_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="ksteven/Matches%20for%20_winter25_ksteven_pa1_List.c%20and%20_winter25_pagrawa5_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>lmbetanc</td><td><a class="report-link" href="lmbetanc/Matches%20for%20_winter25_mchave83_pa1_Lex.c%20and%20_winter25_lmbetanc_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="lmbetanc/Matches%20for%20_winter25_mchave83_pa1_List.c%20and%20_winter25_lmbetanc_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>mboo</td><td><a class="report-link" href="mboo/Matches%20for%20_winter25_mboo_pa1_Lex.c%20and%20_winter24_topau_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="mboo/Matches%20for%20_winter25_mboo_pa1_List.c%20and%20_winter24_topau_pa1_List.c.html">View</a>, <a class="report-link" href="mboo/Matches%20for%20_winter25_mboo_pa1_List.c%20and%20_fall24_bcurielm_pa1_List.c.html">View</a>, <a class="report-link" href="mboo/Matches%20for%20_winter25_mboo_pa1_List.c%20and%20_winter24_qbhoang_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>mchave83</td><td><a class="report-link" href="mchave83/Matches%20for%20_winter25_mchave83_pa1_Lex.c%20and%20_winter25_lmbetanc_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="mchave83/Matches%20for%20_winter25_mchave83_pa1_List.c%20and%20_winter25_lmbetanc_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td>mtarever</td><td><a class="report-link" href="mtarever/Matches%20for%20_winter25_rbishoyi_pa1_Lex.c%20and%20_winter25_mtarever_pa1_Lex.c.html">View</a></td><td class="na">-</td>                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td>naskinne</td><td class="na">-</td><td><a class="report-link" href="naskinne/Matches%20for%20_winter25_naskinne_pa1_List.c%20and%20_winter23_jhawes_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>pagrawa5</td><td class="na">-</td><td><a class="report-link" href="pagrawa5/Matches%20for%20_winter25_ksteven_pa1_List.c%20and%20_winter25_pagrawa5_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>14</td>
+                        <td>rbishoyi</td><td><a class="report-link" href="rbishoyi/Matches%20for%20_winter25_rbishoyi_pa1_Lex.c%20and%20_winter25_mtarever_pa1_Lex.c.html">View</a></td><td><a class="report-link" href="rbishoyi/Matches%20for%20_winter25_rbishoyi_pa1_List.c%20and%20_winter25_jerzimme_pa1_List.c.html">View</a></td>                    </tr>
+                    <tr>
+                        <td>15</td>
+                        <td>srhsenth</td><td><a class="report-link" href="srhsenth/Matches%20for%20_winter25_srhsenth_pa1_Lex.c%20and%20_winter25_hravikop_pa1_Lex.c.html">View</a></td><td class="na">-</td>                    </tr>
+                    <tr>
+                        <td>16</td>
+                        <td>svo8</td><td><a class="report-link" href="svo8/Matches%20for%20_winter25_svo8_pa1_Lex.c%20and%20_winter25_hravikop_pa1_Lex.c.html">View</a></td><td class="na">-</td>                    </tr>
+                </tbody>
+            </table>
+            <div id="noResults" class="no-results">
+                🕵️ No matching students found
+            </div>
+        </div>
+    </div>
 </body>
 </html>

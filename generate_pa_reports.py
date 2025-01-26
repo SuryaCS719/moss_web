@@ -2,96 +2,209 @@
 import os
 import argparse
 from collections import defaultdict
+from datetime import datetime
 
 def generate_pa_index(pa_folder):
-    """Generates an index.html for a specific PA folder with MOSS reports."""
+    """Generates a modern index.html for PA folders with enhanced UI/UX"""
     
-    # HTML template with dynamic PA number in title and header
+    # HTML template with dynamic content
     html_content = f"""<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MOSS Reports - {pa_folder.upper()}</title>
     <style>
-        body {{
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 20px;
+        :root {{
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
         }}
-        h1 {{
-            color: #0056b3;
-        }}
-        input[type="text"] {{
-            width: 100%;
-            padding: 10px;
-            margin: 20px 0;
+
+        * {{
             box-sizing: border-box;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            margin: 0;
+            padding: 0;
         }}
+
+        body {{
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 1rem;
+        }}
+
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+        }}
+
+        .header {{
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }}
+
+        .search-container {{
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }}
+
+        .search-box {{
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid var(--secondary);
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }}
+
+        .search-box:focus {{
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(52,152,219,0.3);
+        }}
+
+        .table-wrapper {{
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }}
+
         table {{
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            min-width: 800px;
         }}
+
         th, td {{
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 1rem;
             text-align: left;
+            border-bottom: 1px solid #eee;
         }}
+
         th {{
-            background-color: #0056b3;
+            background: var(--primary);
             color: white;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
         }}
-        tr:nth-child(even) {{
-            background-color: #f9f9f9;
-        }}
+
         tr:hover {{
-            background-color: #f1f1f1;
+            background: #f8f9fa;
         }}
-        a {{
-            text-decoration: none;
-            color: #007BFF;
+
+        .report-link {{
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: var(--secondary);
+            color: white !important;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+            margin: 2px;
         }}
-        a:hover {{
-            text-decoration: underline;
+
+        .report-link:hover {{
+            background: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+
+        .na {{
+            color: #95a5a6;
+            font-style: italic;
+        }}
+
+        .no-results {{
+            text-align: center;
+            padding: 2rem;
+            color: #95a5a6;
+            display: none;
+        }}
+
+        @media (max-width: 768px) {{
+            body {{
+                padding: 0.5rem;
+            }}
+            
+            .header {{
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }}
+            
+            th, td {{
+                padding: 0.8rem;
+            }}
         }}
     </style>
     <script>
         function filterTable() {{
             const input = document.getElementById("searchBar").value.toLowerCase();
             const rows = document.querySelectorAll("#reportTable tbody tr");
+            let visibleCount = 0;
+            
             rows.forEach(row => {{
                 const name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
-                row.style.display = name.includes(input) ? "" : "none";
+                const isVisible = name.includes(input);
+                row.style.display = isVisible ? "" : "none";
+                if(isVisible) visibleCount++;
             }});
+            
+            document.getElementById("noResults").style.display = visibleCount ? "none" : "block";
         }}
     </script>
 </head>
 <body>
-    <h1>MOSS Reports for {pa_folder.upper()}</h1>
-    <p>Search for a student's CruzID:</p>
-    <input type="text" id="searchBar" placeholder="Type to search..." onkeyup="filterTable()">
-    <table id="reportTable">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Student CruzID</th>"""
+    <div class="container">
+        <div class="header">
+            <h1>📊 {pa_folder.upper()} MOSS Reports</h1>
+        </div>
+
+        <div class="search-container">
+            <input type="text" 
+                   id="searchBar" 
+                   class="search-box"
+                   placeholder="Search by CruzID..."
+                   onkeyup="filterTable()"
+                   aria-label="Search student reports">
+        </div>
+
+        <div class="table-wrapper">
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student CruzID</th>"""
 
     # File type detection logic
     def extract_file_type(filename):
-        for file_type in ["List.c", "Lex.c", "Matrix.c"]:
-            if file_type in filename:
-                return file_type
+        file_types = {
+            "List.c": ["list", "linkedlist"],
+            "Lex.c": ["lex", "lexer"],
+            "Matrix.c": ["matrix", "mat"]
+        }
+        for ft, keywords in file_types.items():
+            if any(kw in filename.lower() for kw in keywords):
+                return ft
         return None
 
     # First pass: Identify all file types and their counts
-    file_types = defaultdict(int)
+    active_report_types = set()
     valid_student_folders = []
 
-    # Validate PA folder exists
     if not os.path.exists(pa_folder):
         print(f"Error: {pa_folder} directory not found!")
         return
@@ -100,87 +213,84 @@ def generate_pa_index(pa_folder):
         student_path = os.path.join(pa_folder, student_folder)
         if os.path.isdir(student_path):
             valid_student_folders.append(student_folder)
-            type_counts = defaultdict(int)
             for item in os.listdir(student_path):
                 if item.startswith("Matches for") and item.endswith(".html"):
                     file_type = extract_file_type(item)
                     if file_type:
-                        type_counts[file_type] += 1
-            for ft, count in type_counts.items():
-                file_types[ft] = max(file_types[ft], count)
+                        active_report_types.add(file_type)
 
     # Generate column headers
-    columns = []
-    for file_type in sorted(file_types.keys()):
-        count = file_types[file_type]
-        if count == 1:
-            columns.append((file_type, 1))
-            html_content += f'                <th>{file_type} Report</th>\n'
-        else:
-            for i in range(1, count + 1):
-                columns.append((file_type, i))
-                html_content += f'                <th>{file_type} Report {i}</th>\n'
+    columns = sorted(active_report_types)
+    for file_type in columns:
+        html_content += f'                <th>{file_type}</th>\n'
 
-    html_content += """            </tr>
-        </thead>
-        <tbody>
-"""
+    html_content += """                    </tr>
+                </thead>
+                <tbody>"""
 
     # Populate table rows
     serial_no = 1
-    for student_folder in sorted(valid_student_folders):
+    for student_folder in sorted(valid_student_folders, key=lambda x: x.lower()):
         student_path = os.path.join(pa_folder, student_folder)
-        report_links = {col: "N/A" for col in columns}
+        report_links = {ft: [] for ft in columns}
         
-        files = defaultdict(list)
+        # Collect reports
         for item in os.listdir(student_path):
             if item.startswith("Matches for") and item.endswith(".html"):
                 file_type = extract_file_type(item)
-                if file_type:
-                    files[file_type].append(item)
-        
-        # Sort files for each type
-        for ft in files:
-            files[ft].sort()
-        
-        # Assign files to columns
-        for ft in files:
-            for i, file in enumerate(files[ft], 1):
-                col = (ft, i)
-                if col in report_links:
-                    report_links[col] = f'<a href="./{student_folder}/{file}">View Report</a>'
+                if file_type in columns:
+                    report_path = os.path.join(student_folder, item).replace(' ', '%20')
+                    report_links[file_type].append(f'<a class="report-link" href="{report_path}">View</a>')
         
         # Add row to table
-        html_content += f"""            <tr>
-                <td>{serial_no}</td>
-                <td>{student_folder}</td>
-"""
-        for col in columns:
-            html_content += f'                <td>{report_links[col]}</td>\n'
+        html_content += f"""                    <tr>
+                        <td>{serial_no}</td>
+                        <td>{student_folder}</td>"""
         
-        html_content += "            </tr>\n"
+        for ft in columns:
+            links = report_links[ft]
+            if links:
+                html_content += f'<td>{", ".join(links[:3])}</td>'
+            else:
+                html_content += '<td class="na">-</td>'
+        
+        html_content += "                    </tr>\n"
         serial_no += 1
 
     # Close HTML structure
-    html_content += """        </tbody>
-    </table>
+    html_content += f"""                </tbody>
+            </table>
+            <div id="noResults" class="no-results">
+                🕵️ No matching students found
+            </div>
+        </div>
+    </div>
 </body>
-</html>
-"""
+</html>"""
 
     # Write to PA folder's index.html
     output_path = os.path.join(pa_folder, "index.html")
     with open(output_path, "w") as f:
         f.write(html_content)
-    print(f"Successfully generated {output_path}")
+    print(f"Successfully generated modern report index at {output_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Generate MOSS report index.html for programming assignments',
-        epilog='Example: python generate_pa_reports.py --pa PA1'
+        description='Generate modern MOSS report index for programming assignments',
+        epilog='Examples:\n  Individual: python generate_pa_reports.py --pa PA1\n  All PAs:    python generate_pa_reports.py --all'
     )
-    parser.add_argument('--pa', required=True, 
-                      help='PA folder to process (e.g., PA1, PA2)')
+    parser.add_argument('--pa', help='PA folder to process (e.g., PA1, PA2)')
+    parser.add_argument('--all', action='store_true',
+                      help='Process all PA directories (PA1, PA2, etc.)')
     args = parser.parse_args()
     
-    generate_pa_index(args.pa)
+    if args.all:
+        # Process all PA folders
+        for folder in os.listdir():
+            if os.path.isdir(folder) and folder.upper().startswith("PA"):
+                generate_pa_index(folder)
+    elif args.pa:
+        # Process single PA folder
+        generate_pa_index(args.pa)
+    else:
+        print("Error: Please specify either --pa or --all")
