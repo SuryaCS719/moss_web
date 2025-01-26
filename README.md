@@ -1,7 +1,19 @@
 # MOSS Web Dashboard
 
 A web-based dashboard for viewing MOSS (Measure of Software Similarity) reports for programming assignments (PAs). This project automates the generation of HTML reports and provides a centralized interface for accessing them.
+---
 
+### Access the Dashboard
+
+You can access the MOSS Web Dashboard at the following URL:
+
+[**MOSS Web Dashboard**](https://cse101-pa-moss-reports-w25.netlify.app/)
+
+
+### Login Credentials
+
+- **Username**: `cse101-admin-w25`
+- **Password**: `admin@cse101-w25`
 ---
 
 ## Features
@@ -9,7 +21,6 @@ A web-based dashboard for viewing MOSS (Measure of Software Similarity) reports 
 - **Searchable Interface**: Allows searching for student reports by CruzID.
 - **Scalable**: Supports multiple PAs (e.g., PA1, PA2, etc.) with minimal configuration.
 - **Netlify Integration**: Automatically deploys updates when changes are pushed to GitHub.
-
 ---
 
 ## Repository Structure
