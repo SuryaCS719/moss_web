@@ -7,7 +7,7 @@ A web-based dashboard for viewing MOSS (Measure of Software Similarity) reports 
 
 You can access the MOSS Web Dashboard at the following URL:
 
-<a href="https://cse101-pa-moss-reports-w25.netlify.app/" target="_blank">MOSS Web Dashboard</a>
+[**MOSS Web Dashboard**](https://cse101-pa-moss-reports-w25.netlify.app/)
 
 ### Login Credentials
 
