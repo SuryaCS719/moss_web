@@ -1,0 +1,105 @@
+
+<!-- saved from url=(0115)file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match2-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/asee1/pa1/Lex.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/mboo/pa1/Lex.c<p></p><pre>// Maxwell Boo
+// mboo
+// 2024 Fall CSE101 PA{1}
+// Lex.c
+// implementation of the Lex.c
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include"List.h"
+#include&lt;string.h&gt;
+#define MAX_LEN 100
+
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa1_report/moss_results/winter25_winter25/Lex.c/part_1/report/match2-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_98.gif"></a>
+
+char *strdup(const char *str){
+   int n = strlen(str) + 1;
+   char *dup = malloc(n);
+   if(dup){
+      strcpy(dup, str); 
+   }
+   return dup;
+}
+
+int main(int argc, char * argv[]){
+   int line_count;
+   FILE *in, *out;
+   char line[MAX_LEN];
+
+   if( argc != 3 ){
+      fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+      exit(1);
+   }
+
+   in = fopen(argv[1], "r");
+   if( in==NULL ){
+      fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+      exit(1);
+   }
+
+   out = fopen(argv[2], "w");
+   if( out==NULL ){
+      fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+      exit(1);
+   }
+
+   line_count = 0;
+   while( fgets(line, MAX_LEN, in) != NULL )  {
+      line_count++;
+   }
+
+   rewind(in);
+   char** str_list = (char**) calloc(sizeof(char*), line_count + 1);
+   int str_list_index = 0;
+   while( fgets(line, MAX_LEN, in) != NULL )  {
+      str_list[str_list_index] = strdup(line); 
+      str_list_index++;
+   }
+
+   List L = newList();
+   append(L, 0);
+   moveFront(L);
+   for(int i = 1; i &lt; line_count; i++){ 
+      moveFront(L);
+      while(index(L) &gt;= 0){
+         if(strcmp(str_list[get(L)], str_list[i]) &gt; 0){
+            break;
+         }
+         moveNext(L);
+      }
+      if(index(L) &lt; 0){
+         append(L, i);
+      }else{
+         insertBefore(L,i);
+      }
+   }
+ 
+   moveFront(L);
+   while(index(L) &gt;= 0){
+      int x = get(L);
+      fprintf(out, "%s", str_list[x]);
+      moveNext(L);
+   }
+
+   freeList(&amp;L); 
+   for(int i = 0; i &lt; line_count + 1; i++){
+      free(str_list[i]);
+   }
+   free(str_list);
+   fclose(in);
+</font>   fclose(out);
+
+   return(0);
+}
+</pre>
+
+
+</body></html>
