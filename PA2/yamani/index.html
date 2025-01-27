@@ -6,13 +6,11 @@
     <title>yamani - PA2 Reports</title>
     <style>
         :root {
-            --primary: #2c3e50;       /* Dark Blue */
-            --secondary: #3498db;     /* Bright Blue */
-            --accent: #e74c3c;        /* Red */
-            --light: #ecf0f1;         /* Light Gray */
-            --dark: #2c3e50;          /* Dark Blue */
-            --success: #2ecc71;       /* Green */
-            --warning: #f1c40f;       /* Yellow */
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
         }
 
         * {
@@ -43,21 +41,12 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
         .back-link {
             color: var(--light);
             text-decoration: none;
             font-size: 0.9rem;
             display: inline-block;
             margin-top: 1rem;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
         }
 
         .report-list {
@@ -71,19 +60,7 @@
             padding: 1.5rem;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
             margin-bottom: 1.5rem;
-        }
-
-        .report-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .report-item h3 {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
         }
 
         .report-link {
@@ -92,25 +69,12 @@
             background: var(--secondary);
             color: white !important;
             border-radius: 20px;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
             text-decoration: none !important;
+            transition: background 0.3s ease;
         }
 
         .report-link:hover {
-            background: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                padding: 1.5rem;
-            }
-
-            .report-item {
-                padding: 1rem;
-            }
+            background: var(--accent);
         }
     </style>
 </head>
@@ -121,12 +85,12 @@
             <a href="../index.html" class="back-link">← Back to PA2 Overview</a>
         </div>
 
-        <ul class="report-list">
-            <li class="report-item">
+        <div class="report-list">
+            <div class="report-item">
                     <h3>Report 1: FindPath.c</h3>
                     <a class="report-link" href="Matches for _winter25_prvuyyur_pa2_FindPath.c and _winter25_yamani_pa2_FindPath.c.html">View Full Report</a>
-                </li>
-        </ul>
+                </div>
+        </div>
     </div>
 </body>
 </html>
