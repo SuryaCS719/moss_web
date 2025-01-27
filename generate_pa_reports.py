@@ -13,8 +13,19 @@ PA_FILE_TYPES = {
         "FindPath.c": ["findpath"],
         "Graph.c": ["graph"],
     },
+    "PA3": {
+        "FindComponents.c": ["components", "findcomponents"],  # Multiple keywords for flexibility
+        "Graph.c": ["graph"],
+    },
+    "PA4": {
+        "Matrix.c": ["matrix"],
+        "Sparse.c": ["sparse"],
+        "List.c": ["list"],
+    }
     # Add more PAs as needed
 }
+
+
 
 def generate_student_index(student_folder, pa_folder, reports):
     """Generate individual student index page with all their matches"""
@@ -151,7 +162,7 @@ def generate_student_index(student_folder, pa_folder, reports):
         <ul class="report-list">
             {"".join([
                 f'''<li class="report-item">
-                    <h3>Report {i + 1}: {os.path.basename(report)}</h3>
+                    <h3>Report {i + 1}: {os.path.basename(report).split("_")[-1].split(".")[0]}.c</h3>
                     <a class="report-link" href="{os.path.basename(report)}">View Full Report</a>
                 </li>'''
                 for i, report in enumerate(reports)
