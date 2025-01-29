@@ -1,0 +1,345 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match3-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/bguo10/pa2/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/spugazhe/pa2/Graph.c<p></p><pre>// Surya Pugazhenthi
+// spugazhe
+// 2025 Winter CSE-101 PA{2}
+// Graph.c
+// Implementation file for Graph ADT
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include "Graph.h"
+
+// GraphObj struct 
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match3-0.html#3" target="0"><img align="left" alt="other" border="0" src="./tm_3_10.gif"></a>
+
+typedef struct GraphObj {
+    List* adj;      // Array of Lists representing adjacency lists
+    List color;     // Array of vertex colors
+    List parent;    // Array of parent vertices
+    List distance;  // Array of distances from most recent BFS source
+    int order;      // Number of vertices in Graph
+    int size;       // Number of edges in Graph
+    int source;     // Source vertex most recently used in BFS
+} GraphObj;
+
+
+// Constructors-Destructors
+
+// Create and return new Graph with n vertices
+Graph newGraph(int n) {
+    // Allocate memory for Graph
+    Graph g = (GraphObj*)malloc(1 * sizeof(GraphObj));
+    
+    // Initialize Graph fields
+    g-&gt;adj = (List*)calloc(n + 1, sizeof(List));
+
+    // Initialize adjacency lists
+    for (int i = 0; i &lt;= n; i++) {
+        g-&gt;adj[i] = newList();  // Create new List for each vertex
+    }
+    
+    g-&gt;color = newList();       // Create new List for vertex colors
+    g-&gt;parent = newList();      // Create new List for parent vertices
+    g-&gt;distance = newList();    // Create new List for distances
+    
+    for (int i = 0; i &lt;= n; i++) {
+        append(g-&gt;color, WHITE);    // Initialize all vertices to WHITE
+        append(g-&gt;distance, INF);   // Initialize all distances to INF
+        append(g-&gt;parent, NIL);     // Initialize all parent vertices to NIL
+    }
+    
+    g-&gt;order = n;       // Set number of vertices in Graph
+</font>    g-&gt;size = 0;        // Set number of edges in Graph
+    g-&gt;source = NIL;    // Set source vertex to NIL
+    return g;           // Return new Graph
+}
+
+// Free all heap memory associated with Graph and set *pG to NULL
+void freeGraph(Graph* pG) {
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match3-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_25.gif"></a>
+
+    if (pG != NULL &amp;&amp; *pG != NULL) {
+        // Free adjacency lists
+        for (int i = 0; i &lt;= (*pG)-&gt;order; i++) {
+            freeList(&amp;((*pG)-&gt;adj[i]));    // Free each adjacency list
+        }
+        freeList(&amp;((*pG)-&gt;color));      // Free color List
+        freeList(&amp;((*pG)-&gt;parent));     // Free parent List
+        freeList(&amp;((*pG)-&gt;distance));   // Free distance List
+        free((*pG)-&gt;adj);               // Free adjacency list array
+        free(*pG);                      // Free Graph
+        *pG = NULL;                     // Set *pG to NULL
+    }
+}
+
+
+// Access functions
+
+// Return number of vertices in Graph
+int getOrder(Graph G) {
+    return G-&gt;order;    // Return number of vertices in Graph
+}
+
+// Return number of edges in Graph
+int getSize(Graph G) {
+    return G-&gt;size;     // Return number of edges in Graph
+}
+
+// Return source vertex most recently used in BFS
+int getSource(Graph G) {
+    return G-&gt;source;   // Return source vertex most recently used in BFS
+}
+
+// Return parent of vertex u in BFS tree
+int getParent(Graph G, int u) {
+    if (G-&gt;source == NIL) {     // Check if source is NIL
+        return NIL;             // Return NIL if source is NIL
+    }
+    List parent = G-&gt;parent;    // Get parent List
+    moveFront(parent);          // Move cursor to front of parent List
+    while (index(parent) != u) { // Loop until cursor is at vertex u
+        moveNext(parent);       // Move cursor to next element
+    }
+    return get(parent);         // Return parent of vertex u
+}
+
+// Return distance from most recent BFS source to vertex u
+int getDist(Graph G, int u) {
+    if (G-&gt;source == NIL) {         // Check if source is NIL
+        return INF;                 // Return INF if source is NIL
+    }
+    List dist = G-&gt;distance;    // Get distance List
+    moveFront(dist);            // Move cursor to front of distance List
+    while(index(dist) != u) {   // Loop until cursor is at vertex u
+        moveNext(dist);         // Move cursor to next element
+    }
+    return get(dist);           // Return distance to vertex u
+}
+
+// Append vertices of shortest path from source to u to List L
+void getPath(List L, Graph G, int u) {
+    if (u == getSource(G)) {    // Check if u is source vertex
+        append(L, u);           // Append u to List L
+        return;                 // Return
+    }
+    List newL = newList();      // Create new List newL
+    append(newL, u);            // Append u to newL
+    int p = getParent(G, u);    // Get parent of u
+    append(newL, p);            // Append parent of u to newL
+    while (p != getSource(G) &amp;&amp; p != NIL) {
+        p = getParent(G, p);     // Get parent of p
+        append(newL, p);       // Prepend parent of p to newL
+    }
+    if (p == NIL) {             // Check if p is NIL
+        append(L, NIL);         // Append NIL to List L
+    } 
+    else {
+        moveBack(newL);         // Move cursor to back of newL
+        while (index(newL) &gt;= 0) {
+            append(L, get(newL));   // Append elements of newL to List L
+            movePrev(newL);         // Move cursor to previous element
+        }
+    }
+    freeList(&amp;newL);            // Free newL
+}
+
+
+// Manipulation procedures
+
+// Make Graph G null
+void makeNull(Graph G) {
+    clear(G-&gt;color);        // Clear color List
+    clear(G-&gt;parent);       // Clear parent List
+    clear(G-&gt;distance);     // Clear distance List
+    for (int i = 0; i &lt;= G-&gt;order; i++) {
+        clear(G-&gt;adj[i]);   // Clear each adjacency list
+    }
+    G-&gt;order = 0;           // Set number of vertices to 0
+</font>    G-&gt;source = NIL;        // Set source vertex to NIL
+}
+
+// Add edge to Graph G
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match3-0.html#4" target="0"><img align="left" alt="other" border="0" src="./tm_4_3.gif"></a>
+
+void addEdge(Graph G, int u, int v) {
+    if (u == v) {     // Check if u == v
+        return;     // Do nothing if so
+    }
+    append(G-&gt;adj[u], v);   // Append v to u's adjacency list
+    append(G-&gt;adj[v], u);   // Append u to v's adjacency list
+    G-&gt;size++;              // Increment number of edges
+</font>}
+
+// Add arc to Graph G
+void addArc(Graph G, int u, int v) {
+    if (u == v) {     // Check if u == v
+        return;       // Do nothing if so
+    }
+    append(G-&gt;adj[u], v);   // Append v to u's adjacency list
+    G-&gt;size++;              // Increment number of edges
+}
+
+// Run BFS algorithm on Graph G with source s
+void BFS(Graph G, int s) {
+    sortAdjacencyList(G);   // Sort adjacency lists
+    G-&gt;source = s;          // Set source vertex to s
+    moveFront(G-&gt;color);    // Move cursor to front of color List
+    moveFront(G-&gt;distance); // Move cursor to front of distance List
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match3-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_24.gif"></a>
+
+    moveFront(G-&gt;parent);   // Move cursor to front of parent List
+    
+    for (int i = 0; i &lt;= G-&gt;order; i++) {
+        set(G-&gt;color, WHITE);   // Set all vertices to WHITE
+        set(G-&gt;distance, INF);  // Set all distances to INF
+        set(G-&gt;parent, NIL);    // Set all parent vertices to NIL
+        moveNext(G-&gt;color);     // Move cursor to next element
+        moveNext(G-&gt;distance);  // Move cursor to next element
+        moveNext(G-&gt;parent);    // Move cursor to next element
+    }
+    
+    moveFront(G-&gt;color);    // Move cursor to front of color List
+    moveFront(G-&gt;distance); // Move cursor to front of distance List
+    moveFront(G-&gt;parent);   // Move cursor to front of parent List
+    
+    while (index(G-&gt;color) != s) {
+        moveNext(G-&gt;color);     // Move cursor to source vertex
+        moveNext(G-&gt;distance);  // Move cursor to source vertex
+        moveNext(G-&gt;parent);    // Move cursor to source vertex
+    }
+    
+    set(G-&gt;color, GRAY);    // Set source vertex to GRAY
+    set(G-&gt;distance, 0);    // Set distance of source vertex to 0
+    set(G-&gt;parent, NIL);    // Set parent of source vertex to NIL
+    List Q = newList();     // Create new List Q
+    append(Q, s);           // Append source vertex to Q
+    
+    // Loop until Q is empty
+    while (length(Q) &gt; 0) {
+        int x = front(Q);                       // Get front element of Q
+        deleteFront(Q);                         // Delete front element of Q
+        moveFront(G-&gt;adj[x]);                   // Move cursor to front of x's adjacency list
+        while (index(G-&gt;adj[x]) &gt;= 0) {
+            int y = get(G-&gt;adj[x]);             // Get vertex y from x's adjacency list
+            moveFront(G-&gt;distance);             // Move cursor to front of distance List
+            while (index(G-&gt;distance) != x) {
+                moveNext(G-&gt;distance);          // Move cursor to x in distance List
+            }
+            int x_dist = get(G-&gt;distance);      // Get distance of x
+            moveFront(G-&gt;color);                // Move cursor to front of color List
+            moveFront(G-&gt;distance);             // Move cursor to front of distance List
+            moveFront(G-&gt;parent);               // Move cursor to front of parent List
+            while (index(G-&gt;color) != y) {
+                moveNext(G-&gt;color);             // Move cursor to y in color List
+                moveNext(G-&gt;distance);          // Move cursor to y in distance List
+                moveNext(G-&gt;parent);            // Move cursor to y in parent List
+            }
+            if (get(G-&gt;color) == WHITE) {
+                set(G-&gt;color, GRAY);            // Set y to GRAY
+                set(G-&gt;distance, x_dist + 1);   // Set distance of y to x_dist + 1
+                set(G-&gt;parent, x);              // Set parent of y to x
+                append(Q, y);                   // Append y to Q
+            }
+            moveNext(G-&gt;adj[x]);                // Move cursor to next element in x's adjacency list
+        }
+        moveFront(G-&gt;color);                    // Move cursor to front of color List
+        while (index(G-&gt;color) != x) {
+            moveNext(G-&gt;color);                 // Move cursor to x in color List
+        }
+        set(G-&gt;color, BLACK);                   // Set x to BLACK
+    }
+    freeList(&amp;Q);                               // Free List Q
+}
+
+
+// Other operations
+
+// Print Graph G to stdout for debugging purposes
+void debugGraph(FILE* out, Graph G) {
+</font>    // Print Graph fields
+    fprintf(out, "order: %d, size: %d, source: %d\n", G-&gt;order, G-&gt;size, G-&gt;source);
+    moveFront(G-&gt;color);        // Move cursor to front of color List
+    moveFront(G-&gt;parent);       // Move cursor to front of parent List
+    moveFront(G-&gt;distance);     // Move cursor to front of distance List
+
+    // Skip first element of color, parent, and distance Lists
+    moveNext(G-&gt;color);         // Move cursor to next element in color List
+    moveNext(G-&gt;parent);        // Move cursor to next element in parent List
+    moveNext(G-&gt;distance);      // Move cursor to next element in distance List
+    
+    // Print color, parent, and distance Lists
+    for (int i = 1; i &lt;= G-&gt;order; i++) {
+        fprintf(out, "%d's properties :\n", i);     // Print vertex i's properties
+        fprintf(out, "\t");                         // Print tab
+
+        // Print color, parent, and distance of vertex 
+        fprintf(out, "color: %d, parent: %d, distance: %d\n", get(G-&gt;color), get(G-&gt;parent), get(G-&gt;distance));
+        moveNext(G-&gt;color);     // Move cursor to next element in color List
+        moveNext(G-&gt;parent);    // Move cursor to next element in parent List
+        moveNext(G-&gt;distance);  // Move cursor to next element in distance List
+    }
+}
+
+// Print Graph G to out
+void printGraph(FILE* out, Graph G) {
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match3-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_18.gif"></a>
+
+    for (int i = 1; i &lt;= getOrder(G); i++) {
+        moveFront(G-&gt;adj[i]);           // Move cursor to front of adjacency list
+        fprintf(out, "%d:", i);         // Print vertex i
+        while(index(G-&gt;adj[i]) &gt;= 0) {
+            int adj = get(G-&gt;adj[i]);   // Get vertex from adjacency list
+            fprintf(out, " %d", adj);   // Print vertex
+            moveNext(G-&gt;adj[i]);        // Move cursor to next element
+        }
+        fprintf(out, "\n");             // Print newline
+    }
+}
+
+// Sort adjacency lists of Graph G
+void sortAdjacencyList(Graph G) {
+    for (int i = 1; i &lt;= getOrder(G); i++) {   // Loop through all vertices
+        if (length(G-&gt;adj[i]) == 0) {       // Skip if adjacency list is empty
+            continue;                  
+        }
+
+        List L = newList();         // Create new List L
+        moveFront(G-&gt;adj[i]);       // Move cursor to front of adjacency list
+        append(L, get(G-&gt;adj[i]));  // Append first element of adjacency list to L
+        moveNext(G-&gt;adj[i]);        // Move cursor to next element
+        
+        while(index(G-&gt;adj[i]) &gt;= 0) {
+            moveFront(L);           // Move cursor to front of L
+            while (index(L) &gt;= 0) {
+                // If element in adjacency list is less than element in L, break
+                if (get(L) &gt; get(G-&gt;adj[i])) {
+                    break;
+                }
+                moveNext(L);        // Move cursor to next element
+            }
+            
+            // If cursor is at front of L, prepend element to L
+            if (index(L) &lt; 0) {
+                append(L, get(G-&gt;adj[i]));
+            } 
+            
+            else {      // Otherwise, insert element before cursor
+                insertBefore(L, get(G-&gt;adj[i]));
+            }
+            moveNext(G-&gt;adj[i]);    // Move cursor to next element in adjacency list
+        }
+        freeList(&amp;(G-&gt;adj[i]));     // Free adjacency list
+        G-&gt;adj[i] = L;              // Set adjacency list to L
+</font>    }
+}</pre>
+
+
+</body></html>

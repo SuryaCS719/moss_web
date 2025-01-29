@@ -1,0 +1,119 @@
+
+<!-- saved from url=(0121)file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/FindPath.c/part_1/report/match10-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/bguo10/pa2/FindPath.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/spugazhe/pa2/FindPath.c<p></p><pre>// Surya Pugazhenthi
+// spugazhe
+// 2025 Winter CSE-101 PA{2}
+// FindPath.c
+// Client program for Graph ADT
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;string.h&gt;
+#include "Graph.h"
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/FindPath.c/part_1/report/match10-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_9.gif"></a>
+
+int main(int argc, char *argv[]) {
+
+    // File pointers
+    FILE *in, *out;
+
+    // Check command line arguments
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+</font>        exit(EXIT_FAILURE);
+    }
+
+    // Open file for reading
+    in = fopen(argv[1], "r");
+    if (in == NULL) {       // Check if file exists
+        fprintf(stderr, "Unable to read from file %s\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
+
+    // Open file for writing
+    out = fopen(argv[2], "w");
+    if (out == NULL) {      // Check if file exists
+        fprintf(stderr, "Unable to write to file %s\n", argv[2]);
+        exit(EXIT_FAILURE);
+    }
+
+
+    // Read number of vertices from input file
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/FindPath.c/part_1/report/match10-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_70.gif"></a>
+
+    int n;      
+    fscanf(in, "%d", &amp;n);       
+    Graph G = newGraph(n);    // Create new Graph with n vertices
+
+    int vertex1, vertex2;     // Vertices for edge
+    fscanf(in, "%d %d\n", &amp;vertex1, &amp;vertex2);        // Read first edge 
+    while (vertex1 != 0 || vertex2 != 0) {          // Loop until 0 0 is read
+        addEdge(G, vertex1, vertex2);               // Add edge to Graph
+        fscanf(in, "%d %d", &amp;vertex1, &amp;vertex2);    // Read next edge
+    }
+
+    // Graph ADT is sorted
+    sortAdjacencyList(G);
+
+    // Print adjacency lists of Graph to output file
+    printGraph(out, G);
+
+
+    // Read source vertex for BFS from input file
+    int source, destination;
+    fscanf(in, "%d %d\n", &amp;source, &amp;destination);   // Read source vertex
+
+    // Run BFS algorithm on Graph w/ source vertex
+    while (source != 0 || destination != 0) {
+        // If source equal to dest, path w/ distance 0 exists
+        if (source == destination) {
+            fprintf(out, "\nThe distance from %d to %d is 0\n", source, destination);
+            fprintf(out, "A shortest %d-%d path is: %d\n", source, destination, source);
+            fscanf(in, "%d %d\n", &amp;source, &amp;destination);   // Read next source vertex
+            continue;
+        }
+        BFS(G, source);     // Run BFS algorithm on Graph G w/ source S
+        int dist = getDist(G, destination);   // Get distance from source to destination
+    
+        // If distance is INF, no path exists
+        if (dist == INF) {
+            fprintf(out, "\nThe distance from %d to %d is infinity\n", source, destination);
+        } 
+        else {
+            fprintf(out, "\nThe distance from %d to %d is %d\n", source, destination, dist);
+        }
+
+        // Print out a shortest path from source to destination
+        List path = newList();          // Create new List path
+        getPath(path, G, destination);  // Get path from source to destination
+        if (front(path) == NIL) {       // If front of path is NIL, no path exists
+            fprintf(out, "No %d-%d path exists\n", source, destination);
+        } 
+        else {
+            fprintf(out, "A shortest %d-%d path is: ", source, destination);
+            printList(out, path);       // Print path to output file
+        }
+        freeList(&amp;path);    // Free path List
+        fscanf(in, "%d %d\n", &amp;source, &amp;destination);   // Read next source vertex
+    }
+
+    // Close files before exiting
+    fclose(in);
+    fclose(out);
+
+    // Free Graph before exiting
+    freeGraph(&amp;G);
+
+    //Exit program
+    return 0;
+</font>}</pre>
+
+
+</body></html>

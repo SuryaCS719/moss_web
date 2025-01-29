@@ -1,0 +1,105 @@
+
+<!-- saved from url=(0119)file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_fall24/FindPath.c/part_1/report/match10-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/bguo10/pa2/FindPath.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/fall24/cberezny/pa2/FindPath.c<p></p><pre>/***
+ * Cole Berezny
+ * cberezny
+ * 2024 Fall CSE101 PA2
+ * FindPath.c
+ * Main file that handles file input, finding vertices/edges/start/end points, and writing to output.
+ ***/
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+
+#include"Graph.h"
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_fall24/FindPath.c/part_1/report/match10-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_10.gif"></a>
+
+int main(int argc, char * argv[]){
+    FILE *in, *out;
+    if( argc != 3 ){
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // open files for reading and writing 
+    in = fopen(argv[1], "r");
+</font>    if( in==NULL ){
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    out = fopen(argv[2], "w");
+    if( out==NULL ){
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    // Read vertices/edges
+    int n;
+    fscanf(in, "%d", &amp;n);
+    Graph G = newGraph(n);
+
+    int vertex1;
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_fall24/FindPath.c/part_1/report/match10-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_65.gif"></a>
+
+    int vertex2;
+    fscanf(in, "%d %d\n", &amp;vertex1, &amp;vertex2);
+    while(vertex1 != 0 || vertex2 != 0){
+        addEdge(G, vertex1, vertex2);
+        fscanf(in, "%d %d\n", &amp;vertex1, &amp;vertex2);
+    }
+
+    maintainGraph(G);
+    printGraph(out, G);
+
+    // Read start/end pairs
+    int start;
+    int end;
+    fscanf(in, "%d %d\n", &amp;start, &amp;end);
+
+    while(start != 0 || end != 0){
+        if(start == end){
+            fprintf(out, "\nThe distance from %d to %d is 0\n", start, end);
+            fprintf(out, "A shortest %d-%d path is: %d\n", start, end, start);
+            fscanf(in, "%d %d\n", &amp;start, &amp;end);
+            continue;
+        }
+        BFS(G, start);
+        // Print distance
+        int dist = getDist(G, end);
+        if(dist == INF){
+            fprintf(out, "\nThe distance from %d to %d is infinity\n", start, end);
+        }else{
+            fprintf(out, "\nThe distance from %d to %d is %d\n", start, end, dist);
+        }
+        // Find shortest path from parent
+        List path = newList();
+        getPath(path, G, end);
+        if(front(path) == NIL){
+            fprintf(out, "No %d-%d path exists\n", start, end);
+        }else{
+            fprintf(out, "A shortest %d-%d path is: ", start, end);
+            printList(out, path);
+        }
+        freeList(&amp;path);
+        fscanf(in, "%d %d\n", &amp;start, &amp;end);
+    }
+
+    fclose(in);
+    fclose(out);
+    
+    freeGraph(&amp;G);
+    return(0);
+</font>}
+</pre>
+
+
+</body></html>

@@ -1,0 +1,309 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_spring23/Graph.c/part_1/report/match1-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/jkim662/pa2/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/jkim662/pa2/Graph.c<p></p><pre>/***
+* Jason Kim
+* jkim662
+* 2025 Winter CSE101 PA2 
+* Graph.c
+* Implementation for Graph ADT
+***/ 
+
+#include &lt;stdio.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+#include "Graph.h"
+
+// Exported types -------------------------------------------------------------
+
+// private GraphObj type
+typedef struct GraphObj{
+    List* adjacency;      // An array of Lists whose ith element contains the neighbors of vertex i.
+    int* colors;                // An array of ints whose ith element is the color (white, gray, black) of vertex i.
+    int* parents;               // An array of ints whose ith element is the parent of vertex i.
+    int* distances;             // An array of ints whose ith element is the distance from the (most recent) source to vertex i.
+    int order;                  // Number of vertices
+    int size;                   // Number of edges
+    int source;                 // The vertex that was most recently used as source for BFS
+} GraphObj;
+
+// Constructors-Destructors ---------------------------------------------------
+
+Graph newGraph(int n){
+    Graph G = malloc(sizeof(GraphObj));             // Dynamically allocate memory for Graph
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_spring23/Graph.c/part_1/report/match1-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_20.gif"></a>
+
+    assert(G != NULL);                              // Initialize its members if sufficient memory is allocated.
+    G-&gt;order = n;
+    G-&gt;size = 0;
+    G-&gt;source = NIL;
+    G-&gt;adjacency = (List*)calloc(n+1, sizeof(List));
+    for(int i = 0; i &lt; n+1; i++){                   // Create a new List for each vertex
+        G-&gt;adjacency[i] = newList();
+    }
+    G-&gt;colors = (int*)calloc(n+1, sizeof(int));
+    G-&gt;parents = (int*)calloc(n+1, sizeof(int));
+    G-&gt;distances = (int*)calloc(n+1, sizeof(int));
+    return(G);
+}
+
+void freeGraph(Graph* pG){
+    if(pG != NULL &amp;&amp; *pG != NULL){ 
+        if((*pG)-&gt;adjacency != NULL){                     
+            for(int i = 0; i &lt; ((*pG)-&gt;order + 1); i++){        // Free each individual List
+                freeList(&amp;((*pG)-&gt;adjacency[i]));
+            }
+            free((*pG)-&gt;adjacency);                             // Free array of Lists of vertex neighbors
+            (*pG)-&gt;adjacency = NULL;                            // Set array of Lists to NULL
+        }
+
+        if((*pG)-&gt;colors != NULL){
+            free((*pG)-&gt;colors);                                // Free array of colors
+            (*pG)-&gt;colors = NULL;                               // Set array of colors to NULL
+        }
+
+        if((*pG)-&gt;parents != NULL){
+            free((*pG)-&gt;parents);                               // Free array of parents
+            (*pG)-&gt;parents = NULL;                              // Set array of parents to NULL
+        }
+
+        if((*pG)-&gt;distances != NULL){
+            free((*pG)-&gt;distances);                             // Free array of distances
+            (*pG)-&gt;distances = NULL;                            // Set array of distances to NULL
+        }
+
+    free(*pG);                                                  // Free Graph
+    *pG = NULL;                                                 // Set Graph to NULL
+   }
+}
+
+// Access functions -----------------------------------------------------------
+
+int getOrder(Graph G){
+    if(G == NULL){
+</font>        fprintf(stderr, "Graph Error: calling getOrder() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+   return(G-&gt;order);
+}
+
+int getSize(Graph G){
+    if(G == NULL){
+        fprintf(stderr, "Graph Error: calling getSize() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+   return(G-&gt;size);
+}
+
+int getSource(Graph G){
+    if(G == NULL){
+        fprintf(stderr, "Graph Error: calling getSource() on NULL Graph reference\n");
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_spring23/Graph.c/part_1/report/match1-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_51.gif"></a>
+
+        exit(EXIT_FAILURE);
+    }
+   return(G-&gt;source);
+}
+
+int getParent(Graph G, int u){
+    if(G == NULL){
+        fprintf(stderr, "Graph Error: calling getParent() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(u &gt;= 1 &amp;&amp; u &lt;= getOrder(G)){
+        if(getSource(G) != NIL){
+            return(G-&gt;parents[u]);
+        }
+        else{
+            return(NIL);
+        }
+    }
+    else{
+        if(u &lt; 1){
+            fprintf(stderr, "Graph Error: failed to meet precondition 1 ≤ u\n");
+        }
+        if(u &gt; getOrder(G)){
+            fprintf(stderr, "Graph Error: failed to meet precondition u ≤ getOrder(G)\n");
+        }
+        exit(EXIT_FAILURE);
+    }
+}
+
+int getDist(Graph G, int u){
+    if(G == NULL){
+        fprintf(stderr, "Graph Error: calling getDist() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(u &gt;= 1 &amp;&amp; u &lt;= getOrder(G)){
+        if(getSource(G) != NIL){
+            return(G-&gt;distances[u]);
+        }
+        else{
+            return(INF);
+        }
+    }
+    else{
+        if(u &lt; 1){
+            fprintf(stderr, "Graph Error: getDist() failed to meet precondition 1 ≤ u\n");
+        }
+        if(u &gt; getOrder(G)){
+            fprintf(stderr, "Graph Error: getDist() failed to meet precondition u ≤ getOrder(G)\n");
+        }
+        exit(EXIT_FAILURE);
+    }
+}
+
+void getPath(List L, Graph G, int u){
+    if(G == NULL){
+        fprintf(stderr, "Graph Error: calling getPath() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(getSource(G) != NIL &amp;&amp; (u &gt;= 1 &amp;&amp; u &lt;= getOrder(G))){
+        if(u == getSource(G)){
+            append(L, getSource(G));
+        }
+        else if(G-&gt;parents[u] == NIL){
+            append(L, NIL);
+        }
+        else{
+            getPath(L, G, G-&gt;parents[u]);                      // From source to predecessor
+            append(L, u);
+        }
+    }
+    else{
+        if(getSource(G) == NIL){
+            fprintf(stderr, "Graph Error: getPath() failed to meet precondition getSource(G) != NIL\n");
+        }
+        if(u &lt; 1){
+            fprintf(stderr, "Graph Error: getPath() failed to meet precondition 1 ≤ u\n");
+        }
+        if(u &gt; getOrder(G)){
+            fprintf(stderr, "Graph Error: getPath() failed to meet precondition u ≤ getOrder(G)\n");
+        }
+        exit(EXIT_FAILURE);
+    }
+}
+
+// Manipulation procedures ----------------------------------------------------
+
+void makeNull(Graph G){
+    for(int i = 1; i &lt; (getOrder(G)+1); i++){
+        clear(G-&gt;adjacency[i]);                                 // Clear adjacency Lists
+        G-&gt;parents[i] = G-&gt;distances[i] = G-&gt;colors[i] = 0;     // Clear parents and distances, and set all colors to white/0
+    }
+    G-&gt;size = 0;                                                // Set number of edges to 0
+    G-&gt;source = NIL;                                            // Set source to NIL
+}
+
+void addArc(Graph G, int u, int v){
+    if((u &gt;= 1 &amp;&amp; u &lt;= getOrder(G)) &amp;&amp; (v &gt;= 1 &amp;&amp; v &lt;= getOrder(G))){
+        if(length(G-&gt;adjacency[u]) == 0){                       // If adjacency List is empty
+            append(G-&gt;adjacency[u], v);                         // Add v to the adjacency List of u 
+            G-&gt;size++;                                          // Increment size by 1
+        }
+        else{                                                   // To keep vertices in sorted order:
+            moveFront(G-&gt;adjacency[u]);                         // Move cursor to front to iterate through List from beginning
+            while(index(G-&gt;adjacency[u]) != -1){                // Iterate through List with moveNext() until we find a vertex, where v &lt; vertex
+                if(v == get(G-&gt;adjacency[u])){                  // If the edge already exists, don't do anything and just exit the loop                   
+                    break;
+                }
+                else if(v &lt; get(G-&gt;adjacency[u])){              
+                    insertBefore(G-&gt;adjacency[u], v);           // Insert v before greater vertex
+                    G-&gt;size++;                                  // Increment size by 1
+                    break;                                      // Exit the loop
+                }
+                else{
+                    moveNext(G-&gt;adjacency[u]);
+                }
+                if(index(G-&gt;adjacency[u]) == -1){               // If end of List reached before inserting v, append v to end of List
+                    append(G-&gt;adjacency[u], v);
+                    G-&gt;size++;                                  // Increment size by 1
+                }
+            }
+        }   
+    }
+    else{
+        if(u &lt; 1){
+            fprintf(stderr, "Graph Error: addArc() failed to meet precondition 1 ≤ u\n");
+        }
+        if(u &gt; getOrder(G)){
+            fprintf(stderr, "Graph Error: addArc() failed to meet precondition u ≤ getOrder(G)\n");
+        }
+        if(v &lt; 1){
+            fprintf(stderr, "Graph Error: addArc() failed to meet precondition 1 ≤ v\n");
+        }
+        if(v &gt; getOrder(G)){
+            fprintf(stderr, "Graph Error: addArc() failed to meet precondition v ≤ getOrder(G)\n");
+        }
+        exit(EXIT_FAILURE);
+    }
+}
+
+void addEdge(Graph G, int u, int v){
+    int tempSize = G-&gt;size;              // Temp variable for size before addArc() is called
+    addArc(G, u, v);                     // Add v to the adjacency List of u
+    addArc(G, v, u);                     // Add u to the adjacency List of v
+    if(G-&gt;size != tempSize){             // If it is not a duplicate edge
+        G-&gt;size--;                       // Decrease size by 1 because addArc() is called twice, increasing the size by 2
+    }
+}
+
+void BFS(Graph G, int s){
+    G-&gt;source = s;
+    for(int i = 1; i &lt; getOrder(G)+1; i++){
+        G-&gt;colors[i] = 0;
+        G-&gt;distances[i] = INF;
+        G-&gt;parents[i] = NIL;
+</font>    }
+    G-&gt;colors[s] = 1;                           // Discover the source
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_spring23/Graph.c/part_1/report/match1-1.html#2" target="1"><img align="left" alt="other" border="0" src="./tm_2_17.gif"></a>
+
+    G-&gt;distances[s] = 0;
+    G-&gt;parents[s] = NIL;
+
+    List Q = newList();                         // Construct a new empty queue
+    append(Q, s);
+    while(length(Q) != 0){
+        moveBack(Q);
+        int x = get(Q);
+        deleteBack(Q);
+        
+        moveFront(G-&gt;adjacency[x]);
+        while(index(G-&gt;adjacency[x]) != -1){
+            if(G-&gt;colors[get(G-&gt;adjacency[x])] == 0){                       // y is discovered
+                G-&gt;colors[get(G-&gt;adjacency[x])] = 1;                        // discover y
+                G-&gt;distances[get(G-&gt;adjacency[x])] = G-&gt;distances[x] + 1;
+                G-&gt;parents[get(G-&gt;adjacency[x])] = x;
+                prepend(Q, get(G-&gt;adjacency[x]));
+            }
+            moveNext(G-&gt;adjacency[x]);
+        }
+        G-&gt;colors[x] = 2;                                               // finish x
+    }
+    freeList(&amp;Q);
+}
+
+// Other Functions ------------------------------------------------------------
+
+void printGraph(FILE* out, Graph G){
+    if(G==NULL){
+      fprintf(stderr, "Graph Error: calling printGraph() on NULL Graph reference\n");
+      exit(EXIT_FAILURE);
+    }
+
+    for(int i = 1; i &lt; getOrder(G)+1; i++){
+        fprintf(out, "%d: ", i);
+        printList(out, G-&gt;adjacency[i]);
+        fprintf(out, "\n");
+</font>    }
+}
+</pre>
+
+
+</body></html>

@@ -1,0 +1,310 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/asee1/pa2/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/asee1/pa2/Graph.c<p></p><pre>#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+
+#include"Graph.h"
+
+// Private struct, not exported 
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_41.gif"></a>
+
+typedef struct NetworkObj{
+    // An array of Lists whose ith element contains the connected nodes of node i.
+    List* connections;
+    // An array of ints (or chars, or strings) whose ith element is the status 
+    // (unvisited, visiting, visited) of node i.
+    List status;
+    // An array of ints whose ith element is the parent of node i.         
+    List predecessor;
+    // An array of ints whose ith element is the distance from the (most recent) 
+    // origin to node i.   
+    List distance;
+    // The number of nodes.   
+    int nodeCount;
+    // The number of edges.   
+    int edgeCount;
+    // Label of the node that was most recently used as origin for BFS.   
+    int origin;
+} NetworkObj;
+
+
+/*** Constructors-Destructors ***/ 
+Network createNetwork(int n){
+    Network net = (NetworkObj *)malloc(1 * sizeof(NetworkObj));
+    net-&gt;connections = (List*)calloc(n + 1, sizeof(List));
+
+    for(int i = 0; i &lt;= n; i++){
+        net-&gt;connections[i] = newList();
+    }
+    net-&gt;status = newList();
+    net-&gt;predecessor = newList();
+    net-&gt;distance = newList();
+    for(int i = 0; i &lt;= n; i++){
+        append(net-&gt;status, UNVISITED);
+        append(net-&gt;distance, INF);
+        append(net-&gt;predecessor, NIL);
+    }
+    net-&gt;nodeCount = n;
+    net-&gt;edgeCount = 0;
+    net-&gt;origin = NIL;
+    return net;
+}
+
+void freeNetwork(Network* pNet){
+    if(pNet != NULL &amp;&amp; *pNet != NULL){
+        for(int i = 0; i &lt;= (*pNet)-&gt;nodeCount; i++){
+            freeList(&amp;((*pNet)-&gt;connections[i]));
+        }
+        freeList(&amp;((*pNet)-&gt;status));
+        freeList(&amp;((*pNet)-&gt;predecessor));
+        freeList(&amp;((*pNet)-&gt;distance));
+        free((*pNet)-&gt;connections);
+        free(*pNet);
+        *pNet = NULL;
+    }
+}
+
+/*** Access functions ***/
+int getNodeCount(Network net){
+    return net-&gt;nodeCount;
+}
+
+int getEdgeCount(Network net){
+    return net-&gt;edgeCount;
+}
+
+int getOrigin(Network net){
+    return net-&gt;origin;
+}
+
+int getPredecessor(Network net, int u){
+    if(net-&gt;origin == NIL){
+        return NIL;
+    }
+    List pred = net-&gt;predecessor;
+    moveFront(pred);
+    while(index(pred) != u){
+        moveNext(pred);
+    }
+    return get(pred);
+}
+
+int getDistance(Network net, int u){
+    if(net-&gt;origin == NIL){
+        return INF;
+    }
+    List dist = net-&gt;distance;
+    moveFront(dist);
+    while(index(dist) != u){
+        moveNext(dist);
+    }
+    return get(dist);
+}
+
+// Appends to the List L the nodes of the shortest path in net from 
+// origin to u, or appends to L the value NIL if no such path exists.
+// Precondition: 
+//      1 ≤ 𝑢 ≤ getNodeCount(net), getOrigin(net)!=NIL,
+//      BFS() must be called before getPath().
+void getPath(List L, Network net, int u){
+    // Fit with pa2-gunit-test.sh
+    if(u == getOrigin(net)){
+        append(L, u);
+        return;
+    }
+    List newL = newList();
+    append(newL, u);
+    int p = getPredecessor(net,u);
+    append(newL, p);
+    while(p != getOrigin(net) &amp;&amp; p != NIL){
+        p = getPredecessor(net, p);
+        append(newL, p);
+    }
+    if(p == NIL){
+        append(L, NIL);
+    }else{
+        moveBack(newL);
+        while (index(newL) &gt;= 0)
+        {
+            append(L,get(newL));
+            movePrev(newL);
+        }
+    }
+    freeList(&amp;newL);
+}
+
+/*** Manipulation procedures ***/
+void resetNetwork(Network net){
+    clear(net-&gt;status);
+    clear(net-&gt;predecessor);
+    clear(net-&gt;distance);
+    for(int i = 0; i &lt;= net-&gt;nodeCount; i++){
+        clear(net-&gt;connections[i]);
+    }
+    net-&gt;nodeCount = 0;
+    net-&gt;origin = NIL;
+}
+
+
+void connectNodes(Network net, int u, int v){
+    if(u == v){
+        return;
+    }
+    append(net-&gt;connections[u], v);
+    append(net-&gt;connections[v], u);
+    net-&gt;edgeCount += 1;
+</font>}
+
+void connectArc(Network net, int u, int v){
+    if(u == v){
+        return;
+    }
+    append(net-&gt;connections[u], v);
+    net-&gt;edgeCount += 1;
+}
+
+// Reference: Pseudo-code/GraphAlgorithms
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_54.gif"></a>
+
+void performBFS(Network net, int s){
+    resetNetwork(net);
+    net-&gt;origin = s;
+    moveFront(net-&gt;status);
+    moveFront(net-&gt;distance);
+    moveFront(net-&gt;predecessor);
+    for(int i = 0; i &lt;= net-&gt;nodeCount; i++){
+        set(net-&gt;status, UNVISITED);
+        set(net-&gt;distance, INF);
+        set(net-&gt;predecessor, NIL);
+        moveNext(net-&gt;status);
+        moveNext(net-&gt;distance);
+        moveNext(net-&gt;predecessor);
+    }
+    moveFront(net-&gt;status);
+    moveFront(net-&gt;distance);
+    moveFront(net-&gt;predecessor);
+    while (index(net-&gt;status) != s)
+    {
+        moveNext(net-&gt;status);
+        moveNext(net-&gt;distance);
+        moveNext(net-&gt;predecessor);
+    }
+    set(net-&gt;status, VISITING);
+    set(net-&gt;distance, 0);
+    set(net-&gt;predecessor, NIL);
+    List queue = newList();
+    append(queue, s);
+    // Loop until queue is empty
+    while(length(queue) &gt; 0){
+        int x = front(queue);
+        deleteFront(queue);
+        moveFront(net-&gt;connections[x]);
+        // Iterate each neighbor of x
+        while (index(net-&gt;connections[x]) &gt;= 0){
+            int y = get(net-&gt;connections[x]);
+            // Get the distance from x to origin
+            moveFront(net-&gt;distance);
+            while(index(net-&gt;distance) != x){
+                moveNext(net-&gt;distance);
+            }
+            int x_dist = get(net-&gt;distance);
+            // Move cursor to the proper index
+            moveFront(net-&gt;status);
+            moveFront(net-&gt;distance);
+            moveFront(net-&gt;predecessor);
+            while(index(net-&gt;status) != y){
+                moveNext(net-&gt;status);
+                moveNext(net-&gt;distance);
+                moveNext(net-&gt;predecessor);
+            }
+            if(get(net-&gt;status) == UNVISITED){
+                set(net-&gt;status, VISITING);
+                set(net-&gt;distance, x_dist + 1);
+                set(net-&gt;predecessor, x);
+                append(queue, y);
+            }
+            moveNext(net-&gt;connections[x]);
+        }
+        moveFront(net-&gt;status);
+        while (index(net-&gt;status) != x)
+        {
+            moveNext(net-&gt;status);
+        }
+        set(net-&gt;status, VISITED);
+    }
+    freeList(&amp;queue);
+}
+
+/*** Other operations ***/
+void debugNetwork(FILE* out, Network net){
+    fprintf(out, "nodeCount: %d, edgeCount: %d, origin: %d\n", net-&gt;nodeCount, net-&gt;edgeCount, net-&gt;origin);
+    moveFront(net-&gt;status);
+    moveFront(net-&gt;predecessor);
+    moveFront(net-&gt;distance);
+    // Skip the first element
+    moveNext(net-&gt;status);
+    moveNext(net-&gt;predecessor);
+    moveNext(net-&gt;distance);
+    for(int i = 1; i &lt;= net-&gt;nodeCount; i++){
+        fprintf(out, "%d's properties :\n", i);
+        fprintf(out, "\t");
+        fprintf(out ,"status: %d, predecessor: %d, distance: %d\n", get(net-&gt;status), get(net-&gt;predecessor), get(net-&gt;distance));
+        moveNext(net-&gt;status);
+        moveNext(net-&gt;predecessor);
+        moveNext(net-&gt;distance);
+    }
+}
+
+void printNetwork(FILE* out, Network net){
+    for(int i = 1; i &lt;= getNodeCount(net); i++){
+        moveFront(net-&gt;connections[i]);
+        fprintf(out, "%d:", i);
+        while(index(net-&gt;connections[i]) &gt;= 0){
+            int neighbor = get(net-&gt;connections[i]);
+            fprintf(out, " %d", neighbor);
+            moveNext(net-&gt;connections[i]);
+        }
+        fprintf(out, "\n");
+    }
+}
+
+void maintainNetwork(Network net){
+    for(int i = 1; i &lt;= getNodeCount(net); i++){
+        if(length(net-&gt;connections[i]) == 0){
+            continue;
+        }        
+        // Perform insertion sort
+        // Insert each data in net-&gt;connections[i] to L
+        List L = newList();
+        moveFront(net-&gt;connections[i]);
+        append(L, get(net-&gt;connections[i]));
+        moveNext(net-&gt;connections[i]);
+        while(index(net-&gt;connections[i]) &gt;= 0){
+            moveFront(L);
+            while(index(L) &gt;= 0){
+                if(get(L) &gt; get(net-&gt;connections[i])){
+                    break;
+                }
+                moveNext(L);
+            }
+            if(index(L) &lt; 0){
+                append(L, get(net-&gt;connections[i]));
+            }else{
+                insertBefore(L, get(net-&gt;connections[i]));
+            }
+            moveNext(net-&gt;connections[i]);
+        }
+        freeList(&amp;(net-&gt;connections[i]));
+        net-&gt;connections[i] = L;
+</font>    }
+}
+</pre>
+
+
+</body></html>

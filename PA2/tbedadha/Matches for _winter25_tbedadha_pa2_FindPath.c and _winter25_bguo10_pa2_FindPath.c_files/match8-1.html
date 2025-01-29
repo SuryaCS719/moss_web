@@ -1,0 +1,87 @@
+
+<!-- saved from url=(0120)file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/FindPath.c/part_1/report/match8-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/tbedadha/pa2/FindPath.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/bguo10/pa2/FindPath.c<p></p><pre>#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+#include&lt;string.h&gt;
+
+#include"Graph.h"
+
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/FindPath.c/part_1/report/match8-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_99.gif"></a>
+
+int main(int argc, char * argv[]){
+    FILE *in, *out;
+    if( argc != 3 ){
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    in = fopen(argv[1], "r");
+    if( in==NULL ){
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+    out = fopen(argv[2], "w");
+    if( out==NULL ){
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    int n;
+    fscanf(in, "%d", &amp;n);
+    Graph G = newGraph(n);
+
+    int vertexU,vertexV;
+    fscanf(in, "%d %d\n", &amp;vertexU, &amp;vertexV);
+    while(vertexU != 0 || vertexV != 0){
+        addEdge(G, vertexU, vertexV);
+        fscanf(in, "%d %d\n", &amp;vertexU, &amp;vertexV);
+    }
+
+    maintainGraph(G);
+    printGraph(out, G);
+
+    int source,destination;
+    fscanf(in, "%d %d\n", &amp;source, &amp;destination);
+
+    while(source != 0 || destination != 0){
+        if(source == destination){
+            fprintf(out, "\nThe distance from %d to %d is 0\n", source, destination);
+            fprintf(out, "A shortest %d-%d path is: %d\n", source, destination, source);
+            fscanf(in, "%d %d\n", &amp;source, &amp;destination);
+            continue;
+        }
+        BFS(G, source);
+        int dist = getDist(G, destination);
+        if(dist == INF){
+            fprintf(out, "\nThe distance from %d to %d is infinity\n", source, destination);
+        }else{
+            fprintf(out, "\nThe distance from %d to %d is %d\n", source, destination, dist);
+        }
+        List path = newList();
+        getPath(path, G, destination);
+        if(front(path) == NIL){
+            fprintf(out, "No %d-%d path exists\n", source, destination);
+        }else{
+            fprintf(out, "A shortest %d-%d path is: ", source, destination);
+            printList(out, path);
+        }
+        freeList(&amp;path);
+        fscanf(in, "%d %d\n", &amp;source, &amp;destination);
+    }
+
+    fclose(in);
+    fclose(out);
+    freeGraph(&amp;G);
+    return(0);
+</font>}
+</pre>
+
+
+</body></html>

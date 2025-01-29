@@ -1,0 +1,234 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match8-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/hbumrah/pa2/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/prvuyyur/pa2/Graph.c<p></p><pre>//Pradeep Vuyyuru - 1942669 - pa2
+
+#include "Graph.h"
+#include &lt;stdlib.h&gt;
+
+#define COLOR_WHITE ((char)0)
+#define COLOR_GRAY  ((char)1)
+#define COLOR_BLACK ((char)2)
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match8-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_24.gif"></a>
+
+struct GraphObj {
+  int   order; // order or the graph (number of vertices)
+  int   size;  // size of the graph (number of undirected edges)
+  List* neighbors;
+  char* color;
+  int*  parent;
+  int*  distance;
+  int   source;
+};
+
+Graph newGraph(int n) {
+  Graph G      = (Graph)malloc(sizeof(struct GraphObj));
+  G-&gt;order     = n;
+  G-&gt;size      = 0;
+  G-&gt;neighbors = (List*)malloc(sizeof(List) * (n + 1));
+  G-&gt;color     = (char*)malloc(sizeof(char) * (n + 1));
+  G-&gt;parent    = (int*) malloc(sizeof(int)  * (n + 1));
+  G-&gt;distance  = (int*) malloc(sizeof(int)  * (n + 1));
+  for (int i = 1; i &lt;= n; i ++) {
+    G-&gt;neighbors[i] = newList();
+    G-&gt;color[i]     = COLOR_WHITE;
+    G-&gt;parent[i]    = NIL;
+    G-&gt;distance[i]  = INF;
+  }
+  G-&gt;source = NIL;
+  return G;
+}
+
+void freeGraph(Graph* pG) {
+  for (int i = 1; i &lt;= (*pG)-&gt;order; i ++) {
+    List neighbors = (*pG)-&gt;neighbors[i];
+    freeList(&amp;neighbors);
+  }
+  free((*pG)-&gt;neighbors);
+  free((*pG)-&gt;color);
+  free((*pG)-&gt;parent);
+  free((*pG)-&gt;distance);
+  free(*pG);
+  *pG = NULL;
+</font>}
+
+int getOrder(Graph G) {
+  return G-&gt;order;
+}
+
+
+int getSize(Graph G) {
+  return G-&gt;size;
+}
+
+int getSource(Graph G) {
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match8-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_52.gif"></a>
+
+  return G-&gt;source;
+}
+
+int getParent(Graph G, int u) {
+  if (u &lt; 1 || u &gt; getOrder(G)) {
+    printf("getParent ERROR: u &lt; 1 || u &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  return G-&gt;parent[u];
+}
+
+int getDist(Graph G, int u) {
+  if (u &lt; 1 || u &gt; getOrder(G)) {
+    printf("getDist ERROR: u &lt; 1 || u &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  return G-&gt;distance[u];
+}
+
+void makeNull(Graph G) {
+  for (int i = 1; i &lt;= G-&gt;order; i ++) {
+    clear(G-&gt;neighbors[i]);
+  }
+  G-&gt;size = 0;
+}
+
+// Adds directed edge without modifying size (addEdge and addArc use
+// this and modify size differently below)
+void addArcHelper(Graph G, int u, int v) {
+  if (u &lt; 1 || u &gt; getOrder(G)) {
+    printf("addArc ERROR: u &lt; 1 || u &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  if (v &lt; 1 || v &gt; getOrder(G)) {
+    printf("addArc ERROR: v &lt; 1 || v &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  List neighbors = G-&gt;neighbors[u];
+  moveFront(neighbors);
+  while (index(neighbors) &gt;= 0) {
+    int k = get(neighbors);
+    if (k &gt; v) {
+      insertBefore(neighbors, v);
+      return;
+    } else if (k == v) {
+      return;
+    }
+    moveNext(neighbors);
+  }
+  append(neighbors, v);
+}
+
+void addArc(Graph G, int u, int v) {
+  addArcHelper(G, u, v);
+  G-&gt;size ++;
+}
+
+void addEdge(Graph G, int u, int v) {
+  if (u &lt; 1 || u &gt; getOrder(G)) {
+    printf("addEdge ERROR: u &lt; 1 || u &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  if (v &lt; 1 || v &gt; getOrder(G)) {
+    printf("addEdge ERROR: v &lt; 1 || v &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  addArcHelper(G, u, v);
+  addArcHelper(G, v, u);
+  G-&gt;size ++;
+}
+
+void printGraph(FILE* out, Graph G) {
+  for (int i = 1; i &lt;= G-&gt;order; i ++) {
+    fprintf(out, "%d:", i);
+    List neighbors = G-&gt;neighbors[i];
+    moveFront(neighbors);
+    while (index(neighbors) &gt;= 0) {
+      int v = get(neighbors);
+      fprintf(out, " %d", v);
+      moveNext(neighbors);
+    }
+    fprintf(out, "\n");
+  }
+}
+
+void BFS(Graph G, int s) {
+  if (s &lt; 1 || s &gt; getOrder(G)) {
+    printf("BFS ERROR: s &lt; 1 || s &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  // initialize vertices
+  for (int i = 1; i &lt;= G-&gt;order; i ++) {
+    if (i == s) {
+      G-&gt;color[i]    = COLOR_GRAY;
+      G-&gt;distance[i] = 0;
+      G-&gt;parent[i]   = NIL;
+    } else {
+      G-&gt;color[i]    = COLOR_WHITE;
+      G-&gt;distance[i] = INF;
+      G-&gt;parent[i]   = NIL;
+    }
+  }
+  // initialize source
+  G-&gt;source = s;
+  // initialize Q
+  List Q = newList();
+  append(Q, s);
+  // loop and expand frontier
+  while (length(Q) != 0) {
+    moveFront(Q);
+    int x = get(Q);
+    deleteFront(Q);
+    List neighbors = G-&gt;neighbors[x];
+    moveFront(neighbors);
+    while (index(neighbors) &gt;= 0) {
+      int y = get(neighbors);
+</font>      if (G-&gt;color[y] == COLOR_WHITE) {
+	G-&gt;color[y]    = COLOR_GRAY;
+	G-&gt;distance[y] = G-&gt;distance[x] + 1;
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa2_report/moss_results/winter25_winter25/Graph.c/part_1/report/match8-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_14.gif"></a>
+
+	G-&gt;parent[y]   = x;
+	append(Q, y);
+      }
+      moveNext(neighbors);
+    }
+    G-&gt;color[x] = COLOR_BLACK;
+  }
+  freeList(&amp;Q);
+}
+
+void getPath(List L, Graph G, int u) {
+  if (getSource(G) == NIL) {
+    printf("getPath ERROR: getSource(G) == NIL\n");
+    exit(-1);
+  }
+  if (u &lt; 1 || u &gt; getOrder(G)) {
+    printf("getPath ERROR: u &lt; 1 || u &gt; G-&gt;getOrder()\n");
+    exit(-1);
+  }
+  if (G-&gt;color[u] == COLOR_WHITE) {
+    append(L, NIL);
+    return;
+  }
+  List P = newList();
+  int  x = u;
+  while (x != G-&gt;source) {
+    prepend(P, x);
+    x = getParent(G, x);
+  }
+  prepend(P, G-&gt;source);
+  moveFront(P);
+  while (index(P) &gt;= 0) {
+    x = get(P);
+    append(L, x);
+    moveNext(P);
+  }
+  freeList(&amp;P);
+</font>}
+</pre>
+
+
+</body></html>

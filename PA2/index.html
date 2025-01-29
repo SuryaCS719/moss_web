@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOSS Reports - PA2</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid var(--secondary);
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        td {
+            background: white;
+        }
+
+        tr:hover td {
+            background: #f8f9fa;
+        }
+
+        .report-count {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            transition: background 0.3s ease;
+        }
+
+        .report-count:hover {
+            background: var(--accent);
+        }
+
+        .no-reports {
+            color: #a0aec0;
+            font-style: italic;
+        }
+
+        .student-link {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .student-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        function filterTable() {
+            const input = document.getElementById("searchBar").value.toLowerCase();
+            const rows = document.querySelectorAll("#reportTable tbody tr");
+            
+            rows.forEach(row => {
+                const name = row.querySelector("td:nth-child(2)").textContent.toLowerCase();
+                row.style.display = name.includes(input) ? "" : "none";
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 PA2 MOSS Reports</h1>
+        </div>
+
+        <div class="search-container">
+            <input type="text" 
+                   id="searchBar" 
+                   class="search-box"
+                   placeholder="Search by CruzID..."
+                   onkeyup="filterTable()"
+                   aria-label="Search student reports">
+        </div>
+
+        <div class="table-wrapper">
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student CruzID</th>                <th>FindPath.c Matches</th>
+                <th>Graph.c Matches</th>
+                    </tr>
+                </thead>
+                <tbody>                    <tr>
+                        <td>1</td>
+                        <td><a href="arosende/index.html" class="student-link">arosende</a></td><td><a href="arosende/index.html" class="report-count">1</a></td><td><span class="no-reports">-</span></td>                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><a href="asee1/index.html" class="student-link">asee1</a></td><td><span class="no-reports">-</span></td><td><a href="asee1/index.html" class="report-count">5</a></td>                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><a href="bguo10/index.html" class="student-link">bguo10</a></td><td><a href="bguo10/index.html" class="report-count">4</a></td><td><a href="bguo10/index.html" class="report-count">5</a></td>                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><a href="erwalee/index.html" class="student-link">erwalee</a></td><td><a href="erwalee/index.html" class="report-count">1</a></td><td><span class="no-reports">-</span></td>                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><a href="hbumrah/index.html" class="student-link">hbumrah</a></td><td><a href="hbumrah/index.html" class="report-count">2</a></td><td><a href="hbumrah/index.html" class="report-count">3</a></td>                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><a href="jkim662/index.html" class="student-link">jkim662</a></td><td><span class="no-reports">-</span></td><td><a href="jkim662/index.html" class="report-count">1</a></td>                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td><a href="jnguy405/index.html" class="student-link">jnguy405</a></td><td><a href="jnguy405/index.html" class="report-count">1</a></td><td><span class="no-reports">-</span></td>                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td><a href="prvuyyur/index.html" class="student-link">prvuyyur</a></td><td><a href="prvuyyur/index.html" class="report-count">2</a></td><td><a href="prvuyyur/index.html" class="report-count">2</a></td>                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td><a href="smdoan/index.html" class="student-link">smdoan</a></td><td><span class="no-reports">-</span></td><td><a href="smdoan/index.html" class="report-count">4</a></td>                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td><a href="spugazhe/index.html" class="student-link">spugazhe</a></td><td><a href="spugazhe/index.html" class="report-count">2</a></td><td><a href="spugazhe/index.html" class="report-count">5</a></td>                    </tr>
+                    <tr>
+                        <td>11</td>
+                        <td><a href="tbedadha/index.html" class="student-link">tbedadha</a></td><td><a href="tbedadha/index.html" class="report-count">3</a></td><td><a href="tbedadha/index.html" class="report-count">5</a></td>                    </tr>
+                    <tr>
+                        <td>12</td>
+                        <td><a href="yamani/index.html" class="student-link">yamani</a></td><td><a href="yamani/index.html" class="report-count">3</a></td><td><span class="no-reports">-</span></td>                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
