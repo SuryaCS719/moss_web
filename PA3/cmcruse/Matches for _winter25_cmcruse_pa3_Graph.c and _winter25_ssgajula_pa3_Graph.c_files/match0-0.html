@@ -1,0 +1,296 @@
+
+<!-- saved from url=(0119)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-0.html#5 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/cmcruse/pa3/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/cmcruse/pa3/Graph.c<p></p><pre>//Clayton Cruse
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include "Graph.h"
+#include "List.h"
+
+// Define color constants for DFS
+#define WHITE 0  // Unvisited vertex
+#define GRAY 1   // Vertex being processed
+#define BLACK 2  // Finished vertex
+
+// GraphObj struct definition
+typedef struct GraphObj {
+    List *adjacencyLists;  // Array of adjacency lists
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#3" target="1"><img align="left" alt="other" border="0" src="./tm_3_5.gif"></a>
+
+    int *colors;           // Array for vertex colors in DFS
+    int *parents;          // Array for parent vertices in DFS tree
+    int *discovers;        // Array for DFS discovery times
+    int *finishes;        // Array for DFS finish times
+    int vertexCount;      // Number of vertices
+    int edgeCount;        // Number of edges
+} GraphObj;
+
+/*** Constructor-Destructor ***/
+
+Graph newGraph(int n) {
+    // Allocate memory for graph structure
+    Graph G = malloc(sizeof(GraphObj));
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: unable to allocate memory for new Graph\n");
+        exit(1);
+    }
+
+    // Allocate memory for graph arrays
+    G-&gt;adjacencyLists = malloc((n + 1) * sizeof(List));
+    G-&gt;colors = malloc((n + 1) * sizeof(int));
+    G-&gt;parents = malloc((n + 1) * sizeof(int));
+</font>    G-&gt;discovers = malloc((n + 1) * sizeof(int));
+    G-&gt;finishes = malloc((n + 1) * sizeof(int));
+    
+    // Check memory allocation was successful
+<a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#5" target="1"><img align="left" alt="other" border="0" src="./tm_0_4.gif"></a>
+
+    if (G-&gt;adjacencyLists == NULL || G-&gt;colors == NULL || G-&gt;parents == NULL || 
+        G-&gt;discovers == NULL || G-&gt;finishes == NULL) {
+        fprintf(stderr, "Graph Error: unable to allocate memory for Graph arrays\n");
+        free(G);
+        exit(1);
+    }
+
+    // Initialize graph parameters
+    G-&gt;vertexCount = n;
+    G-&gt;edgeCount = 0;
+
+    // Initialize arrays for each vertex
+    for (int i = 0; i &lt;= n; i++) {
+        G-&gt;adjacencyLists[i] = newList();
+        G-&gt;colors[i] = WHITE;
+</font>        G-&gt;parents[i] = NIL;
+        G-&gt;discovers[i] = UNDEF;
+        G-&gt;finishes[i] = UNDEF;
+    }
+    return G;
+}
+
+void freeGraph(Graph* pG) {
+<a name="6"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#6" target="1"><img align="left" alt="other" border="0" src="./tm_1_2.gif"></a>
+
+    if (pG != NULL &amp;&amp; *pG != NULL) {
+        // Free all adjacency lists
+        for (int i = 0; i &lt;= (*pG)-&gt;vertexCount; i++) {
+            if ((*pG)-&gt;adjacencyLists[i] != NULL) {
+</font>                freeList(&amp;((*pG)-&gt;adjacencyLists[i]));
+            }
+        }
+        // Free all arrays
+        free((*pG)-&gt;adjacencyLists);
+        free((*pG)-&gt;colors);
+        free((*pG)-&gt;parents);
+        free((*pG)-&gt;discovers);
+        free((*pG)-&gt;finishes);
+        free(*pG);
+        *pG = NULL;
+    }
+}
+
+/*** Access functions ***/
+
+int getOrder(Graph G) {
+    return G-&gt;vertexCount;
+}
+
+int getSize(Graph G) {
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_24.gif"></a>
+
+    return G-&gt;edgeCount;
+}
+
+int getParent(Graph G, int u) {
+    if (u &lt; 1 || u &gt; getOrder(G)) {
+        fprintf(stderr, "Graph Error: getParent() called with invalid vertex\n");
+        exit(1);
+    }
+    return G-&gt;parents[u];
+}
+
+int getDiscover(Graph G, int u) {
+    if (u &lt; 1 || u &gt; getOrder(G)) {
+        fprintf(stderr, "Graph Error: getDiscover() called with invalid vertex\n");
+        exit(1);
+    }
+    return G-&gt;discovers[u];
+}
+
+int getFinish(Graph G, int u) {
+    if (u &lt; 1 || u &gt; getOrder(G)) {
+        fprintf(stderr, "Graph Error: getFinish() called with invalid vertex\n");
+        exit(1);
+    }
+    return G-&gt;finishes[u];
+}
+
+/*** Manipulation procedures ***/
+
+void addEdge(Graph G, int source, int dest) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling addEdge() on NULL Graph reference\n");
+        exit(1);
+    }
+    if (source &lt; 1 || source &gt; getOrder(G) || dest &lt; 1 || dest &gt; getOrder(G)) {
+        fprintf(stderr, "Graph Error: vertex out of bounds\n");
+        exit(1);
+    }
+
+    // Add dest to source's adjacency list in sorted order
+    moveFront(G-&gt;adjacencyLists[source]);
+    while (index(G-&gt;adjacencyLists[source]) != -1) {
+        if (get(G-&gt;adjacencyLists[source]) &gt; dest) {
+            insertBefore(G-&gt;adjacencyLists[source], dest);
+            break;
+        }
+        moveNext(G-&gt;adjacencyLists[source]);
+    }
+    if (index(G-&gt;adjacencyLists[source]) == -1) {
+        append(G-&gt;adjacencyLists[source], dest);
+    }
+
+    // Add source to dest's adjacency list in sorted order
+    moveFront(G-&gt;adjacencyLists[dest]);
+    while (index(G-&gt;adjacencyLists[dest]) != -1) {
+        if (get(G-&gt;adjacencyLists[dest]) &gt; source) {
+            insertBefore(G-&gt;adjacencyLists[dest], source);
+            break;
+        }
+        moveNext(G-&gt;adjacencyLists[dest]);
+    }
+    if (index(G-&gt;adjacencyLists[dest]) == -1) {
+</font>        append(G-&gt;adjacencyLists[dest], source);
+    }
+    G-&gt;edgeCount++;
+}
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_19.gif"></a>
+
+void addArc(Graph G, int source, int dest) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling addArc() on NULL Graph reference\n");
+        exit(1);
+    }
+    if (source &lt; 1 || source &gt; getOrder(G) || dest &lt; 1 || dest &gt; getOrder(G)) {
+        fprintf(stderr, "Graph Error: vertex out of bounds\n");
+        exit(1);
+    }
+
+    // Add dest to source's adjacency list in sorted order
+    moveFront(G-&gt;adjacencyLists[source]);
+    while (index(G-&gt;adjacencyLists[source]) != -1) {
+        if (get(G-&gt;adjacencyLists[source]) == dest) {
+            return;  // Arc already exists
+        }
+        if (get(G-&gt;adjacencyLists[source]) &gt; dest) {
+            insertBefore(G-&gt;adjacencyLists[source], dest);
+            G-&gt;edgeCount++;
+            return;
+        }
+        moveNext(G-&gt;adjacencyLists[source]);
+    }
+    append(G-&gt;adjacencyLists[source], dest);
+    G-&gt;edgeCount++;
+}
+
+void DFS(Graph G, List S) {
+    if (G == NULL || S == NULL) {
+        fprintf(stderr, "Graph Error: calling DFS() on NULL reference\n");
+        exit(1);
+    }
+    if (length(S) != getOrder(G)) {
+        fprintf(stderr, "List Error: length does not match graph order\n");
+        exit(1);
+    }
+
+    // DFS helper function to visit vertices
+    int time = 0;
+    void Visit(int vertex, int parent) {
+        G-&gt;parents[vertex] = parent;
+        G-&gt;colors[vertex] = GRAY;
+        G-&gt;discovers[vertex] = ++time;
+
+        // Visit all unvisited neighbors
+        moveFront(G-&gt;adjacencyLists[vertex]);
+        while (index(G-&gt;adjacencyLists[vertex]) != -1) {
+            int neighbor = get(G-&gt;adjacencyLists[vertex]);
+</font>            if (G-&gt;colors[neighbor] == WHITE) {
+                Visit(neighbor, vertex);
+            }
+            moveNext(G-&gt;adjacencyLists[vertex]);
+        }
+
+        G-&gt;colors[vertex] = BLACK;
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#2" target="1"><img align="left" alt="other" border="0" src="./tm_2_12.gif"></a>
+
+        G-&gt;finishes[vertex] = ++time;
+        prepend(S, vertex);
+    }
+
+    // Initialize all vertices
+    for (int i = 1; i &lt;= getOrder(G); i++) {
+        G-&gt;colors[i] = WHITE;
+        G-&gt;parents[i] = NIL;
+        G-&gt;discovers[i] = UNDEF;
+        G-&gt;finishes[i] = UNDEF;
+    }
+
+    // Process vertices in order specified by S
+    List tempList = copyList(S);
+    clear(S);
+    moveFront(tempList);
+    while (index(tempList) != -1) {
+        int vertex = get(tempList);
+        if (G-&gt;colors[vertex] == WHITE) {
+            Visit(vertex, NIL);
+        }
+        moveNext(tempList);
+    }
+    freeList(&amp;tempList);
+}
+
+Graph transpose(Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling transpose() on NULL Graph reference\n");
+        exit(1);
+    }
+
+    // Create new graph for transpose
+    Graph T = newGraph(getOrder(G));
+    
+    // Reverse direction of all arcs
+    for (int vertex = 1; vertex &lt;= getOrder(G); vertex++) {
+        moveFront(G-&gt;adjacencyLists[vertex]);
+</font>        while (index(G-&gt;adjacencyLists[vertex]) != -1) {
+            int neighbor = get(G-&gt;adjacencyLists[vertex]);
+            addArc(T, neighbor, vertex);  // Reverse direction
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/Graph.c/part_1/report/match0-1.html#4" target="1"><img align="left" alt="other" border="0" src="./tm_4_5.gif"></a>
+
+            moveNext(G-&gt;adjacencyLists[vertex]);
+        }
+    }
+    return T;
+}
+
+void printGraph(FILE* out, Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling printGraph() on NULL Graph reference\n");
+        exit(1);
+    }
+
+    // Print adjacency list representation
+    for (int i = 1; i &lt;= getOrder(G); i++) {
+        fprintf(out, "%d: ", i);
+        printList(out, G-&gt;adjacencyLists[i]);
+        fprintf(out, "\n");
+</font>    }
+}</pre>
+
+
+</body></html>

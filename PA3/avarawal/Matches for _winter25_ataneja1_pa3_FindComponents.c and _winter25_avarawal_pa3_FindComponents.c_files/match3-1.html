@@ -1,0 +1,166 @@
+
+<!-- saved from url=(0126)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/FindComponents.c/part_1/report/match3-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/ataneja1/pa3/FindComponents.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/avarawal/pa3/FindComponents.c<p></p><pre>/***
+* Abizer Varawala // First and Last Name
+* avarawal // UCSC UserID
+* 2024 Fall CSE101 PA3 // Replace ID with assignment number 
+* README.md // FileName
+* Graph ADT Finds strongly connected components // Description
+***/ 
+
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+
+#include"List.h"
+#include"Graph.h"
+
+#include &lt;string.h&gt;
+
+
+
+int main(int argc, char* argv[]){
+
+    /*Graph G = newGraph(8);
+    addArc(G, 1, 2);
+    addArc(G, 1, 3);
+    addArc(G, 2, 4);
+    addArc(G, 3, 4);
+    addArc(G, 4, 5);
+    addArc(G, 5, 6);
+
+    Graph H = transpose(G);
+    printGraph(stdout,G);
+    fprintf(stdout, "\n");
+    printGraph(stdout,H);*/
+
+
+     if(argc != 3){
+        fprintf(stderr, "Usage: %s &lt;filename&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+  }
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/FindComponents.c/part_1/report/match3-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_25.gif"></a>
+
+    FILE *in = fopen(argv[1], "r");
+    FILE *out =  fopen(argv[2], "w");
+
+      if (in == NULL) {
+        perror("Error opening in file");
+        return EXIT_FAILURE;
+    }
+  if (out == NULL) {
+        perror("Error opening out file");
+        return EXIT_FAILURE;
+    }
+    
+
+    int n;
+    int u, v;
+
+    
+    fscanf(in, "%d", &amp;n);
+    Graph G = newGraph(n); 
+
+    
+    while (fscanf(in, "%d %d", &amp;u, &amp;v) == 2) {
+        if (u == 0 &amp;&amp; v == 0) {
+</font>            break;  
+        }
+        addArc(G,u, v);  
+    }
+    fprintf(out, "Adjacency list representation of G:\n");
+    printGraph(out,G);
+    fprintf(out, "\n");
+
+    
+    List L = newList();
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/FindComponents.c/part_1/report/match3-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_53.gif"></a>
+
+    for (int i = 1; i &lt;= n; i++) append(L, i);
+
+    DFS(G,L);
+    
+
+    Graph H = transpose(G);//this is the only function that can fail under public tests
+    
+    
+    DFS(H,L);
+
+
+     int count = 0;
+   if (length(L) &gt; 0) {
+       moveBack(L);
+
+
+       while (index(L) &gt; -1) {
+           if (getParent(H, get(L)) == NIL) {
+               count++;
+           }
+           movePrev(L);
+       }
+   }
+
+   fprintf(out, "G contains %d strongly connected components:\n", count);
+
+   /*1. we go up the stack from the back
+     2. then when we reach a nil value we go down and print the component
+     3. its going back up and past the first nil value 
+     8 7 6 3 4 1 5 2  
+   */ 
+  //1st while loop -&gt; if the index &gt; -1 
+  //count that increments until we find a nil value
+  //2nd while loop and we print the values and we stop once we have printed 3 times and we can use for loop here
+  //we go up by count
+  int i = 0;//tracks non nil components
+  int j = 0;//tracks nil components
+  if(length(L) &gt; 0){
+    moveBack(L);
+  while(index(L) &gt; -1){//index reachees -1 thats why it exits
+    if(getParent(H, get(L)) != NIL){
+        i++;
+        movePrev(L);     
+        }else{
+            j++;
+            fprintf(out, "Component %d: ", j);
+            for(int x = 1; x &lt;=i; x++){//could be subtle issue as to how we iterate through i
+                fprintf(out, "%d ", get(L));
+                moveNext(L);
+            }   
+
+            fprintf(out, "%d \n", get(L));
+
+            for(int x = 1; x &lt;=i + 1; x++){//could be subtle issue as to how we iterate through i
+                movePrev(L);
+                
+            }
+            i = 0;
+            //continue; //try this if outer loop dont work
+        }
+    }
+    
+  }
+
+
+   
+    
+    
+    fclose(in);
+    fclose(out);
+            
+
+   freeGraph(&amp;G);
+   freeGraph(&amp;H);
+   
+   freeList(&amp;L);
+
+return 0;
+</font>}</pre>
+
+
+</body></html>

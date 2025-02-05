@@ -1,0 +1,118 @@
+
+<!-- saved from url=(0126)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/FindComponents.c/part_1/report/match4-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/qaljabir/pa3/FindComponents.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/qaljabir/pa3/FindComponents.c<p></p><pre>/***
+* Qudsi Aljabiri
+* qaljabir
+* 2025 Winter CSE101 PA3
+* FindComponents.c
+* This program reads a directed graph from an input file, finds its strongly
+* connected components using depth-first search, and outputs the results.
+***/
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+
+#include"Graph.h"
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/FindComponents.c/part_1/report/match4-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_10.gif"></a>
+
+int main(int argc, char * argv[]){
+   
+    FILE *in, *out;
+    if( argc != 3 ){
+        fprintf(stderr, "Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        exit(1);
+    }
+
+    // Open files for reading and writing 
+    in = fopen(argv[1], "r");
+</font>    if( in==NULL ){
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/FindComponents.c/part_1/report/match4-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_79.gif"></a>
+
+    out = fopen(argv[2], "w");
+    if( out==NULL ){
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
+        exit(1);
+    }
+
+    int n = 0;
+    fscanf(in, "%d", &amp;n);
+    Graph G = newGraph(n);
+    Graph T = NULL;
+    List S = newList();
+    for(int i=1; i&lt;=n; i++) append(S, i);
+
+    int vertexU,vertexV;
+    fscanf(in, "%d %d\n", &amp;vertexU, &amp;vertexV);
+    while(vertexU != 0 || vertexV != 0){
+        addArc(G, vertexU, vertexV);
+        fscanf(in, "%d %d\n", &amp;vertexU, &amp;vertexV);
+    }
+
+    matainGraph(G);
+
+  
+    fprintf(out, "Adjacency list representation of G:\n");
+    printGraph(out, G);
+
+    T = transpose(G);
+    DFS(G, S);
+    DFS(T, S);  
+    
+    List R = newList(); 
+    int count = 0;
+    moveFront(S);
+    while(index(S) &gt;= 0){
+        
+        if(getParent(T, get(S)) == NIL){
+            count++;
+            prepend(R, get(S)); 
+        }
+        moveNext(S);
+    }
+    fprintf(out, "\nG contains %d strongly connected components:\n", count);
+    
+    int k = 1;
+    moveFront(R);
+    while(index(R) &gt;= 0){
+        fprintf(out, "Component %d: ", k++);
+        List components = newList();
+
+        if(index(S) &lt; 0) moveBack(S);
+        while(index(S) &gt;= 0){
+            
+            if(getParent(T,get(S)) == NIL){
+                prepend(components, get(S));
+                movePrev(S);
+                break;
+            }
+            prepend(components, get(S));
+            movePrev(S);
+        }
+        printList(out, components);
+        fprintf(out, "\n");
+        freeList(&amp;components);
+        moveNext(R);
+    }
+
+   
+    fclose(in);
+    fclose(out);
+    freeGraph(&amp;G);
+    freeGraph(&amp;T);
+    freeList(&amp;S);
+    freeList(&amp;R);
+</font>    return(0);
+}</pre>
+
+
+</body></html>

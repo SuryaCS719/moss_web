@@ -1,0 +1,627 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/jkarnsom/pa3/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter23/addelros/pa3/Graph.c<p></p><pre>/********************************************************************************* 
+* Alfonso Luis Del Rosario, 1698802
+* 2023 Winter CSE101 PA3
+* Graph.c
+*********************************************************************************/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;assert.h&gt;
+#include "Graph.h"
+#include "List.h"
+
+#define INF -1
+#define NIL -10
+#define UNDEF -100
+
+#define NULL_ERROR(x) printf("Graph Error: calling %s() on NULL Graph reference\n", x)
+#define BOUND_ERROR(x) printf("Graph Error: calling %s() with out of bounds reference\n", x)
+#define BFS_ERROR(x) printf("Graph Error: calling %s() without calling BFS beforehand\n", x)
+#define EXIT exit(EXIT_FAILURE)
+
+int time = 0;
+
+enum color{
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_7.gif"></a>
+
+    WHITE = 0, BLACK = 1, GRAY = 2
+};
+
+typedef struct GraphObj{
+    List* list; //double pointer for list of lists.
+    int* color;
+    int* parent;
+    int* distance;
+    int* discover; 
+    int* finish;
+    int sourceVertex;
+    int order; //number of vertices 
+    int size; //number of edges
+}GraphObj;
+
+Graph newGraph(int n)
+{
+    Graph G = malloc(sizeof(GraphObj));
+    assert(G!=NULL);
+    G-&gt;list = calloc(n, sizeof(List));
+    G-&gt;color = calloc(n, sizeof(int));
+    G-&gt;parent = calloc(n, sizeof(int)); 
+    G-&gt;distance = calloc(n, sizeof(int));
+    G-&gt;discover = calloc(n, sizeof(int)); 
+    G-&gt;finish = calloc(n, sizeof(int)); 
+    G-&gt;sourceVertex = NIL;
+    G-&gt;order = n;
+    G-&gt;size = 0;
+
+    for(int i = 0; i &lt; (n); i++)
+    {
+        G-&gt;list[i] = newList();
+</font>    }
+
+    for(int i = 0; i &lt; (n); i++)
+    {
+        G-&gt;parent[i] = NIL;
+    }
+
+    for(int i = 0; i &lt; (n); i++)
+    {
+        G-&gt;distance[i] = INF;
+    }
+    
+    for(int i = 0; i &lt; (n); i++)
+    {
+        G-&gt;discover[i] = UNDEF; 
+    }
+    
+    for(int i = 0; i &lt; (n); i++)
+    {
+        G-&gt;finish[i] = UNDEF; 
+    }
+
+    return G;
+}
+
+void freeGraph(Graph* pG)
+{
+    if(*pG == NULL)
+    {
+        NULL_ERROR("freeGraph");
+        EXIT;   
+    }
+    
+    if(pG != NULL &amp;&amp; *pG != NULL)
+    {
+        for(int i = 0; i &lt; (*pG)-&gt;order; i++)
+        {
+            freeList(&amp;((*pG)-&gt;list[i]));
+        }
+        free((*pG)-&gt;list);
+        free((*pG)-&gt;distance);
+        free((*pG)-&gt;parent);
+        free((*pG)-&gt;color);
+        free((*pG)-&gt;discover);
+        free((*pG)-&gt;finish);
+        free(*pG);
+        *pG = NULL;
+    }
+}
+
+/*** Access functions ***/
+
+int getOrder(Graph G)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("getOrder");
+        EXIT;
+    }
+
+    return G-&gt;order;
+}
+
+int getSize(Graph G)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("getSize");
+        EXIT;
+    }
+
+    return G-&gt;size; 
+}
+
+int getSource(Graph G)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("getSource");
+        EXIT;
+    }
+
+    return G-&gt;sourceVertex;
+}
+
+int getParent(Graph G, int u)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("getDist");
+        EXIT;
+    }
+
+    if(u &lt; 1 || u &gt; getOrder(G))
+    {
+        BOUND_ERROR("getParent");
+        EXIT;
+    }
+
+<a name="13"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#13" target="0"><img align="left" alt="other" border="0" src="./tm_3_1.gif"></a>
+
+    if(G-&gt;sourceVertex == NIL)
+    {
+        return NIL;
+    }
+
+    return G-&gt;parent[u-1];
+}
+
+int getDiscover(Graph G, int u)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("getDiscover");
+        EXIT;
+</font>    }
+
+    if(u &lt; 1 || u &gt; getOrder(G))
+    {
+        BOUND_ERROR("getDiscover");
+        EXIT;
+    }
+
+    //CHANGE: check preconditions
+
+    return G-&gt;discover[u-1];
+}
+
+int getFinish(Graph G, int u)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("getFinish");
+        EXIT;
+    }
+
+    if(u &lt;  1 || u  &gt; getOrder(G))
+    {
+        BOUND_ERROR("getFinish");
+        EXIT;
+    }
+
+    return G-&gt;finish[u-1];
+}
+
+Graph transpose(Graph G)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("transpose");
+<a name="7"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#7" target="0"><img align="left" alt="other" border="0" src="./tm_2_3.gif"></a>
+
+        EXIT;
+    }
+
+    Graph T = newGraph(getOrder(G));
+    List L = NULL;
+
+    for(int i = 0; i &lt; getOrder(G); i++)
+    {
+        L = G-&gt;list[i];
+        for(moveFront(L); index(L) &gt;= 0; moveNext(L))
+        {
+            addArc(T, get(L), i+1);
+        }
+    }
+
+    return T;
+}
+
+Graph copyGraph(Graph G)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("copyGraph");
+        EXIT;
+    }
+
+    Graph copy_graph = newGraph(getOrder(G));
+</font><a name="8"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#8" target="0"><img align="left" alt="other" border="0" src="./tm_3_3.gif"></a>
+
+
+    copy_graph-&gt;order = getOrder(G);
+    copy_graph-&gt;size = getSize(G);
+    copy_graph-&gt;sourceVertex = getSource(G);
+
+    for(int i = 0; i &lt; getOrder(G); i++)
+    {
+        copy_graph-&gt;list[i] = copyList(G-&gt;list[i]);    
+        copy_graph-&gt;color[i] = G-&gt;color[i];
+</font>        copy_graph-&gt;parent[i] = G-&gt;parent[i];    
+        copy_graph-&gt;distance[i] = G-&gt;distance[i];    
+<a name="9"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#9" target="0"><img align="left" alt="other" border="0" src="./tm_4_2.gif"></a>
+
+        copy_graph-&gt;discover[i] = G-&gt;discover[i];    
+        copy_graph-&gt;finish[i] = G-&gt;finish[i];    
+    }
+
+    return copy_graph;
+}
+
+int getDist(Graph G, int u)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("getDist");
+</font>        EXIT;
+    }
+
+    if(u &lt; 1 || u &gt; getOrder(G))
+    {
+        BOUND_ERROR("getDist");
+        EXIT;
+    }
+
+<a name="10"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#10" target="0"><img align="left" alt="other" border="0" src="./tm_0_2.gif"></a>
+
+    if(G-&gt;sourceVertex == NIL)
+    {
+        return INF;
+    }
+    
+    return G-&gt;distance[u-1];
+}
+
+void getPath(List L, Graph G, int u)
+{
+    if(G == NULL || L == NULL)
+    {
+        NULL_ERROR("getPath");
+        EXIT;
+</font>    }
+
+    if(u &lt; 1 || u &gt; getOrder(G))
+    {
+        BOUND_ERROR("getPath");
+        EXIT;
+    }
+
+    if(G-&gt;sourceVertex == NIL)
+    {
+        BFS_ERROR("getPath");
+        EXIT;
+    } 
+    
+<a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#5" target="0"><img align="left" alt="other" border="0" src="./tm_0_4.gif"></a>
+
+    if(u != getSource(G) &amp;&amp; getParent(G, u) == NIL)
+    {
+        append(L, NIL);
+        return;
+    }
+
+    List temp = newList();
+
+    int current = u;
+    while(current != NIL)
+    {
+        prepend(temp, current);
+        current = getParent(G, current);
+    }
+
+    int i = 0;
+    moveFront(temp);
+    while(i &lt; length(temp))
+    {
+        append(L, get(temp));
+        moveNext(temp);
+        i++;
+    }
+
+    freeList(&amp;temp);
+}
+
+/*** Manipulation procedures ***/
+
+void makeNull(Graph G)
+{
+    if (G == NULL)
+    {
+        NULL_ERROR("makeNull");
+</font>        EXIT;
+    }
+
+<a name="6"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#6" target="0"><img align="left" alt="other" border="0" src="./tm_1_4.gif"></a>
+
+    int i = 0;
+
+    while(i &lt; getOrder(G))
+    {
+        clear(G-&gt;list[i]); 
+        G-&gt;color[i] = WHITE;
+        G-&gt;parent[i] = NIL;
+        G-&gt;distance[i] = INF;
+        i++;
+    }
+
+    G-&gt;size = 0;
+    G-&gt;sourceVertex = NIL;
+}
+
+void addEdge(Graph G, int u, int v) 
+{
+    if(G==NULL)
+    {
+        NULL_ERROR("addEdge");
+</font>        EXIT;
+    }
+
+    if(u &lt; 1 || u &gt; getOrder(G))
+    {
+        BOUND_ERROR("addEdge");
+        EXIT;
+    }
+
+    if(v &lt; 1 || v &gt; getOrder(G))
+    {
+        BOUND_ERROR("addEdge");
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_7.gif"></a>
+
+        EXIT;
+    }
+
+    List U = G-&gt;list[u-1];
+    List V = G-&gt;list[v-1];
+
+    //check if v is in U list
+    for(moveFront(U); index(U)&gt;=0; moveNext(U))
+        if(get(U) == v)
+            return;
+
+    if(length(U) == 0)
+    {
+        append(U, v);
+    }
+    else
+    {
+        if(v &gt; back(U))
+        {
+            append(U, v);
+        }
+        else
+        {
+            moveFront(U);
+            while(v &gt; get(U))
+            {
+                moveNext(U);
+            }
+            insertBefore(U,v);
+        }
+    }
+
+    if(length(V) == 0)
+    {
+        append(V, u);
+    }
+    else
+    {
+        if(u &gt; back(V))
+        {
+            append(V, u);
+        }
+        else
+        {
+            moveFront(V);
+            while(u &gt; get(V))
+            {                
+                moveNext(V);
+            }
+            insertBefore(V,u);
+        }
+    }
+    G-&gt;size++;
+}
+
+void addArc(Graph G, int u, int v)
+{
+    if(G==NULL)
+    {
+        NULL_ERROR("addArc");
+</font>        EXIT;
+    }
+
+    if(u &lt; 1 || u &gt; getOrder(G))
+    {
+        BOUND_ERROR("addArc");
+        EXIT;
+    }
+
+    if(v &lt; 1 || v &gt; getOrder(G))
+    {
+        BOUND_ERROR("addArc");
+        EXIT;
+    }
+
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#4" target="0"><img align="left" alt="other" border="0" src="./tm_4_4.gif"></a>
+
+    List U = G-&gt;list[u-1];
+
+    //check if v is in U list
+    for(moveFront(U); index(U)&gt;=0; moveNext(U))
+        if(get(U) == v)
+            return;
+
+    //main append loop
+    if(length(U) == 0)
+    {
+        append(U, v);
+    }
+    else
+    {
+        if(v &gt; back(U))
+        {
+            append(U, v);
+        }
+        else
+        {
+            moveFront(U);
+            while(v &gt; get(U))
+                moveNext(U);
+            insertBefore(U, v);
+        }
+    }
+    G-&gt;size++;
+}
+
+void Visit(Graph G, List S, int x)
+{
+    G-&gt;discover[x] = ++time;
+</font>    G-&gt;color[x] = GRAY;
+    
+    List L = G-&gt;list[x];
+
+    for(moveFront(L); index(L) &gt;= 0; moveNext(L))
+    {
+        if(G-&gt;color[get(L)-1] == WHITE)
+        {
+            Visit(G, S, get(L)-1);
+            G-&gt;parent[get(L)-1] = x+1;
+        }
+    }
+
+<a name="11"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#11" target="0"><img align="left" alt="other" border="0" src="./tm_1_2.gif"></a>
+
+    G-&gt;color[x] = BLACK;
+    G-&gt;finish[x] = ++time;
+    prepend(S, x+1);
+}
+
+void DFS(Graph G, List S)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("DFS");
+</font>        EXIT;
+    }   
+
+    if(length(S) != getOrder(G))
+    {
+        BOUND_ERROR("DFS");
+        EXIT;
+    }
+
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#3" target="0"><img align="left" alt="other" border="0" src="./tm_3_5.gif"></a>
+
+    G-&gt;sourceVertex = 0; //Set to zero so getter functions dont return NIL
+
+    for(int i = 0; i &lt; getOrder(G); i++)
+    {
+        G-&gt;color[i] = WHITE;
+        G-&gt;parent[i] = NIL;
+    }
+
+    time = 0;
+
+    List L = copyList(S);
+    clear(S);
+
+    for(moveFront(L); index(L) &gt;= 0; moveNext(L))
+    {
+        if(G-&gt;color[get(L)-1] == WHITE)
+            Visit(G, S, get(L)-1);
+    }
+
+    freeList(&amp;L);
+}
+
+void BFS(Graph G, int s)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("BFS");
+</font>        EXIT;
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_12.gif"></a>
+
+    G-&gt;sourceVertex = s;
+
+    //sets all elements to undiscovered
+    for(int i = 0; i &lt; getOrder(G); i++)
+    {
+        G-&gt;color[i] = WHITE;
+        G-&gt;distance[i] = INF;
+        G-&gt;parent[i] = NIL;
+    }
+
+    //sets source vertex to discovered
+    G-&gt;distance[s-1] = 0;
+    G-&gt;color[s-1] = GRAY;
+    G-&gt;parent[s-1] = NIL;
+
+    int curr = 0;
+
+    List L = newList();
+    prepend(L, s);
+    while(length(L) != 0)
+    {
+        moveFront(L);
+        curr = get(L)-1;
+        deleteFront(L);
+        List temp = G-&gt;list[curr];
+        moveFront(temp);
+        while(index(temp) != -1)
+        {
+            int adj_index = get(temp)-1;
+            if(G-&gt;color[adj_index] == WHITE)
+            {
+                G-&gt;color[adj_index] = GRAY;
+                G-&gt;distance[adj_index] = G-&gt;distance[curr]+1;
+                G-&gt;parent[adj_index] = curr+1;
+                append(L, get(temp));
+            }
+            moveNext(temp);
+        }
+        G-&gt;color[curr] = BLACK;
+    }
+    freeList(&amp;L);
+}
+
+/*** Other operations ***/
+void printGraph(FILE* out, Graph G)
+{
+    if(G == NULL)
+    {
+        NULL_ERROR("printGraph");
+</font>        EXIT;
+    }
+    
+<a name="12"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_3/report/match0-0.html#12" target="0"><img align="left" alt="other" border="0" src="./tm_2_1.gif"></a>
+
+    for(int i = 0; i &lt; G-&gt;order; i++)
+    {
+        fprintf(out, "%d: ", i+1);
+        printList(out, G-&gt;list[i]);
+        fprintf(out, "\n");
+</font>    }
+}</pre>
+
+
+</body></html>

@@ -1,0 +1,141 @@
+
+<!-- saved from url=(0126)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/FindComponents.c/part_1/report/match6-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/ataneja1/pa3/FindComponents.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/ataneja1/pa3/FindComponents.c<p></p><pre>// Name: Arjun Taneja
+// Cruz ID: ataneja1
+// Assignment name: PA3
+
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include &lt;stdbool.h&gt;
+
+#include"List.h"
+#include"Graph.h"
+
+#include &lt;string.h&gt;
+
+
+
+int main(int argc, char* argv[]){
+
+
+     if(argc != 3){
+        fprintf(stderr, "Usage: %s &lt;filename&gt;\n", argv[0]);
+        return EXIT_FAILURE;
+  }
+    FILE *in = fopen(argv[1], "r");
+    FILE *out =  fopen(argv[2], "w");
+
+      if (in == NULL) {
+        perror("Error opening in file");
+        return EXIT_FAILURE;
+    }
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/FindComponents.c/part_1/report/match6-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_15.gif"></a>
+
+  if (out == NULL) {
+        perror("Error opening out file");
+        return EXIT_FAILURE;
+    }
+    
+
+    int n;
+    int u, v;
+
+    
+    fscanf(in, "%d", &amp;n);
+    Graph G = newGraph(n); 
+
+    
+    while (fscanf(in, "%d %d", &amp;u, &amp;v) == 2) {
+        if (u == 0 &amp;&amp; v == 0) {
+</font>            break;  
+        }
+        addArc(G,u, v);  
+    }
+    fprintf(out, "Adjacency list representation of G:\n");
+    printGraph(out,G);
+    fprintf(out, "\n");
+
+    
+    List S = newList();
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter25/FindComponents.c/part_1/report/match6-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_52.gif"></a>
+
+    for (int i = 1; i &lt;= n; i++) append(S, i);
+
+    DFS(G,S);
+    
+
+    Graph H = transpose(G);
+    
+    
+    DFS(H,S);
+
+
+     int c = 0;
+   if (length(S) &gt; 0) {
+       moveBack(S);
+
+
+       while (index(S) &gt; -1) {
+           if (getParent(H, get(S)) == NIL) {
+               c++;
+           }
+           movePrev(S);
+       }
+   }
+
+   fprintf(out, "G contains %d strongly connected components:\n", c);
+
+
+  int i = 0;
+  int j = 0;
+  if(length(S) &gt; 0){
+    moveBack(S);
+  while(index(S) &gt; -1){
+    if(getParent(H, get(S)) != NIL){
+        i++;
+        movePrev(S);     
+    } else {
+            j++;
+            fprintf(out, "Component %d: ", j);
+            for(int x = 1; x &lt;=i; x++){
+                fprintf(out, "%d ", get(S));
+                moveNext(S);
+            }   
+
+            fprintf(out, "%d \n", get(S));
+
+            for(int x = 1; x &lt;=i + 1; x++){
+                movePrev(S);
+                
+            }
+            i = 0;
+        }
+    }
+    
+  }
+
+
+   
+    
+    
+    fclose(in);
+    fclose(out);
+            
+
+   freeGraph(&amp;G);
+   freeGraph(&amp;H);
+   
+   freeList(&amp;S);
+
+return 0;
+</font>}
+
+</pre>
+
+
+</body></html>

@@ -1,0 +1,234 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/Graph.c/part_4/report/match3-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/aaychen/pa3/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/aaychen/pa3/Graph.c<p></p><pre>/***
+* Aaron Chen
+* aaychen
+* 2025 Winter CSE 101 PA3
+* Graph.c
+* Implementation of Graph ADT
+***/
+
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include "Graph.h"
+
+typedef struct GraphObj {
+	List* adj;
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/Graph.c/part_4/report/match3-1.html#3" target="1"><img align="left" alt="other" border="0" src="./tm_3_5.gif"></a>
+
+    	int *color;
+    	int *parent;
+    	int *finish;
+    	int *discover;
+    	int order;
+    	int size;
+} GraphObj;
+
+// Constructors-Destructors
+Graph newGraph(int n) {
+	Graph G = malloc(sizeof(struct GraphObj));
+    	G-&gt;adj = malloc((n+1) * sizeof(List));
+    	G-&gt;color = malloc((n+1) * sizeof(int));
+</font>    	G-&gt;parent = malloc((n+1) * sizeof(int));
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/Graph.c/part_4/report/match3-1.html#2" target="1"><img align="left" alt="other" border="0" src="./tm_2_14.gif"></a>
+
+    	G-&gt;discover = malloc((n+1) * sizeof(int));
+    	G-&gt;finish = malloc((n+1) * sizeof(int));
+
+	for(int i=1;i&lt;=n;++i) {
+		G-&gt;adj[i]=newList();
+        	G-&gt;color[i]=WHITE;;
+        	G-&gt;parent[i]=NIL;
+        	G-&gt;finish[i]=UNDEF;
+        	G-&gt;discover[i]=UNDEF;
+	}
+
+	G-&gt;size=0;
+	G-&gt;order=n;
+	return G;
+}
+
+void freeGraph(Graph* pG){
+	if(pG!=NULL &amp;&amp; *pG!=NULL) {
+		for(int i=1;i&lt;=(*pG)-&gt;order;++i) {
+			freeList(&amp;((*pG)-&gt;adj[i]));
+		}
+		free((*pG)-&gt;adj);
+        	free((*pG)-&gt;color);
+        	free((*pG)-&gt;parent);
+</font>        	free((*pG)-&gt;finish);
+        	free((*pG)-&gt;discover);
+        	free(*pG);
+        	*pG=NULL;
+	}
+}
+
+// Access functions
+int getOrder(Graph G) {
+	if (G == NULL) {
+		fprintf(stderr, "getOrder() called on NULL Graph reference\n");
+		exit(EXIT_FAILURE);
+	}
+	return G-&gt;order;
+}
+
+int getSize(Graph G) {
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/Graph.c/part_4/report/match3-1.html#4" target="1"><img align="left" alt="other" border="0" src="./tm_4_3.gif"></a>
+
+	if (G == NULL) {
+		fprintf(stderr, "getSize() called on NULL Graph reference\n");
+		exit(EXIT_FAILURE);
+	}
+	return G-&gt;size;
+}
+
+int getParent(Graph G, int u){
+	if (G == NULL) {
+		printf("Error: cannot perform getParent() called on NULL Graph reference\n");
+		exit(EXIT_FAILURE);
+	}
+	if(u&lt;1 || u&gt;getOrder(G)) {
+</font>		printf("Error: Cannot perform getParent on invalid vertex\n");
+		exit(EXIT_FAILURE);
+	}
+	return G-&gt;parent[u];
+}
+
+int getDiscover(Graph G, int u) {
+	if(u&lt;1 || u&gt;getOrder(G)) {
+		printf("Error: Cannot perform getDiscover() on invalid vertex\n");
+		exit(EXIT_FAILURE);
+	}
+	return G-&gt;discover[u];
+}
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/Graph.c/part_4/report/match3-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_20.gif"></a>
+
+int getFinish(Graph G, int u) {
+	if(u&lt;1 || u&gt;getOrder(G)) {
+		printf("Error: Cannot perform getFinish on invalid vertex\n");
+		exit(EXIT_FAILURE);
+	}
+	return G-&gt;finish[u];
+}
+
+// Manipulation procedures
+void addArc(Graph G, int u, int v) {
+	if (v &gt; getOrder(G) || u &gt; getOrder(G) || v &lt; 1 || u &lt; 1) {
+		printf("addArc(): invalid vertex index\n");
+		exit(1);
+	}
+	List L = G-&gt;adj[u];
+	if (length(L) == 0) {
+		append(L, v);
+	} else {
+		for (moveFront(L); index(L) &gt;= 0; moveNext(L)) {
+			if (v &lt; get(L)) {
+				insertBefore(L, v);
+				break;
+			} else if (v == get(L)) {
+				return;
+			}
+		}
+		if (index(L) &lt; 0) {
+			append(L, v);
+		}
+	}
+	G-&gt;size++;
+}
+
+void addEdge(Graph G, int u, int v) {
+	addArc(G, u, v);
+	addArc(G, v, u);
+	G-&gt;size--;
+}
+
+void DFS(Graph G, List S){
+	for(int i = 0; i &lt;= getOrder(G); i++){
+		G-&gt;color[i] = WHITE;
+		G-&gt;parent[i] = NIL;
+</font>		G-&gt;discover[i] = UNDEF;
+		G-&gt;finish[i] = UNDEF;
+	}
+	int time = 0;
+	List temp = copyList(S);
+	clear(S);
+	moveFront(temp);
+	while(index(temp) &gt;= 0){
+		int vertex = get(temp);
+		if(G-&gt;color[vertex] == WHITE){
+			visit(G, vertex, &amp;time, S);
+		}
+		moveNext(temp);
+	}
+	freeList(&amp;temp);
+}
+
+void visit(Graph G, int x, int *time, List S){
+<a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/Graph.c/part_4/report/match3-1.html#5" target="1"><img align="left" alt="other" border="0" src="./tm_0_3.gif"></a>
+
+	G-&gt;discover[x] = ++(*time);
+	G-&gt;color[x] = GRAY;
+	List L = G-&gt;adj[x];
+	moveFront(L);
+	while (index(L) &gt;= 0) {
+</font>		int y = get(L);
+		if(G-&gt;color[y] == WHITE){
+			G-&gt;parent[y] = x;
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter24/Graph.c/part_4/report/match3-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_22.gif"></a>
+
+			visit(G, y, time, S);
+		}
+		moveNext(L);
+	}
+	G-&gt;color[x] = BLACK;
+	G-&gt;finish[x] = ++(*time);
+	prepend(S, x);
+}
+
+// Other Functions
+Graph transpose(Graph G){
+	int n = getOrder(G);
+	Graph T = newGraph(n);
+	for (int u = 1; u &lt;= n; u++) {
+		List adj = G-&gt;adj[u];
+		for(moveFront(adj);index(adj)!=-1;moveNext(adj)) {
+			int v = get(adj);
+			addArc(T, v, u);
+		}
+	}
+	return T;
+}
+
+Graph copyGraph(Graph G){
+	int n = getOrder(G);
+	Graph C = newGraph(n);
+	for (int u = 1; u &lt;= n; u++) {
+		List adj = G-&gt;adj[u];
+		for(moveFront(adj);index(adj)!=-1;moveNext(adj)) {
+			int v = get(adj);
+			addArc(C, u, v);
+		}
+	}
+	return C;
+}
+
+void printGraph(FILE* out , Graph G){
+	for(int i=1;i&lt;=getOrder(G);++i) {
+		List l=G-&gt;adj[i];
+		fprintf(out,"%d: ",i);
+		for(moveFront(l);index(l)!=-1;moveNext(l)) {
+			fprintf(out,"%d ",get(l));
+</font>		}
+		fprintf(out,"\n");
+	}
+}
+</pre>
+
+
+</body></html>

@@ -1,0 +1,313 @@
+
+<!-- saved from url=(0115)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_fall23/Graph.c/part_3/report/match0-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/qaljabir/pa3/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/fall23/gealgome/pa3/Graph.c<p></p><pre>//-----------------------------------------------------------------------------
+//  Graph.c
+//  George Gomez
+//  1755012
+//  pa3
+//-----------------------------------------------------------------------------
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;stdbool.h&gt;
+
+#include"Graph.h"
+
+void moveCursor(List L, int i);
+
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_fall23/Graph.c/part_3/report/match0-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_2.gif"></a>
+
+void moveCursor(List L, int i){
+    while(index(L) != i){
+        if(index(L) == -1) moveFront(L);
+        if(index(L) &lt; i) moveNext(L);
+        if(index(L) &gt; i) movePrev(L);
+</font>    }
+}
+
+void visit(Graph G, int x, int *timePtr);
+
+// private struct, not exported 
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_fall23/Graph.c/part_3/report/match0-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_54.gif"></a>
+
+typedef struct GraphObj{
+    // An array of Lists whose ith element contains the neighbors of vertex i.
+    List* neighbors;    
+    // An array of ints (or chars, or strings) whose ith element is the color 
+    // (white, gray, black) of vertex i.
+    List color;
+    // An array of ints whose ith element is the parent of vertex i.         
+    List parent;
+    // An array of ints whose ith element is the discover time of vertex i.
+    List discover;
+    // An array of ints whose ith element is the finish time of vertex i.
+    List finish;
+    // The number of vertices.   
+    int order;
+    // The number of edges.   
+    int size;
+} GraphObj;
+
+Graph newGraph(int n){
+    Graph g = (Graph)malloc(sizeof(GraphObj));
+    g-&gt;neighbors = (List*)calloc(n + 1, sizeof(List));
+    for(int i = 0; i &lt;= n; i++){
+        g-&gt;neighbors[i] = newList();
+    }
+    g-&gt;color = newList();
+    g-&gt;parent = newList();
+    g-&gt;discover = newList();
+    g-&gt;finish = newList();
+    for(int i = 0; i &lt;= n; i++){
+        append(g-&gt;color, WHITE);
+        append(g-&gt;parent, NIL);
+        append(g-&gt;discover, UNDEF);
+        append(g-&gt;finish, UNDEF);
+    }
+    g-&gt;order = n;
+    g-&gt;size = 0;
+    return g;
+}
+
+void freeGraph(Graph* pG){
+    if(pG != NULL &amp;&amp; *pG != NULL){
+        for(int i = 0; i &lt;= (*pG)-&gt;order; i++){
+            freeList(&amp;((*pG)-&gt;neighbors[i]));
+        }
+        freeList(&amp;((*pG)-&gt;color));
+        freeList(&amp;((*pG)-&gt;parent));
+        freeList(&amp;((*pG)-&gt;discover));
+        freeList(&amp;((*pG)-&gt;finish));
+        free((*pG)-&gt;neighbors);
+        free(*pG);
+        *pG = NULL;
+    }
+}
+
+int getOrder(Graph G){
+    return G-&gt;order;
+}
+
+int getSize(Graph G){
+    return G-&gt;size;
+}
+
+int getParent(Graph G, int u){
+    moveCursor(G-&gt;parent, u);
+    return get(G-&gt;parent);
+}
+
+int getDiscover(Graph G, int u){
+    moveCursor(G-&gt;discover, u);
+    return get(G-&gt;discover);
+}
+
+int getFinish(Graph G, int u){
+    moveCursor(G-&gt;finish, u);
+    return get(G-&gt;finish);
+}
+
+void addEdge(Graph G, int u, int v){
+    append(G-&gt;neighbors[u], v);
+    append(G-&gt;neighbors[v], u);
+    G-&gt;size += 1;
+    matainGraph(G);
+}
+
+void addArc(Graph G, int u, int v){
+    append(G-&gt;neighbors[u], v);
+    G-&gt;size += 1;
+    matainGraph(G);
+}
+
+
+void DFS(Graph G, List S){
+    moveFront(S);
+    while(index(S) &gt;= 0){
+        int x = get(S);
+        moveCursor(G-&gt;color, x);
+        set(G-&gt;color, WHITE);
+        moveCursor(G-&gt;parent, x);
+        set(G-&gt;parent, NIL);
+        moveNext(S);
+    }
+    int time = 0;
+    moveFront(S);
+    while (index(S) &gt;= 0){
+        int x = get(S);
+        moveCursor(G-&gt;color, x);
+        int color = get(G-&gt;color);  // color is the value of color[x]
+        if(color == WHITE){
+            // x is the root of strong components
+            visit(G, x, &amp;time);
+        }
+        moveNext(S);
+    }
+
+    // Sort S by decreasing finish times
+    List L = newList();
+    append(L, 1);
+    moveFront(L);
+    for(int i = 2; i &lt;= length(S); i++){ // insert the ith element
+        moveFront(L);
+        while(index(L) &gt;= 0){
+            if(getFinish(G, i) &lt; getFinish(G, get(L))){
+                break;
+            }
+            moveNext(L);
+        }
+        if(index(L) &lt; 0){
+            append(L, i);
+        }else{
+            insertBefore(L,i);
+        }
+    }
+
+    moveFront(S);
+    moveBack(L);
+    while (index(S) &gt;= 0)
+    {
+        set(S, get(L));
+        moveNext(S);
+        movePrev(L);
+    }
+    freeList(&amp;L);
+}
+
+void visit(Graph G, int x, int *timePtr){
+    moveCursor(G-&gt;discover, x);
+    *timePtr += 1;
+    set(G-&gt;discover, *timePtr);
+    moveCursor(G-&gt;color, x);
+    set(G-&gt;color, GRAY);
+    
+    moveFront(G-&gt;neighbors[x]);
+    while(index(G-&gt;neighbors[x]) &gt;= 0){
+       int  y = get(G-&gt;neighbors[x]);
+       moveCursor(G-&gt;color, y);
+       int color = get(G-&gt;color);
+       if (color == WHITE){
+           moveCursor(G-&gt;parent, y);
+           set(G-&gt;parent, x);           //p[y] = x
+           visit(G, y, timePtr);
+       }
+        moveNext(G-&gt;neighbors[x]);
+    }
+    moveCursor(G-&gt;color, x);
+    set(G-&gt;color, BLACK);
+    moveCursor(G-&gt;finish, x);
+    *timePtr += 1;
+    set(G-&gt;finish, *timePtr);
+}
+
+
+Graph transpose(Graph G){
+    Graph G_t = newGraph(getOrder(G));  // Transpoesed G
+    for(int i = 0; i &lt;= getOrder(G); i++){
+        moveFront(G-&gt;neighbors[i]);
+</font>        while(index(G-&gt;neighbors[i]) &gt;= 0){
+            int neighbor = get(G-&gt;neighbors[i]);
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_fall23/Graph.c/part_3/report/match0-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_38.gif"></a>
+
+            addArc(G_t, neighbor, i);
+            moveNext(G-&gt;neighbors[i]);
+        }
+    }
+    return G_t;
+}
+
+Graph copyGraph(Graph G){
+    Graph newG = (Graph)malloc(sizeof(GraphObj));
+    newG-&gt;neighbors = (List*)calloc(getOrder(G) + 1, sizeof(List));
+    for(int i = 0; i &lt;= getOrder(G); i++){
+        newG-&gt;neighbors[i] = newList();
+    }
+    for(int i = 0; i &lt;= getOrder(G); i++){
+        moveFront(G-&gt;neighbors[i]);
+        while(index(G-&gt;neighbors[i]) &gt;= 0){
+            int neighbor = get(G-&gt;neighbors[i]);
+            addArc(newG, i, neighbor);
+            moveNext(G-&gt;neighbors[i]);
+        }
+    }
+    newG-&gt;color = copyList(G-&gt;color);
+    newG-&gt;parent = copyList(G-&gt;parent);
+    newG-&gt;discover = copyList(G-&gt;discover);
+    newG-&gt;finish = copyList(G-&gt;finish);
+    // newG-&gt;size is setted while performming addArc()
+    newG-&gt;order = getOrder(G);
+    return newG;
+}
+
+void debugGraph(FILE* out, Graph G){
+    fprintf(out, "order: %d, size: %d\n", G-&gt;order, G-&gt;size);
+    moveFront(G-&gt;color);
+    moveFront(G-&gt;parent);
+    moveFront(G-&gt;discover);
+    moveFront(G-&gt;finish);
+    // Skip the first element
+    moveNext(G-&gt;color);
+    moveNext(G-&gt;parent);
+    moveNext(G-&gt;discover);
+    moveNext(G-&gt;finish);
+    for(int i = 1; i &lt;= G-&gt;order; i++){
+        fprintf(out, "%d's properties :\n", i);
+        fprintf(out, "\t");
+        fprintf(out ,"color: %d, parent: %d, discover: %d finish:%d\n, ", get(G-&gt;color), get(G-&gt;parent), get(G-&gt;discover), get(G-&gt;finish));
+        moveNext(G-&gt;color);
+        moveNext(G-&gt;parent);
+        moveNext(G-&gt;discover);
+        moveNext(G-&gt;finish);
+    }
+}
+
+void printGraph(FILE* out, Graph G){
+    for(int i = 1; i &lt;= getOrder(G); i++){
+        moveFront(G-&gt;neighbors[i]);
+        fprintf(out, "%d:", i);
+        while(index(G-&gt;neighbors[i]) &gt;= 0){
+            int neighbor = get(G-&gt;neighbors[i]);
+            fprintf(out, " %d", neighbor);
+            moveNext(G-&gt;neighbors[i]);
+        }
+        fprintf(out, "\n");
+    }
+}
+
+void matainGraph(Graph G){
+    for(int i = 1; i &lt;= getOrder(G); i++){
+        if(length(G-&gt;neighbors[i]) == 0){
+            continue;
+        }        
+        // Perform insertion sort
+        // Insert each data in G-&gt;neighbors[i] to L
+        List L = newList();
+        moveFront(G-&gt;neighbors[i]);
+        append(L, get(G-&gt;neighbors[i]));
+        moveNext(G-&gt;neighbors[i]);
+        while(index(G-&gt;neighbors[i]) &gt;= 0){
+            moveFront(L);
+            while(index(L) &gt;= 0){
+                if(get(L) &gt; get(G-&gt;neighbors[i])){
+                    break;
+                }
+                moveNext(L);
+            }
+            if(index(L) &lt; 0){
+                append(L, get(G-&gt;neighbors[i]));
+            }else{
+                insertBefore(L, get(G-&gt;neighbors[i]));
+            }
+            moveNext(G-&gt;neighbors[i]);
+        }
+        freeList(&amp;(G-&gt;neighbors[i]));
+        G-&gt;neighbors[i] = L;
+</font>    }
+}</pre>
+
+
+</body></html>

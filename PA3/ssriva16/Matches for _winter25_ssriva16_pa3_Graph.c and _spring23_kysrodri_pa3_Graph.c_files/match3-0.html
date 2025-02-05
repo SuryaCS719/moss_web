@@ -1,0 +1,290 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_spring23/Graph.c/part_4/report/match3-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/ssriva16/pa3/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter25/ssriva16/pa3/Graph.c<p></p><pre>//Sara Srivastava, ssriva16, pa3
+
+#include "Graph.h"
+#define UNDEF -1
+
+
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_spring23/Graph.c/part_4/report/match3-1.html#3" target="1"><img align="left" alt="other" border="0" src="./tm_3_7.gif"></a>
+
+typedef struct GraphObj {
+    List* adj;
+    int order;
+    int size;
+    int* color;
+    int* parent;
+    int* discover;
+    int* finish;
+} GraphObj;
+
+Graph newGraph(int n) {
+    Graph G = malloc(sizeof(GraphObj));
+    G-&gt;adj = malloc((n + 1) * sizeof(List));
+    G-&gt;order = n;
+    G-&gt;size = 0;
+    G-&gt;color = malloc((n + 1) * sizeof(int));
+    G-&gt;parent = malloc((n + 1) * sizeof(int));
+    G-&gt;discover = malloc((n + 1) * sizeof(int));
+</font>    G-&gt;finish = malloc((n + 1) * sizeof(int));
+
+    for (int i = 0; i &lt;= n; i++) { 
+        if (i != 0) {
+            G-&gt;adj[i] = newList();
+        }
+        G-&gt;color[i] = WHITE;    
+        G-&gt;parent[i] = NIL;     
+        G-&gt;discover[i] = UNDEF; 
+        G-&gt;finish[i] = UNDEF;   
+    }
+
+    return G;
+}
+
+void freeGraph(Graph* pG) {
+    if (pG != NULL &amp;&amp; *pG != NULL) {
+        for (int i = 1; i &lt;= (*pG)-&gt;order; i++) {
+            freeList(&amp;(*pG)-&gt;adj[i]);
+        }
+        free((*pG)-&gt;adj);
+        free((*pG)-&gt;color);
+        free((*pG)-&gt;parent);
+        free((*pG)-&gt;discover);
+        free((*pG)-&gt;finish);
+        free(*pG);
+        *pG = NULL;
+    }
+}
+
+
+int getOrder(Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | getOrder() | Calling getOrder() on a NULL Graph.");
+        exit(EXIT_FAILURE);
+    }
+    return G-&gt;order;
+}
+
+int getSize(Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | getSize() | Calling getSize() on a NULL Graph.");
+        exit(EXIT_FAILURE);
+    }
+    return G-&gt;size;
+}
+
+int getParent(Graph G, int u) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | getParent() | Calling getParent() on a NULL Graph.");
+        exit(EXIT_FAILURE);
+    }
+    if (!(1 &lt;= u &amp;&amp; u &lt;= getOrder(G))) {
+        fprintf(stderr, "Graph | getParent() | Violated Precondition: u is not in the range [1, getOrder(G)].");
+        exit(EXIT_FAILURE);
+    }
+    return G-&gt;parent[u];
+}
+
+int getDiscover(Graph G, int u) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | getDiscover() | Calling getDiscover() on a NULL Graph.");
+        exit(EXIT_FAILURE);
+    }
+    if (!(1 &lt;= u &amp;&amp; u &lt;= getOrder(G))) {
+        fprintf(stderr, "Graph | getDiscover() | Violated Precondition: u is not in the range [1, getOrder(G)].");
+        exit(EXIT_FAILURE);
+    }
+    return G-&gt;discover[u];
+}
+
+int getFinish(Graph G, int u) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | getFinish() | Calling getFinish() on a NULL Graph.");
+<a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_spring23/Graph.c/part_4/report/match3-1.html#5" target="1"><img align="left" alt="other" border="0" src="./tm_0_3.gif"></a>
+
+        exit(EXIT_FAILURE);
+    }
+    if (!(1 &lt;= u &amp;&amp; u &lt;= getOrder(G))) {
+        fprintf(stderr, "Graph | getFinish() | Violated Precondition: u is not in the range [1, getOrder(G)].");
+        exit(EXIT_FAILURE);
+    }
+    return G-&gt;finish[u];
+}
+
+void addArc(Graph G, int u, int v) {
+    if (G == NULL) {
+</font>        fprintf(stderr, "Graph | addArc() | Calling on a NULL Graph.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (!(1 &lt;= u &amp;&amp; u &lt;= getOrder(G)) || !(1 &lt;= v &amp;&amp; v &lt;= getOrder(G))) {
+        fprintf(stderr, "Graph | addArc() | Invalid vertex (%d, %d) out of range.\n", u, v);
+        exit(EXIT_FAILURE);
+    }
+
+    moveFront(G-&gt;adj[u]);
+    while (index(G-&gt;adj[u]) != NIL) {
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_spring23/Graph.c/part_4/report/match3-1.html#2" target="1"><img align="left" alt="other" border="0" src="./tm_2_7.gif"></a>
+
+        if (get(G-&gt;adj[u]) == v) {
+            return;
+        }
+        moveNext(G-&gt;adj[u]);
+    }
+
+    moveFront(G-&gt;adj[u]);
+    while (index(G-&gt;adj[u]) != NIL &amp;&amp; get(G-&gt;adj[u]) &lt; v) {
+        moveNext(G-&gt;adj[u]);
+    }
+    
+    if (index(G-&gt;adj[u]) == NIL) {
+        append(G-&gt;adj[u], v);
+    } else {
+        insertBefore(G-&gt;adj[u], v);
+    }
+
+    G-&gt;size++;
+</font>}
+
+
+
+void addEdge(Graph G, int u, int v) {
+    addArc(G, u, v);
+    addArc(G, v, u);
+    G-&gt;size--;
+}
+
+void Visit(Graph G, List S, int u, int *time) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | Visit() | Calling Visit() on a NULL Graph.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (!(1 &lt;= u &amp;&amp; u &lt;= getOrder(G))) {
+        fprintf(stderr, "Graph | Visit() | Invalid vertex %d (out of range).\n", u);
+        exit(EXIT_FAILURE);
+    }
+
+    G-&gt;discover[u] = ++(*time);
+    G-&gt;color[u] = GRAY;
+    
+
+    int v;
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_spring23/Graph.c/part_4/report/match3-1.html#4" target="1"><img align="left" alt="other" border="0" src="./tm_4_3.gif"></a>
+
+    for (moveFront(G-&gt;adj[u]); index(G-&gt;adj[u]) &gt;= 0; moveNext(G-&gt;adj[u])) {
+        v = get(G-&gt;adj[u]);
+        if (G-&gt;color[v] == WHITE) {
+</font>            G-&gt;parent[v] = u;
+            Visit(G, S, v, time);
+        }
+    }
+
+    G-&gt;color[u] = BLACK;
+    G-&gt;finish[u] = ++(*time);
+    prepend(S, u);
+}
+
+void DFS(Graph G, List S) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | DFS() | Calling DFS() on a NULL Graph.");
+        exit(EXIT_FAILURE);
+    } 
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_spring23/Graph.c/part_4/report/match3-1.html#1" target="1"><img align="left" alt="other" border="0" src="./tm_1_12.gif"></a>
+
+    if (S == NULL) {
+        fprintf(stderr, "List | DFS() | Calling DFS() on a NULL List (Stack).");
+        exit(EXIT_FAILURE);
+    }
+    if (length(S) != getOrder(G)) {
+        fprintf(stderr, "Violated Precondition: length(S) must be equal to getOrder(G)");
+        exit(EXIT_FAILURE);
+    }
+    List cS = copyList(S);  
+    clear(S);
+    int time = 0;
+    for (moveFront(cS); index(cS) &gt;= 0; moveNext(cS)) {
+        int u = get(cS);
+        G-&gt;color[u] = WHITE;
+        G-&gt;parent[u] = NIL;
+        G-&gt;discover[u] = UNDEF;
+        G-&gt;finish[u] = UNDEF;
+    }
+    for (moveFront(cS); index(cS) &gt;= 0; moveNext(cS)) {
+        int v = get(cS);
+        if (G-&gt;color[v] == WHITE) {
+            Visit(G, S, v, &amp;time);
+        }
+    }
+    freeList(&amp;cS);
+}
+
+Graph transpose(Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | transpose() | Calling transpose() on a NULL Graph.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    Graph T = newGraph(getOrder(G));
+</font>
+    for (int i = 1; i &lt;= getOrder(G); i++) {
+        if (length(G-&gt;adj[i]) &gt; 0) {
+            moveFront(G-&gt;adj[i]);
+        }
+
+        while (index(G-&gt;adj[i]) &gt;= 0) {
+            addArc(T, get(G-&gt;adj[i]), i);
+            moveNext(G-&gt;adj[i]);
+        }
+    }
+
+    return T;
+}
+
+
+Graph copyGraph(Graph G) {
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_spring23/Graph.c/part_4/report/match3-1.html#0" target="1"><img align="left" alt="other" border="0" src="./tm_0_13.gif"></a>
+
+    if (G == NULL) {
+        fprintf(stderr, "Graph | copyGraph() | Calling copyGraph() on a NULL Graph.");
+        exit(EXIT_FAILURE);
+    }
+    Graph C = newGraph(G-&gt;order);
+    for (int i = 1; i &lt;= getOrder(G); i++) {
+        moveFront(G-&gt;adj[i]);
+        while(index(G-&gt;adj[i]) != NIL) {
+            addArc(C, i, get(G-&gt;adj[i]));
+            moveNext(G-&gt;adj[i]);
+        }
+    }
+    C-&gt;size = G-&gt;size;
+    return C;
+}
+
+void printGraph(FILE* out, Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph | printGraph | Calling printGraph on a NULL Graph.");
+        exit(EXIT_FAILURE);
+    }    
+
+    for (int i = 1; i&lt;= getOrder(G); i++) {
+        fprintf(out, "%d:", i);
+        moveFront(G-&gt;adj[i]);
+        
+        while (index(G-&gt;adj[i]) != NIL) {
+            fprintf(out, " %d", get(G-&gt;adj[i]));
+            moveNext(G-&gt;adj[i]);
+</font>        }
+
+        fprintf(out, "\n");
+    }
+}
+
+</pre>
+
+
+</body></html>

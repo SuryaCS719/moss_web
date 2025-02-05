@@ -1,0 +1,244 @@
+
+<!-- saved from url=(0117)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/wzhan143/pa3/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter22/kliu80/pa3/Graph.c<p></p><pre>/********************************************************************************
+* Kelly Liu, kliu80
+* 2022 Winter CSE101 PA3
+* Graph.c
+* This is my graph ADT where we use BFS to find the shortest path possible.
+*********************************************************************************/
+
+
+#include &lt;stdbool.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;stdint.h&gt;
+#include "List.h"
+#include "Graph.h"
+
+<a name="8"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#8" target="0"><img align="left" alt="other" border="0" src="./tm_3_2.gif"></a>
+
+typedef struct GraphObj{	
+	int *color;
+	int *parent;
+	int *discover;
+	int *finish;
+	List *neighbors;
+	int order;
+	int size;
+	int time;
+}GraphObj;
+
+//allocating all my memory and return my Graph
+Graph newGraph(int n){
+</font>	Graph G = malloc(sizeof(GraphObj));
+	G-&gt;color = (int *)calloc(n+1,sizeof(int));
+	G-&gt;parent = (int *)calloc(n+1,sizeof(int));
+<a name="7"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#7" target="0"><img align="left" alt="other" border="0" src="./tm_2_3.gif"></a>
+
+	G-&gt;discover = (int *)calloc(n+1,sizeof(int));
+	G-&gt;finish =  (int *)calloc(n+1, sizeof(int));
+	G-&gt;neighbors = (List *) calloc(n+1,sizeof(List));
+</font><a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_10.gif"></a>
+
+	G-&gt;order = n;
+	G-&gt;size = 0;
+	G-&gt;time = 0;
+	for(uint32_t i = 1; i &lt; n+1; i++){
+		G-&gt;neighbors[i]= newList();
+		G-&gt;discover[i] = UNDEF;
+		G-&gt;finish[i] = UNDEF;
+	}
+	return G;
+
+}
+
+//frees all heap memory associated with *pG and sets *pG to  NULL
+void freeGraph(Graph *pG){
+	if(pG!= NULL &amp;&amp; *pG != NULL){
+		for(uint32_t i = 1; i &lt;= (*pG)-&gt;order; i++){
+            		freeList(&amp;(*pG)-&gt;neighbors[i]);
+        	}
+        	free((*pG)-&gt;color);
+        	free((*pG)-&gt;parent);
+</font>        	free((*pG)-&gt;discover);
+		free((*pG)-&gt;finish);
+        	free((*pG)-&gt;neighbors);
+		free(*pG);
+		*pG = NULL;
+	}
+}
+
+//return Order
+int getOrder(Graph G){
+	return G-&gt;order;
+}
+
+
+//return size
+int getSize(Graph G){
+	return G-&gt;size;
+}
+
+//return my parent vertex to my u if it exists, else return NIL
+int getParent(Graph G, int u){
+	if (u&gt;=1 &amp;&amp; u&lt;= getOrder(G)){	
+		return G-&gt;parent[u];
+	}
+	else{
+		return NIL;
+	}
+}
+//return my discover vertex to my u if it exists, else return NIL
+int getDiscover(Graph G, int u){
+        if (u&gt;=1 &amp;&amp; u&lt;= getOrder(G)){
+                return G-&gt;discover[u];
+        }
+        else{
+                return NIL;
+        }
+}
+
+//return my finish vertex to my u if it exists, else return NIL
+int getFinish(Graph G, int u){
+        if (u&gt;=1 &amp;&amp; u&lt;= getOrder(G)){
+                return G-&gt;finish[u];
+        }
+        else{
+                return NIL;
+        }
+}
+
+
+//inserts a new
+//edge joining u to v, i.e. u is added to the adjacency List of v,
+//and v to the adjacency List of u.
+void addEdge(Graph G, int u , int v){
+	if ( u&gt;=1 &amp;&amp; u &lt;= getOrder(G)&amp;&amp; v&gt;=1 &amp;&amp; v&lt;=getOrder(G) ){
+		addArc(G,u,v);
+		addArc(G,v,u);
+		G-&gt;size = G-&gt;size -1;
+	}
+}
+
+
+//inserts a new directed
+//edge from u to v, i.e. v is added to the adjacency List of u
+//(but not u to the adjacency List of v)
+void addArc(Graph G, int u , int v){
+	if ( u &gt;=1 &amp;&amp; u&lt;= getOrder(G)&amp;&amp; v&gt;=1 &amp;&amp; v&lt;= getOrder(G)){
+			moveBack(G-&gt;neighbors[u]);
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#4" target="0"><img align="left" alt="other" border="0" src="./tm_4_4.gif"></a>
+
+	   		while(index(G-&gt;neighbors[u])&gt;=0  &amp;&amp; get(G-&gt;neighbors[u])&gt;v){
+		   		movePrev(G-&gt;neighbors[u]);
+			}
+			if(index(G-&gt;neighbors[u]) != -1){
+	  			insertAfter(G-&gt;neighbors[u],v);
+	 		}
+			else{
+				prepend(G-&gt;neighbors[u],v);
+			}
+		G-&gt;size = G-&gt;size +1;
+</font>	}
+}
+
+//private function used to recursively set vertexes to black while running my DFS
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_16.gif"></a>
+
+void Visit(Graph G, int x, List s){
+        G-&gt;discover[x] = ++(G-&gt;time);
+        G-&gt;color[x] = 1;
+        moveFront(G-&gt;neighbors[x]);
+        for (int i = 0; i&lt; length(G-&gt;neighbors[x]); i++){
+                int bla = get(G-&gt;neighbors[x]);
+                if(G-&gt;color[bla] == 0){
+                        G-&gt;parent[bla] = x;
+                        Visit(G,bla,s);
+                }
+                moveNext(G-&gt;neighbors[x]);
+        }
+        G-&gt;color[x] = 2;
+        prepend(s,x);
+        G-&gt;finish[x] = ++(G-&gt;time);
+}
+
+//DFS search implented. Initially setting everything to 0 or NIL and then slowly traversing through everything calling 
+//Visit when need be. Storing the result of our List to s
+void DFS(Graph G, List s){
+	if(length(s) == G-&gt;order){
+		List old = copyList(s);
+		moveFront(old);
+		clear(s);
+		for ( int i = 1; i &lt; G-&gt;order + 1; i++){
+</font><a name="6"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#6" target="0"><img align="left" alt="other" border="0" src="./tm_1_3.gif"></a>
+
+			G-&gt;color[get(old)] = 0;
+			G-&gt;parent[get(old)] = NIL;
+			moveNext(old);
+		}
+		G-&gt;time = 0;
+		moveFront(old);
+		for (int i = 1; i &lt; G-&gt;order + 1; i++){
+</font><a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#5" target="0"><img align="left" alt="other" border="0" src="./tm_0_4.gif"></a>
+
+			if(G-&gt;color[get(old)] == 0){
+				Visit(G,get(old),s);
+			}
+			moveNext(old);
+		}
+		freeList(&amp;old);
+	}
+}
+
+//Transpoing the graph to flipping everything 
+Graph transpose(Graph G){
+	Graph rawr = newGraph(G-&gt;order);
+	for(int i = 1; i &lt;G-&gt;order + 1; i++){
+</font><a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#3" target="0"><img align="left" alt="other" border="0" src="./tm_3_5.gif"></a>
+
+		moveFront(G-&gt;neighbors[i]);
+		for(int j = 0; j &lt; length(G-&gt;neighbors[i]); j++){
+			int bla = get(G-&gt;neighbors[i]);
+			addArc(rawr,bla,i);
+			moveNext(G-&gt;neighbors[i]);
+		}
+	}
+	return rawr;
+</font>}
+
+//Copy graph, make a complete copy of our graph 
+Graph copyGraph(Graph G){
+	Graph rawr = newGraph(G-&gt;order);
+	for(int i = 1; i &lt;G-&gt;order + 1; i++){
+        	rawr-&gt;neighbors[i] = copyList(G-&gt;neighbors[i]); 
+		rawr-&gt;discover[i] = (G-&gt;discover[i]);
+		rawr-&gt;color[i] = (G-&gt;color[i]);
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter22/Graph.c/part_3/report/match3-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_5.gif"></a>
+
+		rawr-&gt;parent[i] = (G-&gt;parent[i]);
+	}
+	rawr-&gt;order = G-&gt;order;
+	rawr-&gt;size = G-&gt;size;
+	rawr-&gt;time = G-&gt;time;
+        return rawr;
+}
+
+//prints the adjacency
+//list representation of G to the file pointed to by out
+void printGraph(FILE* out, Graph G){
+    for(uint32_t i = 1; i &lt; G-&gt;order+1; i++){
+</font>        fprintf(out, "%u: ", i);
+        printList(out, G-&gt;neighbors[i]);
+        fprintf(out, "\n");
+    }
+}
+
+</pre>
+
+
+</body></html>
