@@ -1,0 +1,365 @@
+
+<!-- saved from url=(0119)file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-1.html#0 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/saemlee/pa3/Graph.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter23/jma363/pa3/Graph.c<p></p><pre>/********************************************************************************* 
+* Joey Ma, jma363
+* 2023 Winter CSE101 PA3
+* Graph.c 
+* Graph for Graph
+*********************************************************************************/ 
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include&lt;assert.h&gt;
+#include&lt;stdbool.h&gt;
+#include "Graph.h"
+
+#define INF -6
+#define NIL 0
+#define UNDEF -1
+
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_6.gif"></a>
+
+typedef struct GraphObj{
+	List *neighbors;
+	char *color;
+	int *parent;
+	int *discovered;
+  int *finished;
+	int order;
+	int size;
+} GraphObj;
+
+void Visit(Graph G, int x, int *time);
+
+/*** Constructors-Destructors ***/
+
+// Function newGraph() returns a Graph pointing to a newly created GraphObj representing a graph having n vertices and no edges.
+Graph newGraph(int n) {
+	Graph G = malloc(sizeof(GraphObj));
+	assert(G!=NULL);
+	
+	G-&gt;neighbors = malloc(sizeof(List*) * (n + 1));
+ 	G-&gt;color = malloc(sizeof(char*) * (n + 1));
+</font> 	G-&gt;parent = malloc(sizeof(int*) * (n + 1));
+  G-&gt;discovered = malloc(sizeof(int*) * (n + 1)); 
+  G-&gt;finished = malloc(sizeof(int*) * (n + 1));
+	for (int i = 1; i &lt;= n; i++) {
+    G-&gt;neighbors[i] = newList();
+		G-&gt;color[i] = 'w';
+		G-&gt;parent[i] = NIL;
+    G-&gt;discovered[i] = UNDEF; 
+    G-&gt;finished[i] = UNDEF;
+	}
+
+  G-&gt;order = n;
+  G-&gt;size = 0;
+  
+	return G;
+}
+// Function freeGraph frees all heap memory associated with the Graph *pG, then sets the handle *pG to NULL.
+void freeGraph(Graph* pG) { 
+	if (pG != NULL &amp;&amp; *pG != NULL){
+		for (int i = 1; i &lt;= (*pG)-&gt;order; i++) {
+      freeList(&amp;(*pG)-&gt;neighbors[i]);
+    }
+		free((*pG)-&gt;neighbors);
+		free((*pG)-&gt;color);
+		free((*pG)-&gt;parent);
+    free((*pG)-&gt;finished);
+    free((*pG)-&gt;discovered);
+		free(*pG);
+    *pG = NULL;
+	}
+}
+
+/*** Access functions ***/
+// Function getOrder eturns the number of vertices
+int getOrder(Graph G) {
+  // checks
+  if (G==NULL) {
+    printf("Graph Error: calling getOrder() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  // final
+  return(G-&gt;order);
+}
+
+// Function getSize returns the number of edges
+int getSize(Graph G) {
+  // checks
+  if (G==NULL) {
+    printf("Graph Error: calling getSize() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  // final
+  return(G-&gt;size);
+}
+
+// Function getParent returns the parent of vertex u in the BFS tree created by BFS(), or NIL if BFS() has not yet been called.
+// precondition 1 &lt;= u &lt;= getOrder(G).
+int getParent(Graph G, int u) {
+  // checks
+  if (G==NULL) {
+    printf("Graph Error: calling getSource() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  if (1 &gt; u || u &gt; getOrder(G)) {
+    printf("Graph Error: calling getSource() on invalid vertex\n");
+    exit(EXIT_FAILURE);
+  }
+  // final
+  if (u &gt;= 1 &amp;&amp; u &lt;= G-&gt;order) {
+    return(G-&gt;parent[u]);
+  } else {
+    printf("Graph Error: calling getSource() unknown error\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+// precondition 1 &lt;= u &lt;= getOrder(G).
+int getDiscover(Graph G, int u) {
+  if (G==NULL) {
+    printf("Graph Error: calling getDiscover() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  if (1 &gt; u || u &gt; getOrder(G)) {
+    printf("Graph Error: calling getDiscover() on invalid vertex\n");
+    exit(EXIT_FAILURE);
+  }
+  return(G-&gt;discovered[u]);
+}
+
+// precondition 1 &lt;= u &lt;= getOrder(G).
+int getFinish(Graph G, int u) {
+  if (G==NULL) {
+    printf("Graph Error: calling getFinish() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+<a name="7"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#7" target="0"><img align="left" alt="other" border="0" src="./tm_2_3.gif"></a>
+
+  if (1 &gt; u || u &gt; getOrder(G)) {
+    printf("Graph Error: calling getFinish() on invalid vertex\n");
+    exit(EXIT_FAILURE);
+  }
+  return(G-&gt;finished[u]);
+}
+
+/*** Manipulation procedures ***/
+
+// Function addEdge() inserts a new edge joining u to v, i.e. u is added to the adjacency List of v, and v to the adjacency List of u.
+void addEdge(Graph G, int u, int v) {
+  // checks
+  if (G==NULL) {
+    printf("Graph Error: calling addEdge() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  if (getOrder(G) &lt; 1) {
+</font>    printf("Graph Error: calling addEdge() on invalid vertex\n");
+    exit(EXIT_FAILURE);
+  }
+  if (u &lt; 1 || u &gt; getOrder(G)) {
+    printf("Graph Error: calling addEdge() on invalid vertex u\n");
+    exit(EXIT_FAILURE);  
+  }
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#3" target="0"><img align="left" alt="other" border="0" src="./tm_3_4.gif"></a>
+
+  if (v &lt; 1 || v &gt; getOrder(G)) {
+    printf("Graph Error: calling addEdge() on invalid vertex v\n");
+    exit(EXIT_FAILURE);
+  }
+  // COMMENTED OUT for PA3
+  // if (u == v) {
+  //   printf("Graph Error: calling addEdge() on invalid vertex u and v\n");
+  //   exit(EXIT_FAILURE);
+  // }
+  // final
+  addArc(G, u, v);
+  addArc(G, v, u);
+  G-&gt;size--;
+}
+
+// Function addArc() inserts a new directed edge from u to v, i.e. v is added to the adjacency List of u (but not u to the adjacency List of v).
+void addArc(Graph G, int u, int v) {
+ // checks
+  if (G==NULL) {
+    printf("Graph Error: calling addArc() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  if (getOrder(G) &lt; 1) {
+</font>    printf("Graph Error: calling addArc() on invalid vertex\n");
+    exit(EXIT_FAILURE);
+  }
+  if (u &lt; 1 || u &gt; getOrder(G)) {
+    printf("Graph Error: calling addArc() on invalid vertex u\n");
+    exit(EXIT_FAILURE);  
+  }
+  if (v &lt; 1 || v &gt; getOrder(G)) {
+    printf("Graph Error: calling addArc() on invalid vertex v\n");
+    exit(EXIT_FAILURE);
+  }
+  // COMMENTED OUT for PA3
+  // if (u == v) {
+  //   printf("Graph Error: calling addEdge() on invalid vertex u and v\n");
+  //   exit(EXIT_FAILURE);
+  // }
+  // final
+  if (length(G-&gt;neighbors[u]) == 0) {
+    append(G-&gt;neighbors[u], v);
+  } else {
+    moveFront(G-&gt;neighbors[u]);
+    while (index(G-&gt;neighbors[u]) != -1) {
+      if (get(G-&gt;neighbors[u]) == v) {
+        return;
+        } else if (get(G-&gt;neighbors[u]) &gt; v) {
+          insertBefore(G-&gt;neighbors[u], v);
+          break;
+        }
+      moveNext(G-&gt;neighbors[u]);
+    }
+    if (index(G-&gt;neighbors[u]) == -1) {
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_6.gif"></a>
+
+      append(G-&gt;neighbors[u], v);
+    }
+  }
+  G-&gt;size++;
+}
+
+// Function DFS() will perform the depth first search algorithm on 𝐺.
+/* Pesudocode from GraphAlgorithms.pdf
+DFS(𝐺)
+1. for all 𝑥 ∈ 𝑉(𝐺)
+2. color[𝑥] = white
+3. 𝑝[𝑥] = nil
+4. time = 0
+5. for all 𝑥 ∈ 𝑉(𝐺)
+6. if color[𝑥] == white
+7. Visit(𝑥)
+*/
+void DFS(Graph G, List S) {
+   // checks
+  if (G==NULL || S == NULL) { 
+    printf("Graph Error: calling DFS() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  if (getOrder(G) != length(S)) {
+    printf("Graph Error: Invalid stack and order");
+    exit(EXIT_FAILURE);
+  }
+  // final
+  for (int i = 1; i &lt;= getOrder(G); i++) {
+    G-&gt;color[i] = 'w';
+    G-&gt;parent[i] = NIL;
+  }
+  int time = 0;
+  moveFront(S);
+  while (index(S) &gt;= 0) {
+</font>    if (G-&gt;color[get(S)] == 'w')
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_5.gif"></a>
+
+      Visit(G, get(S), &amp;time);
+    moveNext(S);
+  }
+  // sort
+  List temp = newList();
+  for (int i = 1; i &lt;= getOrder(G); i++) {
+    moveFront(temp);
+    while (index(temp) != -1 &amp;&amp; G-&gt;finished[get(temp)] &gt; G-&gt;finished[i]) moveNext(temp);
+    if (index(temp) == -1) append(temp, i);
+    else insertBefore(temp, i);
+  }
+  clear(S);
+  moveFront(temp);
+</font>  for (int i = 0; i &lt; length(temp); i++) {
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#4" target="0"><img align="left" alt="other" border="0" src="./tm_4_4.gif"></a>
+
+    append(S, get(temp));
+    moveNext(temp);
+  }
+  freeList(&amp;temp);
+}
+
+void Visit(Graph G, int x, int *time) {
+  // checks
+  if (G==NULL) {
+    printf("Graph Error: calling Visit() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  // final
+  G-&gt;discovered[x] = ++(*time);
+  G-&gt;color[x] = 'g';
+</font>  moveFront(G-&gt;neighbors[x]);
+  while (index(G-&gt;neighbors[x]) &gt;= 0) {
+    if (G-&gt;color[get(G-&gt;neighbors[x])] == 'w') {
+      G-&gt;parent[get(G-&gt;neighbors[x])] = x;
+      Visit(G, get(G-&gt;neighbors[x]), time);
+    } 
+    moveNext(G-&gt;neighbors[x]);
+  }
+<a name="6"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#6" target="0"><img align="left" alt="other" border="0" src="./tm_1_3.gif"></a>
+
+  G-&gt;color[x] = 'b';
+  G-&gt;finished[x] = ++(*time);
+}
+
+// Function transpose() returns a reference to a new graph object representing the transpose of G,
+Graph transpose(Graph G) {
+   // checks
+  if (G==NULL) {
+    printf("Graph Error: calling transpose() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  // final
+  Graph T = newGraph(getOrder(G));
+  for (int i = 1; i &lt;= getOrder(G); i++) {
+</font>    moveFront(G-&gt;neighbors[i]);
+    while(index(G-&gt;neighbors[i]) &gt;= 0) {
+      addArc(T, get(G-&gt;neighbors[i]), i);
+      moveNext(G-&gt;neighbors[i]);
+    }
+  }
+  return T;
+}
+
+// Function copyGraph() returns a reference to a new graph that is a copy of G
+Graph copyGraph(Graph G) {
+   // checks
+  if (G==NULL) {
+    printf("Graph Error: calling copyGraph() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+  // final
+  Graph C = newGraph(getOrder(G));
+  for (int i = 1; i &lt;= getOrder(G); i++) {
+    moveFront(G-&gt;neighbors[i]);
+    while (index(G-&gt;neighbors[i]) &gt;= 0) {
+      addArc(C, i, get(G-&gt;neighbors[i]));
+      moveNext(G-&gt;neighbors[i]);
+    }
+  }
+<a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa3_report/moss_results/winter25_winter23/Graph.c/part_4/report/match5-0.html#5" target="0"><img align="left" alt="other" border="0" src="./tm_0_3.gif"></a>
+
+  C-&gt;order = getOrder(G);
+  return C;
+}
+
+// Function printGraph() prints the adjacency list representation of G to the file pointed to by out.
+void printGraph(FILE* out, Graph G){
+  // checks
+  if (G==NULL) {
+    printf("Graph Error: calling printGraph() on NULL Graph\n");
+    exit(EXIT_FAILURE);
+  }
+	for (int i = 1; i &lt;= getOrder(G); i++){
+		fprintf(out, "%d: ", i);
+		printList(out, G-&gt;neighbors[i]);
+</font>		fprintf(out, "\n");
+	}
+}</pre>
+
+
+</body></html>
