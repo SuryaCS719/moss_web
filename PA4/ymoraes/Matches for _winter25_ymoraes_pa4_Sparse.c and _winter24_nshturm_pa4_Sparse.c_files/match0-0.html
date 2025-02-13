@@ -1,0 +1,133 @@
+
+<!-- saved from url=(0061)http://moss.stanford.edu/results/0/651133650421/match0-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/ymoraes/pa4/Sparse.c</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/ymoraes/pa4/Sparse.c<p></p><pre>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "Matrix.h"
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/0/651133650421/match0-1.html#1" target="1"><img src="./tm_1_25.gif" alt="other" border="0" align="left"></a>
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+        return 1;
+    }
+
+    const char* fIn = argv[1];
+    FILE* in = fopen(fIn, "r");
+    if (in == NULL) {
+        perror("error opening file");
+        return 1;
+    }
+
+    const char* fOut = argv[2];
+    FILE* out = fopen(fOut, "w");
+    if (out == NULL) {
+        perror("error opening file");
+        return 1;
+    }
+
+
+    int n, a, b;
+
+    fscanf(in, "%d %d %d\n", &amp;n, &amp;a, &amp;b);
+
+    Matrix Matrix1 = newMatrix(n);
+</font>    Matrix Matrix2 = newMatrix(n);
+
+    int row, col;
+    double value;
+
+    for (int i = 0; i &lt; a; i++) {
+        fscanf(in, "%d %d %lf\n",&amp;row, &amp;col, &amp;value);
+        changeEntry(Matrix1, row, col, value);
+    }
+
+    for (int j = 0; j &lt; b; j++) {
+        fscanf(in, "%d %d %lf\n", &amp;row, &amp;col, &amp;value);
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/0/651133650421/match0-1.html#0" target="1"><img src="./tm_0_48.gif" alt="other" border="0" align="left"></a>
+
+        changeEntry(Matrix2, row, col, value);
+    }
+
+    fclose(in);
+
+    fprintf(out, "A has %d non-zero entries: \n", NNZ(Matrix1));
+    printMatrix(out, Matrix1);
+
+    printf("\n");
+
+    fprintf(out, "B has %d non-zero entries: \n", NNZ(Matrix2));
+    printMatrix(out, Matrix2);
+
+    printf("\n");
+
+    Matrix scalr = scalarMult(1.5, Matrix1);
+    fprintf(out, "(1.5)*A =\n");
+    printMatrix(out, scalr);
+
+    printf("\n");
+
+    Matrix sum1 = sum(Matrix1, Matrix2);
+    fprintf(out, "A+B = \n");
+    printMatrix(out, sum1);
+
+    printf("\n");
+
+    Matrix sum2 = sum(Matrix1, Matrix1);
+    fprintf(out, "A+A = \n");
+    printMatrix(out, sum2);
+
+    printf("\n");
+
+    Matrix diff1 = diff(Matrix2, Matrix1);
+    fprintf(out, "B-A = \n");
+    printMatrix(out, diff1);
+
+    printf("\n");
+
+    Matrix diff2 = diff(Matrix1, Matrix1);
+    fprintf(out, "A-A = \n");
+    printMatrix(out, diff2);
+
+    printf("\n");
+
+    Matrix trans = transpose(Matrix1);
+    fprintf(out, "Transpose(A) = \n");
+    printMatrix(out, trans);
+
+    printf("\n");
+
+    Matrix prod1 = product(Matrix1, Matrix2);
+    fprintf(out, "A*B = \n");
+    printMatrix(out, prod1);
+
+    printf("\n");
+
+    Matrix prod2 = product(Matrix2, Matrix2);
+    fprintf(out, "B*B = \n");
+    printMatrix(out, prod2);
+
+
+    freeMatrix(&amp;Matrix1);
+    freeMatrix(&amp;Matrix2);
+	freeMatrix(&amp;scalr);
+</font>	freeMatrix(&amp;sum1);
+	freeMatrix(&amp;sum2);
+	freeMatrix(&amp;diff1);
+	freeMatrix(&amp;diff2);
+	freeMatrix(&amp;trans);
+	freeMatrix(&amp;prod1);
+	freeMatrix(&amp;prod2);
+
+
+    return 0;
+}</pre>
+
+
+
+</body></html>

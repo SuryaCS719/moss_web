@@ -1,0 +1,153 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/3/8404958230416/match3-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/ssikehar/pa4/Sparse.c</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter23/sashzhan/pa4/Sparse.c<p></p><pre>/*****************************
+* Samuel Zhang, sashzhan
+* Winter 2023 CSE101 PA4
+* Sparse.c
+* Client file for Matrix ADT 
+*****************************/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include "Matrix.h"
+
+#define MAX_LEN 256
+
+int main(int argc, char* argv[])
+{
+	if (argc != 3)
+	{
+		printf("Usage: Sparse &lt;input file&gt; &lt;output file&gt;\n");
+		exit(EXIT_FAILURE);
+	}
+
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/3/8404958230416/match3-0.html#2" target="0"><img src="./tm_2_9.gif" alt="other" border="0" align="left"></a>
+
+	FILE *in, *out;
+	int size, a, b;
+	int i, j;
+	double x;
+
+	in = fopen(argv[1], "r");
+	if (in == NULL) 
+	{
+		printf("Unable to open file %s for reading \n", argv[1]);
+		exit(EXIT_FAILURE);
+</font>	}
+	out = fopen(argv[2], "w");
+	if (out == NULL) 
+	{
+		printf("Unable to open file %s for writing\n", argv[2]);
+		exit(EXIT_FAILURE);
+	}
+	
+	fscanf(in, "%d %d %d", &amp;size, &amp;a, &amp;b);
+	Matrix A = newMatrix(size);
+	Matrix B = newMatrix(size);
+
+	//Matrix A
+	for (int y = 0; y &lt; a; y++) 
+	{
+		fscanf(in, "%d %d %lf", &amp;i, &amp;j, &amp;x);
+		changeEntry(A, i, j, x);
+	}
+	
+	//Matrix B
+	for (int y = 0; y &lt; b; y++) 
+	{
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/3/8404958230416/match3-0.html#0" target="0"><img src="./tm_0_24.gif" alt="other" border="0" align="left"></a>
+
+		fscanf(in, "%d %d %lf", &amp;i, &amp;j, &amp;x);
+		changeEntry(B, i, j, x);
+	}
+
+	//fprintf(out, "NNZ: %d\n", NNZ(A));
+	//printMatrix(out, A);
+	
+	Matrix scalar;
+	Matrix AplusB;
+	Matrix AplusA;
+	Matrix BminusA;
+	Matrix AminusA;
+	Matrix TA;
+	Matrix AmultB;
+	Matrix BmultB;
+
+	fprintf(out, "A has %d non-zero entries:\n", a);
+	printMatrix(out, A);
+	fprintf(out, "\n");
+	
+	fprintf(out, "B has %d non-zero entries:\n", b);
+	printMatrix(out, B);
+	fprintf(out, "\n");
+	
+	fprintf(out, "(1.5)*A = \n");
+	scalar = scalarMult(1.5, A);
+	printMatrix(out, scalar);
+	fprintf(out, "\n");
+
+	fprintf(out, "A+B = \n");
+	AplusB = sum(A, B);
+	printMatrix(out, AplusB);
+</font>	fprintf(out, "\n");
+
+	fprintf(out, "A+A = \n");       
+        AplusA = sum(A, A);
+        printMatrix(out, AplusA);
+        fprintf(out, "\n");		
+
+	fprintf(out, "B-A = \n");       
+        BminusA = diff(B, A);
+        printMatrix(out, BminusA);
+        fprintf(out, "\n");
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/3/8404958230416/match3-0.html#1" target="0"><img src="./tm_1_20.gif" alt="other" border="0" align="left"></a>
+
+	fprintf(out, "A-A = \n");       
+        AminusA = diff(A, A);
+        printMatrix(out, AminusA);
+        fprintf(out, "\n");
+
+	fprintf(out, "Transpose(A) = \n");       
+        TA = transpose(A);
+        printMatrix(out, TA);
+        fprintf(out, "\n");	
+
+	fprintf(out, "A*B = \n");       
+        AmultB = product(A, B);
+        printMatrix(out, AmultB);
+        fprintf(out, "\n");
+
+	fprintf(out, "B*B = \n");       
+        BmultB = product(B, B);
+        printMatrix(out, BmultB);
+        fprintf(out, "\n");
+
+	freeMatrix(&amp;A);
+	freeMatrix(&amp;B);
+	freeMatrix(&amp;scalar);
+	freeMatrix(&amp;AplusB);
+	freeMatrix(&amp;AplusA);
+</font>	freeMatrix(&amp;BminusA);
+	freeMatrix(&amp;AminusA);
+	freeMatrix(&amp;TA);
+	freeMatrix(&amp;AmultB);
+	freeMatrix(&amp;BmultB);
+
+	fclose(in);
+	fclose(out);
+
+	return EXIT_SUCCESS;
+
+} 
+</pre>
+
+
+
+</body></html>

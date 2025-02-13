@@ -1,0 +1,392 @@
+
+<!-- saved from url=(0118)file:///Users/surya/Desktop/moss/cse101/pa4_report/moss_results/winter25_winter24/Matrix.c/part_4/report/match0-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>/winter25/aagarw43/pa4/Matrix.c</title>
+</head>
+<body bgcolor="white">
+<hr>
+/winter24/jemaniti/pa4/Matrix.c<p></p><pre>//-----------------------------------------------------------------------------
+// Jentsen Maniti
+// CruzID: jemaniti
+// Assignment: pa4
+// Matrix.c
+// Implementation of Matrix ADT
+//-----------------------------------------------------------------------------
+#include "List.h"
+#include "Matrix.h"
+#include "stdlib.h"
+
+// Define a structure for entries in the matrix
+typedef struct EntryObj* Entry;
+
+typedef struct EntryObj{
+    int index;
+    double data;
+} EntryObj;
+
+// Function to create a new entry
+Entry newEntry(double d, int i){
+    Entry E = malloc(sizeof(EntryObj));
+    E-&gt;data = d;
+<a name="0"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa4_report/moss_results/winter25_winter24/Matrix.c/part_4/report/match0-0.html#0" target="0"><img align="left" alt="other" border="0" src="./tm_0_35.gif"></a>
+
+    E-&gt;index = i;
+    return E;
+}
+
+// Function to free an entry
+void freeEntry(Entry* pE){
+    if(pE != NULL &amp;&amp; *pE != NULL){
+        free(*pE);
+        *pE = NULL;
+    }
+}
+
+// Define a structure for matrices
+typedef struct MatrixObj{
+    List* rows; // Array of lists representing matrix rows
+    int size;   // Size of the matrix (number of rows/columns)
+    int nnz;    // Number of non-zero entries
+} MatrixObj;
+
+// Function to create a new matrix
+Matrix newMatrix(int n){
+    Matrix M = malloc(sizeof(MatrixObj));
+    M-&gt;rows = calloc(n + 1, sizeof(List)); // Allocate memory for rows
+    for(int i = 0; i &lt;= n; i++){
+        M-&gt;rows[i] = newList(); // Initialize each row as a list
+    }
+    M-&gt;size = n;
+    M-&gt;nnz = 0;
+    return M;
+}
+
+// Function to move cursor to a specific index in a list
+void moveCursor(List L, int i){
+    while(((Entry)get(L))-&gt;index != i){
+        if(index(L) == -1) moveFront(L);
+        if(((Entry)get(L))-&gt;index &lt; i) moveNext(L);
+        if(((Entry)get(L))-&gt;index &gt; i) movePrev(L);
+    }
+}
+
+// Constructors, Destructors
+// Function to get an entry at (i, j) in a matrix
+Entry getEntry(Matrix M ,int i, int j){
+    List row = M-&gt;rows[i];
+    for(moveFront(row); index(row) &gt;= 0; moveNext(row)){
+        Entry E = get(row);
+        if(E-&gt;index == j){
+            return E;
+        }
+    }
+    return NULL;
+}
+
+// Function to free a matrix
+void freeMatrix(Matrix* pM){
+    if(pM != NULL &amp;&amp; *pM != NULL){
+        for(int i = 0; i &lt;= size(*pM); i++){
+            List row = (*pM)-&gt;rows[i];
+            for(moveFront(row); index(row) &gt;= 0; moveNext(row)){
+                Entry E = get(row);
+                freeEntry(&amp;E);
+            }
+            freeList(&amp;((*pM)-&gt;rows[i]));
+        }
+        free((*pM)-&gt;rows);
+        free((*pM));
+        *pM = NULL;
+    }
+}
+
+// Function to get the size of a matrix
+int size(Matrix M){
+    return M-&gt;size;
+}
+
+// Function to get the number of non-zero entries in a matrix
+int NNZ(Matrix M){
+    return M-&gt;nnz;
+}
+
+// Function to check if two entries are equal
+bool equalsEntry(Entry A, Entry B){
+    return A-&gt;data == B-&gt;data &amp;&amp; A-&gt;index == B-&gt;index;
+}
+
+// Function to check if two rows are equal
+bool equalsRow(List A, List B){
+    for(moveFront(A), moveFront(B); index(A) &gt;=0 &amp;&amp; index(B) &gt;= 0; moveNext(A), moveNext(B)){
+        Entry a = get(A);
+        Entry b = get(B);
+        if(!equalsEntry(a, b)){
+            return false;
+        }
+    }
+    return true;
+}
+
+// Function to check if two matrices are equal
+int equals(Matrix A, Matrix B){
+    if(A-&gt;size != B-&gt;size || A-&gt;nnz != B-&gt;nnz){
+        return 0;
+    }
+    for(int i = 0; i &lt;= size(A); i++){
+        if(!equalsRow(A-&gt;rows[i], A-&gt;rows[i])){
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Function to make a matrix zero
+void makeZero(Matrix M){
+    for(int i = 0; i &lt; size(M); i++){
+        List row = M-&gt;rows[i];
+        while(length(row) &gt; 0){
+            deleteFront(row);
+        }
+    }
+    M-&gt;nnz = 0;
+}
+
+// Function to change an entry in a matrix
+void changeEntry(Matrix M, int i, int j, double x){
+    Entry E = getEntry(M, i, j);
+    if(E == NULL){
+        if(x == 0){
+            return;
+        }
+        List row = M-&gt;rows[i];
+        for(moveFront(row); index(row) &gt;= 0; moveNext(row)){
+            if(((Entry)get(row))-&gt;index &gt; j){
+                break;
+            }
+        }
+        if(index(row) &gt;= 0){
+            insertBefore(row, newEntry(x, j));
+        }else{
+            append(M-&gt;rows[i], newEntry(x, j));
+        }
+        M-&gt;nnz ++;
+    }else{ 
+        if(x == 0){
+            moveCursor(M-&gt;rows[i], j);
+            freeEntry(&amp;E);
+            delete(M-&gt;rows[i]);
+            M-&gt;nnz -= 1;
+            return;
+        }
+        E-&gt;data = x;
+    }
+}
+
+// Function to copy a matrix
+Matrix copy(Matrix A){
+    Matrix copyA = newMatrix(size(A));
+    copyA-&gt;nnz = NNZ(A);
+    for(int i = 0; i &lt;= size(A); i++){
+</font>        List row = A-&gt;rows[i];
+<a name="4"></a><font color="#FF00FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa4_report/moss_results/winter25_winter24/Matrix.c/part_4/report/match0-0.html#4" target="0"><img align="left" alt="other" border="0" src="./tm_4_7.gif"></a>
+
+        for(moveFront(row); index(row) &gt;= 0; moveNext(row)){
+            Entry E = get(row);
+            append(copyA-&gt;rows[i], newEntry(E-&gt;data, E-&gt;index));
+        }
+    }
+    return copyA;
+}
+
+// Function to transpose a matrix
+Matrix transpose(Matrix A){
+    Matrix T = newMatrix(size(A));
+    T-&gt;nnz = NNZ(A);
+    for(int i = 0; i &lt;= size(A); i++){
+        List row = A-&gt;rows[i];
+        for(moveFront(row); index(row) &gt;= 0; moveNext(row)){
+            Entry E = get(row);
+            append(T-&gt;rows[E-&gt;index], newEntry(E-&gt;data, i));
+        }
+    }
+    return T;
+}
+
+// Function to multiply a matrix by a scalar
+Matrix scalarMult(double x, Matrix A){
+    Matrix scalarA = newMatrix(size(A));
+    scalarA-&gt;nnz = NNZ(A);
+    for(int i = 0; i &lt;= size(A); i++){
+</font>        List row = A-&gt;rows[i];
+<a name="5"></a><font color="#FF0000"><a href="file:///Users/surya/Desktop/moss/cse101/pa4_report/moss_results/winter25_winter24/Matrix.c/part_4/report/match0-0.html#5" target="0"><img align="left" alt="other" border="0" src="./tm_0_4.gif"></a>
+
+        for(moveFront(row); index(row) &gt;= 0; moveNext(row)){
+            Entry E = get(row);
+            append(scalarA-&gt;rows[i], newEntry(x * E-&gt;data, E-&gt;index));
+            if(x == 0){
+                scalarA-&gt;nnz -= 1;
+            }
+        }
+    }
+    return scalarA;
+}
+
+// Function to add two matrices
+Matrix sum(Matrix A, Matrix B){
+    B = copy(B);
+    Matrix sumAB = newMatrix(size(A));
+    for(int i = 0; i &lt;= size(A); i++){
+</font>        List rowA = A-&gt;rows[i];
+        List rowB = B-&gt;rows[i];
+<a name="2"></a><font color="#0000FF"><a href="file:///Users/surya/Desktop/moss/cse101/pa4_report/moss_results/winter25_winter24/Matrix.c/part_4/report/match0-0.html#2" target="0"><img align="left" alt="other" border="0" src="./tm_2_14.gif"></a>
+
+        for(moveFront(rowA), moveFront(rowB); index(rowA) &gt;= 0 &amp;&amp; index(rowB) &gt;= 0; ){
+            Entry E_A = get(rowA);
+            Entry E_B = get(rowB);
+            if(E_A-&gt;index == E_B-&gt;index){
+                append(sumAB-&gt;rows[i], newEntry(E_A-&gt;data + E_B-&gt;data, E_A-&gt;index));
+                if(E_A-&gt;data + E_B-&gt;data == 0){
+                    deleteBack(sumAB-&gt;rows[i]);
+                    sumAB-&gt;nnz -= 1;
+                }
+                moveNext(rowA);
+                moveNext(rowB);
+            }else if (E_A-&gt;index &lt; E_B-&gt;index){
+                append(sumAB-&gt;rows[i], newEntry(E_A-&gt;data, E_A-&gt;index));
+                moveNext(rowA);
+            }else if (E_A-&gt;index &gt; E_B-&gt;index){
+                append(sumAB-&gt;rows[i], newEntry(E_B-&gt;data, E_B-&gt;index));
+                moveNext(rowB);
+            }
+            sumAB-&gt;nnz += 1;
+        }
+        while (index(rowA) &gt;= 0){
+            Entry E_A = get(rowA);
+            append(sumAB-&gt;rows[i], newEntry(E_A-&gt;data, E_A-&gt;index));
+            sumAB-&gt;nnz += 1;
+            moveNext(rowA);
+        }
+        while (index(rowB) &gt;= 0){
+            Entry E_B = get(rowB);
+            append(sumAB-&gt;rows[i], newEntry(E_B-&gt;data, E_B-&gt;index));
+            sumAB-&gt;nnz += 1;
+            moveNext(rowB);
+        }
+    }
+    freeMatrix(&amp;B);
+    return sumAB;
+}
+
+// Function to subtract one matrix from another
+Matrix diff(Matrix A, Matrix B){
+    B = copy(B);
+    Matrix diffAB = newMatrix(size(A));
+    for(int i = 0; i &lt;= size(A); i++){
+</font>        List rowA = A-&gt;rows[i];
+        List rowB = B-&gt;rows[i];
+<a name="1"></a><font color="#00FF00"><a href="file:///Users/surya/Desktop/moss/cse101/pa4_report/moss_results/winter25_winter24/Matrix.c/part_4/report/match0-0.html#1" target="0"><img align="left" alt="other" border="0" src="./tm_1_14.gif"></a>
+
+        for(moveFront(rowA), moveFront(rowB); index(rowA) &gt;= 0 &amp;&amp; index(rowB) &gt;= 0; ){
+            Entry E_A = get(rowA);
+            Entry E_B = get(rowB);
+            if(E_A-&gt;index == E_B-&gt;index){
+                append(diffAB-&gt;rows[i], newEntry(E_A-&gt;data - E_B-&gt;data, E_A-&gt;index));
+                if(E_A-&gt;data - E_B-&gt;data == 0){
+                    diffAB-&gt;nnz -= 1;
+                }
+                moveNext(rowA);
+                moveNext(rowB);
+            }else if (E_A-&gt;index &lt; E_B-&gt;index){
+                append(diffAB-&gt;rows[i], newEntry(E_A-&gt;data, E_A-&gt;index));
+                moveNext(rowA);
+            }else if (E_A-&gt;index &gt; E_B-&gt;index){
+                append(diffAB-&gt;rows[i], newEntry(0 - E_B-&gt;data, E_B-&gt;index));
+                moveNext(rowB);
+            }
+            diffAB-&gt;nnz += 1;
+        }
+        while (index(rowA) &gt;= 0){
+            Entry E_A = get(rowA);
+            append(diffAB-&gt;rows[i], newEntry(E_A-&gt;data, E_A-&gt;index));
+            diffAB-&gt;nnz += 1;
+            moveNext(rowA);
+        }
+        while (index(rowB) &gt;= 0){
+            Entry E_B = get(rowB);
+            append(diffAB-&gt;rows[i], newEntry(0 - E_B-&gt;data, E_B-&gt;index));
+            diffAB-&gt;nnz += 1;
+            moveNext(rowB);
+        }
+    }
+    freeMatrix(&amp;B);
+    return diffAB;
+}
+
+// Function to compute the dot product of two vectors represented by lists
+double vectorDot(List P, List Q){
+    double result = 0.0;
+    for(moveFront(P), moveFront(Q); index(P) &gt;= 0 &amp;&amp; index(Q) &gt;= 0; ){
+        Entry p = get(P);
+        Entry q = get(Q);
+</font>        if(p-&gt;index == q-&gt;index){
+            result += p-&gt;data * q-&gt;data;
+            moveNext(P);
+            moveNext(Q);
+<a name="3"></a><font color="#00FFFF"><a href="file:///Users/surya/Desktop/moss/cse101/pa4_report/moss_results/winter25_winter24/Matrix.c/part_4/report/match0-0.html#3" target="0"><img align="left" alt="other" border="0" src="./tm_3_13.gif"></a>
+
+        }else if (p-&gt;index &lt; q-&gt;index){
+            moveNext(P);
+        }else if(p-&gt;index &gt; q-&gt;index){
+            moveNext(Q);
+        }
+    }
+    return result;
+}
+
+// Function to compute the product of two matrices
+Matrix product(Matrix A, Matrix B){
+    Matrix newB = transpose(B);
+    Matrix productAB = newMatrix(size(A));
+    for(int i = 1; i &lt;= size(A); i++){
+        for(int j = 1; j &lt;= size(A); j++){
+            double product = vectorDot(A-&gt;rows[i], newB-&gt;rows[j]);
+            if(product != 0.0){
+                append(productAB-&gt;rows[i], newEntry(product, j));
+                productAB-&gt;nnz += 1;
+            }
+        }
+    }
+    freeMatrix(&amp;newB);
+    return productAB;
+}
+
+// Function to concatenate entries in a list to a file
+void cat(FILE* out, List L){
+    moveFront(L);
+    while(index(L) &gt;= 0){
+        Entry E = get(L);
+        if(E-&gt;data != 0) fprintf(out, "(%d, %.1lf) ", E-&gt;index, E-&gt;data);
+        moveNext(L);
+    }
+}
+
+// Function to print the matrix to a file
+void printMatrix(FILE* out, Matrix M){
+    for(int i = 0; i &lt;= size(M); i++){
+        moveFront(M-&gt;rows[i]);
+        while(index(M-&gt;rows[i]) &gt;= 0){
+            if(((Entry)get(M-&gt;rows[i]))-&gt;data != 0.0){
+                fprintf(out, "%d: ", i);
+                cat(out, M-&gt;rows[i]);
+                fprintf(out, "\n");
+                break;
+            }
+            moveNext(M-&gt;rows[i]);
+        }
+    }
+    fprintf(out, "\n");
+</font>}
+</pre>
+
+
+</body></html>

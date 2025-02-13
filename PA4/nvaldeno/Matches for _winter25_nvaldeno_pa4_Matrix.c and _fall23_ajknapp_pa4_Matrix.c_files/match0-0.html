@@ -1,0 +1,537 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/9/8328711968819/match0-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/nvaldeno/pa4/Matrix.c</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/nvaldeno/pa4/Matrix.c<p></p><pre>/***
+* Nathaniel Valdenor
+* nvaldeno
+* 2025 Winter CSE101 PA4
+* Matrix.c
+* Implementation file for Matrix ADT
+***/
+
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+#include "List.h"
+#include "Matrix.h"
+
+//	Private Declarations ----------------------------------------------------------------------------
+//	Matrix
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/8328711968819/match0-1.html#0" target="1"><img src="./tm_0_99.gif" alt="other" border="0" align="left"></a>
+
+double vectorDot(int size, List P, List Q);
+
+struct MatrixObj {
+    List* row;  // Lists
+    int size;   // Size
+    int nnz;    // Number that is non 0
+} MatrixObj;
+
+// 		Entry
+typedef struct EntryObj* Entry;
+struct EntryObj {
+    int col;
+    double data;
+} EntryObj;
+
+// -------------------------------------------------------------------------------------------------
+
+// Constructors-Destructors
+//		Entry 		--------------
+Entry newEntry(int c, double d){
+	// Allocate the Entry and check for success
+    Entry E = (Entry) malloc(sizeof(EntryObj));
+    if (!E) { fprintf(stderr, "Location: Matrix.c\nFunction: newEntry()\nError: Memory Allocation failed\n"); exit(1); }
+
+    // Initialize the variables
+    E-&gt;col = c;
+    E-&gt;data = d;
+
+    return E;
+}
+
+void freeEntry(Entry* pE){
+	// Check if pE exists
+    if (!pE) { fprintf(stderr, "Location: Matrix.c\nFunction: freeEntry()\nError: Entry is NULL\n"); exit(1); }
+
+    // Free Matrix and set to null
+    free(*pE);
+    *pE = NULL;
+    return;
+}
+
+//	Matrix 		--------------
+// newMatrix()
+// Returns a reference to a new nXn Matrix object in the zero state.
+Matrix newMatrix(int n){
+	// Allocate the Matrix and check for success
+    Matrix M = (Matrix) malloc(sizeof(MatrixObj));
+    if (!M) { fprintf(stderr, "Location: Matrix.c\nFunction: newMatrix()\nError: Memory Allocation failed\n"); exit(1); }
+
+    // Allocate the array of Lists in the Matrix and check for success
+    M-&gt;row = malloc(sizeof(List) * (n+1));
+    if (!M-&gt;row) { fprintf(stderr, "Location: Matrix.c\nFunction: newMatrix()\nError: Memory Allocation failed\n"); exit(1); }
+
+    // Initialize the rest of the variables
+    M-&gt;size = n;
+    M-&gt;nnz = 0;
+
+    // Populate the arrays
+    for (int i = 0; i &lt;= n; i++){
+        M-&gt;row[i] = newList();
+    }
+
+    return M;
+}
+
+// freeMatrix()
+// Frees heap memory associated with *pM, sets *pM to NULL.
+void freeMatrix(Matrix* pM){
+	// Check if pM exists
+    if (!pM) { fprintf(stderr, "Location: Matrix.c\nFunction: freeMatrix()\nError: Matrix is NULL\n"); exit(1); }
+
+    // Call makeZero to remove all Entries
+    makeZero(*pM);
+
+    // Free each List in the List array
+    for (int i = 0; i &lt;= size(*pM); i++){
+        freeList(&amp;(*pM)-&gt;row[i]);
+    }
+
+    // Free the List array and set to NULL
+    free((*pM)-&gt;row);
+    (*pM)-&gt;row = NULL;
+
+    // Free Matrix and set to NULL
+    free(*pM);
+    *pM = NULL;
+    return;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+// Access functions
+
+// size()
+// Return the size of square Matrix M.
+int size(Matrix M){
+	// Check if M exists
+    if (!M) { fprintf(stderr, "Location: Matrix.c\nFunction: size()\nError: Matrix is NULL\n"); exit(1); }
+	return M-&gt;size;
+}
+
+// NNZ()
+// Return the number of non-zero elements in M.
+int NNZ(Matrix M){
+	// Check if M exists
+    if (!M) { fprintf(stderr, "Location: Matrix.c\nFunction: NNZ()\nError: Matrix is NULL\n"); exit(1); }
+	return M-&gt;nnz;
+}
+
+// equals()
+// Return true (1) if matrices A and B are equal, false (0) otherwise.
+int equals(Matrix A, Matrix B){
+	// Check if Matrix exits
+    if (!A || !B) { fprintf(stderr, "Location: Matrix.c\nFunction: sum()\nError: Matrix is NULL\n"); exit(1); }
+    
+    // If they are not the same size
+    if (size(A) != size(B)) { return 0; }
+
+    // If they are the same Matrix object
+    if (A == B){
+        return 1;
+    }
+
+    // Sorry the following code is a little messy
+    for (int i = 1; i &lt;= size(A); i++){
+        moveFront(A-&gt;row[i]); moveFront(B-&gt;row[i]);
+        moveNext(A-&gt;row[i]); moveNext(B-&gt;row[i]); // Skip 0th element
+        for (int j = 1; j &lt;= size(A); j++){
+            double dataA = 0;
+            double dataB = 0;
+            int currCol;
+
+            if (index(A-&gt;row[i]) &gt;= 0){
+                currCol = ((Entry) get(A-&gt;row[i]))-&gt;col; // column number
+                if (currCol == j){
+                    dataA = ((Entry) get(A-&gt;row[i]))-&gt;data; // data value of A[i][j]
+                    moveNext(A-&gt;row[i]);
+                }
+            }
+            if (index(B-&gt;row[i]) &gt;= 0){
+                currCol = ((Entry) get(B-&gt;row[i]))-&gt;col; // column number
+                if (currCol == j){
+                    dataB = ((Entry) get(B-&gt;row[i]))-&gt;data; // data value of B[i][j]
+                    moveNext(B-&gt;row[i]);
+                }
+            }
+        // printf("Checking if %.1f == %.1f at row: %d, col: %d\n", dataA, dataB, i, j); // debug
+            if (dataA != dataB){ return 0; }
+        }
+    }
+	return 1;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+// Manipulation procedures
+
+// makeZero()
+// Re-sets M to the zero Matrix state.
+void makeZero(Matrix M){
+	// Check if M exists
+	if (!M) { fprintf(stderr, "Location: Matrix.c\nFunction: makeZero()\nError: Matrix is NULL\n"); exit(1); }
+
+	for (int i = 1; i &lt;= size(M); i++){
+		// Free the Entries
+		moveFront(M-&gt;row[i]); //moveNext(M-&gt;row[i]); //usually i would skip idx 0, lowkey dont know why not here
+		for (int j = 1; j &lt;= length(M-&gt;row[i]); j++){
+			Entry del = (Entry) get(M-&gt;row[i]);
+			freeEntry(&amp;del);
+			moveNext(M-&gt;row[i]);
+		}
+		clear(M-&gt;row[i]); // Clear the List to 0
+	}
+
+	M-&gt;nnz = 0;
+	return;
+}
+
+// changeEntry()
+// Changes the ith row, jth column of M to the value x.
+// Pre: 1&lt;=i&lt;=size(M), 1&lt;=j&lt;=size(M)
+void changeEntry(Matrix M, int i, int j, double x){
+    // Check if M exits
+    if (!M) { fprintf(stderr, "Location: Matrix.c\nFunction: changeEntry()\nError: Matrix is NULL\n"); exit(1); }
+    // Check if numbers are in range
+    if ((i &lt; 1) || (i &gt; size(M)) || (j &lt; 1) || (j &gt; size(M))){ fprintf(stderr, "Location: Matrix.c\nFunction: changeEntry()\nError: Inputs out of range\n"); exit(1); }
+    //if (x == 0){ return; }
+
+    Entry E = newEntry(j, x); // Create new Entry to put in list
+
+
+    // If this is the first item in the list, put NULL as the first item, as it will be ignored by the user
+    if (length(M-&gt;row[i]) &lt;= 0) {
+        if (x == 0){ freeEntry(&amp;E); return; } // Don't input anything if x is 0
+        //Entry zero = newEntry(0, 0);
+        append(M-&gt;row[i], NULL); // index 0 will be unused
+        append(M-&gt;row[i], E);
+        M-&gt;nnz++; // Increase the nnz
+        return;
+    }
+
+    // Moves the cursor through the list from back to front, inserting the new value at the cursor when at the right spot
+    moveBack(M-&gt;row[i]);
+    while (j &lt;= ((Entry)get(M-&gt;row[i]))-&gt;col){   // While j is smaller than column value at the cursor, move the cursor again
+
+        if (j == ((Entry) get(M-&gt;row[i]))-&gt;col ){ // This entry already exists
+        	Entry toDel = get(M-&gt;row[i]);
+        	freeEntry(&amp;toDel);
+            if (x == 0){ freeEntry(&amp;E); delete(M-&gt;row[i]); M-&gt;nnz--; return; } // if x == 0 delete entry and decrease nnz
+        	set(M-&gt;row[i], E);
+        	return; // don't increase nnz
+        }
+
+        movePrev(M-&gt;row[i]);
+        if (index(M-&gt;row[i]) == 0) { break; } // If at the front of the List
+
+    }
+
+    if (x == 0){ freeEntry(&amp;E); return; } // Don't input anything if x is 0
+
+    insertAfter(M-&gt;row[i], E);    // When v becomes larger than the value at the cursor, insert v after the cursor
+    M-&gt;nnz++; // Increase the nnz
+
+    return;
+}
+
+// -------------------------------------------------------------------------------------------------
+
+// Matrix Arithmetic operations
+
+// copy()
+// Returns a reference to a new Matrix object having the same entries as A.
+Matrix copy(Matrix A){
+	// Check if A exits
+    if (!A) { fprintf(stderr, "Location: Matrix.c\nFunction: copy()\nError: Matrix is NULL\n"); exit(1); }
+
+    Matrix C = newMatrix(size(A));
+
+    for (int i = 1; i &lt;= size(A); i++){
+        if(length(A-&gt;row[i]) &lt;= 0){ continue; } // If the row does not have anything in its list
+
+        moveFront(A-&gt;row[i]);
+        moveNext(A-&gt;row[i]); // Skip 0th element
+        Entry x = (Entry) get(A-&gt;row[i]);
+
+        for (int j = 1; j &lt; length(A-&gt;row[i]); j++){
+            x = (Entry) get(A-&gt;row[i]);
+            changeEntry(C, i, x-&gt;col, x-&gt;data); // Maybe change to appending maybe instead of changeEntry?
+            moveNext(A-&gt;row[i]);
+        }
+
+    }
+
+    return C;
+}
+
+// transpose()
+// Returns a reference to a new Matrix object representing the transpose
+// of A.
+Matrix transpose(Matrix A){
+	// Check if A exits
+    if (!A) { fprintf(stderr, "Location: Matrix.c\nFunction: transpose()\nError: Matrix is NULL\n"); exit(1); }
+
+    Matrix T = newMatrix(size(A));
+
+    for (int i = 1; i &lt;= size(A); i++){
+        if(length(A-&gt;row[i]) &lt;= 0){ continue; } // If the row does not have anything in its list
+
+        moveFront(A-&gt;row[i]);
+        moveNext(A-&gt;row[i]); // Skip 0th element
+        Entry x = (Entry) get(A-&gt;row[i]);
+
+        for (int j = 1; j &lt; length(A-&gt;row[i]); j++){
+            x = (Entry) get(A-&gt;row[i]);
+            changeEntry(T, x-&gt;col, i, x-&gt;data);
+            moveNext(A-&gt;row[i]);
+        }
+
+    }
+
+    return T;
+}
+
+// scalarMult()
+// Returns a reference to a new Matrix object representing xA.
+Matrix scalarMult(double x, Matrix A){
+	// Check if A exits
+    if (!A) { fprintf(stderr, "Location: Matrix.c\nFunction: sum()\nError: Matrix is NULL\n"); exit(1); }
+
+    Matrix B = newMatrix(size(A));
+
+    for (int i = 1; i &lt;= size(A); i++){
+        if(length(A-&gt;row[i]) &lt;= 0){ continue; } // If the row does not have anything in its list
+
+        moveFront(A-&gt;row[i]);
+        moveNext(A-&gt;row[i]); // Skip 0th element
+        Entry y = (Entry) get(A-&gt;row[i]);
+
+        for (int j = 1; j &lt; length(A-&gt;row[i]); j++){
+            y = (Entry) get(A-&gt;row[i]);
+            changeEntry(B, i, y-&gt;col, ((y-&gt;data) * x));
+            moveNext(A-&gt;row[i]);
+        }
+
+    }
+
+    return B;
+}
+
+// sum()
+// Returns a reference to a new Matrix object representing A+B.
+// pre: size(A)==size(B)
+Matrix sum(Matrix A, Matrix B){
+    // Check if Matrix exits
+    if (!A || !B) { fprintf(stderr, "Location: Matrix.c\nFunction: sum()\nError: Matrix is NULL\n"); exit(1); }
+    if (size(A) != size(B)) { fprintf(stderr, "Location: Matrix.c\nFunction: sum()\nError: Matrices are different sizes\n"); exit(1); }
+
+    if (A == B){
+        Matrix N = scalarMult(2, A);
+        return N;
+    }
+
+	Matrix N = newMatrix(size(A));
+
+    // Sorry the following code is messy, good luck reading it :thumbsup:
+    // I forgot about making a helper function ^ (same with diff())
+    for (int i = 1; i &lt;= size(A); i++){
+
+        moveFront(A-&gt;row[i]); moveFront(B-&gt;row[i]);
+        moveNext(A-&gt;row[i]); moveNext(B-&gt;row[i]); // Skip 0th element
+        for (int j = 1; j &lt;= size(A); j++){
+            double dataA = 0;
+            double dataB = 0;
+            int currCol;
+
+            if (index(A-&gt;row[i]) &gt;= 0){
+                currCol = ((Entry) get(A-&gt;row[i]))-&gt;col; // column number
+                if (currCol == j){
+                    dataA = ((Entry) get(A-&gt;row[i]))-&gt;data; // data value of A[i][j]
+                    moveNext(A-&gt;row[i]);
+                }
+            }
+
+            if (index(B-&gt;row[i]) &gt;= 0){
+                currCol = ((Entry) get(B-&gt;row[i]))-&gt;col; // column number
+                if (currCol == j){
+                    dataB = ((Entry) get(B-&gt;row[i]))-&gt;data; // data value of B[i][j]
+                    moveNext(B-&gt;row[i]);
+                }
+            }
+
+            double x = dataA + dataB; // New int that is the data value of A[i][j] + B[i][j]
+            if (x == 0.0){ continue; } // Don't add if value is 0
+            // printf("Adding %.1f + %.1f = %.1f to row: %d, col: %d\n", dataA, dataB, x, i, j); // debug
+            changeEntry(N, i, j, x);
+        }
+
+    }
+
+    return N;
+}
+
+// diff()
+// Returns a reference to a new Matrix object representing A-B.
+// pre: size(A)==size(B)
+Matrix diff(Matrix A, Matrix B){
+	// Check if Matrix exits
+    if (!A || !B) { fprintf(stderr, "Location: Matrix.c\nFunction: diff()\nError: Matrix is NULL\n"); exit(1); }
+    if (size(A) != size(B)) { fprintf(stderr, "Location: Matrix.c\nFunction: diff()\nError: Matrices are different sizes\n"); exit(1); }
+
+    Matrix N = newMatrix(size(A));
+
+    if (A == B){
+        return N;
+    }
+
+    for (int i = 1; i &lt;= size(A); i++){
+
+        moveFront(A-&gt;row[i]); moveFront(B-&gt;row[i]);
+        moveNext(A-&gt;row[i]); moveNext(B-&gt;row[i]); // Skip 0th element
+        for (int j = 1; j &lt;= size(A); j++){
+            double dataA = 0;
+            double dataB = 0;
+            int currCol;
+
+            if (index(A-&gt;row[i]) &gt;= 0){
+                currCol = ((Entry) get(A-&gt;row[i]))-&gt;col; // column number
+                if (currCol == j){
+                    dataA = ((Entry) get(A-&gt;row[i]))-&gt;data; // data value of A[i][j]
+                    moveNext(A-&gt;row[i]);
+                }
+            }
+
+            if (index(B-&gt;row[i]) &gt;= 0){
+                currCol = ((Entry) get(B-&gt;row[i]))-&gt;col; // column number
+                if (currCol == j){
+                    dataB = ((Entry) get(B-&gt;row[i]))-&gt;data; // data value of B[i][j]
+                    moveNext(B-&gt;row[i]);
+                }
+            }
+
+            double x = dataA - dataB; // New int that is the data value of A[i][1] + B[i][1]
+            if (x == 0.0){ continue; } // Don't add if value is 0
+            changeEntry(N, i, j, x);
+        }
+
+    }
+
+    return N;
+}
+
+// product()
+// Returns a reference to a new Matrix object representing AB
+// pre: size(A)==size(B)
+Matrix product(Matrix A, Matrix B){
+	// Check if Matrix exits
+    if (!A || !B) { fprintf(stderr, "Location: Matrix.c\nFunction: diff()\nError: Matrix is NULL\n"); exit(1); }
+    if (size(A) != size(B)) { fprintf(stderr, "Location: Matrix.c\nFunction: diff()\nError: Matrices are different sizes\n"); exit(1); }
+
+    Matrix N = newMatrix(size(A));
+    Matrix BT = transpose(B);
+
+    for (int i = 1; i &lt;= size(A); i++){
+        // If the current row is empty, don't iterate
+        if (length(A-&gt;row[i]) &lt; 1) { continue; }
+
+        for (int j = 1; j &lt;= size(A); j++){
+            // If the current column (row of BT) is empty, don't iterate
+            if (length(BT-&gt;row[j]) &lt; 1) { continue; }
+        
+            double result = vectorDot(size(A), A-&gt;row[i], BT-&gt;row[j]);
+            if (result == 0.0){ continue; } // Don't add if value is 0
+            // printf("Adding %.1f to row: %d, col: %d\n", result, i, j); // debug
+            changeEntry(N, i, j, result);
+
+        }
+    }
+
+    freeMatrix(&amp;BT);
+    return N;
+}
+
+// printMatrix()
+// Prints a string representation of Matrix M to filestream out. Zero rows
+// are not printed. Each non-zero row is represented as one line consisting
+// of the row number, followed by a colon, a space, then a space separated
+// list of pairs "(col, val)" giving the column numbers and non-zero values
+// in that row. The double val will be rounded to 1 decimal point.
+void printMatrix(FILE* out, Matrix M){
+	// Check if G exits
+    if (!M) { fprintf(stderr, "Location: Graph.c\nFunction: DFS()\nError: Graph is NULL\n"); exit(1); }
+
+    for (int i = 1; i &lt;= size(M); i++){
+        if (length(M-&gt;row[i]) &lt; 1){ continue; } // if nothing is printed for this row then skip it
+
+        fprintf(out, "%d: ", i);
+
+        moveFront(M-&gt;row[i]);
+		moveNext(M-&gt;row[i]); //start at idx 1 instead of 0
+		for (int j = 1; j &lt; length(M-&gt;row[i]); j++){
+            Entry currentE = ((Entry)get(M-&gt;row[i]));
+			fprintf(out, "(%d, %.1f) ", currentE-&gt;col, currentE-&gt;data);
+			moveNext(M-&gt;row[i]);
+		}
+
+        fprintf(out, "\n");
+    }
+
+    return;
+}
+
+double vectorDot(int size, List P, List Q){
+    if (length(P) &lt; 1 &amp;&amp; length(Q) &lt; 1){
+        return 0;
+    }
+
+    double sum = 0;
+
+    moveFront(P); moveFront(Q);
+    moveNext(P); moveNext(Q); // skip idx 0
+
+    for (int i = 1; i &lt;= size; i++){
+        double dataP = 0;
+        double dataQ = 0;
+        int currCol;
+
+        if (index(P) &gt;= 0){
+            currCol = ((Entry) get(P))-&gt;col; // column number
+            if (currCol == i){
+                dataP = ((Entry) get(P))-&gt;data; // data value of P[i][j]
+                moveNext(P);
+            }
+        }
+
+        if (index(Q) &gt;= 0){
+            currCol = ((Entry) get(Q))-&gt;col; // column number
+            if (currCol == i){
+                dataQ = ((Entry) get(Q))-&gt;data; // data value of Q[i][j]
+                moveNext(Q);
+            }
+        }
+
+        sum += dataP * dataQ; // New int that is the data value of P[i][1] + Q[i][1] 
+
+    }
+    
+    return sum; 
+</font>}</pre>
+
+
+
+</body></html>

@@ -1,0 +1,413 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/9/1362601866453/match1-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/jaddao/pa4/Matrix.c</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter23/rqdao/pa4/Matrix.c<p></p><pre>/********************************************************************************* 
+ * * Richard Dao, rqdao 
+ * * 2023 Winter CSE101 PA4
+ * * Matrix.c 
+ * * Matrix C file for Matrix ADT 
+ * *********************************************************************************/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;assert.h&gt;
+#include &lt;stdbool.h&gt;
+#include "Matrix.h"
+#include "List.h"
+
+// typedef struct Cell* Cell;
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/9/1362601866453/match1-0.html#1" target="0"><img src="./tm_1_44.gif" alt="other" border="0" align="left"></a>
+
+typedef struct MatrixObj {
+		List *rows;
+		int size;
+		int NNZ;
+
+} MatrixObj;
+
+typedef struct CellObj {
+		int column;
+		double value;
+} CellObj;
+
+
+Matrix newMatrix(int n){
+		if (n &lt; 0){
+				printf("N cannot be less than 0\n");
+				exit(1);
+		}
+		Matrix M = malloc(sizeof(MatrixObj));
+		M-&gt;rows = malloc((n+1) * sizeof(List));
+		M-&gt;size = n;
+		M-&gt;NNZ = 0;
+		for (int i = 0; i &lt; n+1; i++){
+				M-&gt;rows[i] = newList();
+		}
+		return M;
+}
+
+Cell newCell(int col, double value){
+		if (col &lt; 0){
+				printf("Col cannot be less than 0\n");
+				exit(1);
+		}
+		Cell c = malloc(sizeof(CellObj));
+		c-&gt;value = value;
+		c-&gt;column = col;
+		return c;
+}
+
+
+void freeCell(Cell* pC){
+		if (pC != NULL &amp;&amp; *pC != NULL){
+				free(*pC);
+				*pC = NULL;
+		}
+}
+
+void freeMatrix(Matrix *pM){
+		if (pM != NULL &amp;&amp; *pM != NULL){
+				for (int i = 0; i &lt; (*pM)-&gt;size + 1; i++){
+						List row = ((*pM)-&gt;rows[i]);
+						if (row == NULL){ continue;}
+						for (moveFront(row); index(row) &gt;= 0; moveNext(row)){
+								Cell c = get(row);
+								freeCell(&amp;c);
+						}
+						freeList(&amp;(*pM)-&gt;rows[i]);
+				}
+				free((*pM)-&gt;rows);
+				free(*pM);
+				*pM = NULL;
+		}		
+}
+
+int size(Matrix M){
+		if (M == NULL){
+				exit(1);
+		}
+		return M-&gt;size;
+}
+
+int NNZ(Matrix M){
+		if (M == NULL){
+				printf("M is NULL\n");
+				exit(1);
+		}
+		int count = 0;
+		for (int i = 0; i &lt; M-&gt;size; i++){
+				count += length(M-&gt;rows[i]);
+		}
+		return count;
+}
+
+int equals(Matrix A, Matrix B){
+		if (A == NULL || B == NULL){
+				printf("Either A or B is NULL\n");
+				exit(1);
+		}
+		if (A-&gt;size != B-&gt;size){
+				return 0;
+		}
+		for (int i = 0; i &lt; A-&gt;size; i++){
+
+				moveFront(A-&gt;rows[i]);
+				moveFront(B-&gt;rows[i]);
+				if (length(A-&gt;rows[i]) != length(B-&gt;rows[i])){
+						return 0;
+				}
+				while(index(A-&gt;rows[i]) &gt;= 0){
+						Cell c1 = (Cell)get(A-&gt;rows[i]);
+						Cell c2 = (Cell)get(B-&gt;rows[i]);
+						if (c1-&gt;value != c2-&gt;value){
+								// fprintf(stderr, "Not equal %f != %f\n", c1-&gt;value, c2-&gt;value);
+								return 0;
+						}
+						moveNext(A-&gt;rows[i]);
+						moveNext(B-&gt;rows[i]);
+				}
+		}
+		return 1;
+
+}
+
+void makeZero(Matrix M){
+		if (M == NULL){
+				printf("M is null\n");
+				exit(1);
+		}
+		for (int i = 0; i &lt; M-&gt;size; i++){
+				List row = M-&gt;rows[i];
+				for (moveFront(row); index(row) &gt;= 0; moveNext(row)){
+						Cell c = get(row);
+						freeCell(&amp;c);
+				}
+				freeList(&amp;row);
+				M-&gt;rows[i] = newList();
+		}
+}
+
+
+int exists(Matrix M, int i, int j){
+		if ((i &gt; M-&gt;size || i &lt;= 0) || (j &gt; M-&gt;size || j &lt;= 0)){
+				printf("Invalid (i, j)\n");
+
+exit(1);
+		}
+		if (length(M-&gt;rows[i-1]) != 0){
+				moveFront(M-&gt;rows[i-1]);
+				while (index(M-&gt;rows[i-1]) &gt;= 0){
+						Cell curr = get(M-&gt;rows[i-1]);
+						if (curr-&gt;column == j){
+								return index(M-&gt;rows[i-1]);
+						}
+						moveNext(M-&gt;rows[i-1]);
+				}
+		}
+		return -1;
+}
+
+void changeEntry(Matrix M, int i, int j, double x){
+		// Remember i and j will be &gt; 1 (so they aren't 0-indexed)
+		if (M == NULL){
+				printf("M is null\n");
+				exit(1);
+		}
+		if ((i &gt; M-&gt;size || i &lt;= 0) || (j &gt; M-&gt;size || j &lt;= 0)){
+				printf("Invalid (i, j)\n");
+				exit(1);
+		}
+		List row = M-&gt;rows[i-1];
+		if (x != 0){
+				Cell c = newCell(j, x);
+				
+				if (length(row) == 0){
+						append(row, c);
+				} else {
+						for (moveFront(row); index(row) &gt;= 0; moveNext(row)){
+								Cell curr = (Cell)get(row);
+								if (j == curr-&gt;column){
+										insertBefore(row, c);
+										freeCell(&amp;curr);
+										delete(row);
+								} else if (j &lt; curr-&gt;column){
+										insertBefore(row, c);
+										break;
+								} else if (index(row) == length(row) - 1){
+										append(row, c);
+										break;
+								}
+						}
+				} M-&gt;NNZ++;
+		}
+		else {
+				for (moveFront(row); index(row) &gt;= 0; moveNext(row)){
+						Cell curr = (Cell)get(row);
+						if (curr-&gt;column == j){
+								freeCell(&amp;curr);
+								delete(row);
+								M-&gt;NNZ--;
+								break;
+						}
+				}
+		}
+		return;
+
+}
+
+Matrix copy(Matrix A){
+		Matrix N = newMatrix(A-&gt;size);
+		for (int i = 0; i &lt; A-&gt;size; i++){
+				for (moveFront(A-&gt;rows[i]); index(A-&gt;rows[i]) &gt;= 0; moveNext(A-&gt;rows[i])){
+</font><a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/9/1362601866453/match1-0.html#2" target="0"><img src="./tm_2_4.gif" alt="other" border="0" align="left"></a>
+
+						Cell curr = (Cell)get(A-&gt;rows[i]);
+						Cell c = newCell(curr-&gt;column, curr-&gt;value);
+						append(N-&gt;rows[i], c);
+						N-&gt;NNZ += 1;
+						if (N-&gt;NNZ == A-&gt;NNZ){
+								return N;
+						}
+				}
+		}
+		return N;
+}
+
+Matrix transpose(Matrix A){
+		Matrix M = newMatrix(A-&gt;size);
+		for (int i = 0; i &lt; A-&gt;size; i++){
+				for (moveFront(A-&gt;rows[i]); index(A-&gt;rows[i]) &gt;= 0; moveNext(A-&gt;rows[i])){
+</font><a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/1362601866453/match1-0.html#0" target="0"><img src="./tm_0_48.gif" alt="other" border="0" align="left"></a>
+
+						Cell curr = (Cell)get(A-&gt;rows[i]);
+						int currCol = curr-&gt;column;
+						changeEntry(M, currCol, i+1, curr-&gt;value);
+				}
+		}
+		return M;
+}
+
+Matrix scalarMult(double x, Matrix A){
+		Matrix M = newMatrix(A-&gt;size);
+		for (int i = 0; i &lt; A-&gt;size; i++){
+				for (moveFront(A-&gt;rows[i]); index(A-&gt;rows[i]) &gt;= 0; moveNext(A-&gt;rows[i])){
+						Cell curr = (Cell)get(A-&gt;rows[i]);
+						changeEntry(M, i+1, curr-&gt;column, curr-&gt;value * x);
+						if (NNZ(A) == M-&gt;NNZ){
+								return M;
+						}
+				}
+		}
+		return M;
+}
+
+
+List oper(List P, List Q, bool add){
+		List L = newList();
+		moveFront(P);
+		moveFront(Q);
+		while(index(P) &gt;= 0 || index(Q) &gt;= 0){
+				if (index(P) &gt;= 0 &amp;&amp; index(Q) &gt;= 0){
+						Cell a = (Cell) get(P);
+						Cell b = (Cell) get(Q);
+						if (a-&gt;column &gt; b-&gt;column){
+								append(L, newCell(b-&gt;column, (add ? 1.0 : -1.0) * b-&gt;value));
+								moveNext(Q);
+						} else if (a-&gt;column &lt; b-&gt;column) {
+								append(L, newCell(a-&gt;column, a-&gt;value));
+								moveNext(P);
+						} else if (a-&gt;column == b-&gt;column) {
+								if ((add &amp;&amp; a-&gt;value + b-&gt;value != 0) || (!add &amp;&amp; a-&gt;value - b-&gt;value != 0)){
+										append(L, newCell(a-&gt;column, (add ? a-&gt;value + b-&gt;value : a-&gt;value - b-&gt;value)));
+								}
+								moveNext(P);
+								moveNext(Q);
+						}
+				} else if (index(P) &gt;= 0){
+						Cell a = (Cell) get(P);
+						append(L, newCell(a-&gt;column, a-&gt;value));
+						moveNext(P);
+				} else {
+						Cell b = (Cell) get(Q);
+						append(L, newCell(b-&gt;column, (add ? 1.0 : -1.0) * b-&gt;value));
+						moveNext(Q);
+				}
+		}
+		return L;
+}
+
+
+
+Matrix sum(Matrix A, Matrix B){
+		if (A == NULL || B == NULL){
+				printf("A and/or B are null\n");
+				exit(1);
+		}
+		if (A-&gt;size != B-&gt;size){
+				printf("A and B are different sizes\n");
+				exit(1);
+		}
+
+		if (A == B || equals(A, B)){
+				return scalarMult(2, A);
+		}
+		Matrix M = malloc(sizeof(MatrixObj));
+		M-&gt;rows = malloc((A-&gt;size+1) * sizeof(List));
+		M-&gt;size = A-&gt;size;
+		M-&gt;NNZ = 0;
+		for (int i = 0; i &lt; A-&gt;size+1; i++)
+		{
+				M-&gt;rows[i] = oper(A-&gt;rows[i], B-&gt;rows[i], true);
+		}
+		return M;
+		
+}
+
+Matrix diff(Matrix A, Matrix B){
+		if (A == NULL || B == NULL){
+				printf("A and/or B are null\n");
+				exit(1);
+		}
+		if (A-&gt;size != B-&gt;size){
+				printf("A and B are different sizes\n");
+				exit(1);
+		}
+		Matrix M = malloc(sizeof(MatrixObj));
+		M-&gt;rows = malloc((A-&gt;size+1) * sizeof(List));
+		M-&gt;size = A-&gt;size;
+		M-&gt;NNZ = 0;
+
+		for (int i = 0; i &lt; A-&gt;size+1; i++){
+				M-&gt;rows[i] = oper(A-&gt;rows[i], B-&gt;rows[i], false);
+		}
+		return M;
+
+}
+
+Matrix product(Matrix A, Matrix B){
+		if (A == NULL || B == NULL){
+				printf("A and/or B are null\n");
+				exit(1);
+		}
+		if (A-&gt;size != B-&gt;size){
+				printf("A and B are different sizes\n");
+				exit(1);
+		}
+
+		Matrix T = transpose(B);
+		Matrix M = newMatrix(A-&gt;size);
+
+		for (int i = 0; i &lt; A-&gt;size; i++){
+				List row = A-&gt;rows[i];
+				if (length(row) != 0){
+						for (int j =0; j &lt; T-&gt;size; j++){
+								List row2 = T-&gt;rows[j];
+								if (length(row2) != 0){
+										double dp = vectorDot(row, row2);
+										changeEntry(M, i+1, j+1, dp);
+								}
+						}
+				}
+		}
+		freeMatrix(&amp;T);
+		return M;
+}
+
+void printMatrix(FILE* out, Matrix M){
+		for (int i = 0; i &lt; M-&gt;size; i++){
+				List row = M-&gt;rows[i];
+				if (length(row) == 0){
+						continue;
+				}
+				fprintf(out, "%d: ", i+1);
+				for (moveFront(row); index(row) &gt;= 0; moveNext(row)){
+							Cell curr = (Cell)get(row);
+							fprintf(out, "(%d, %0.1f) ", curr-&gt;column, curr-&gt;value);
+				}
+				fprintf(out, "\n");
+		}
+}
+
+double vectorDot(List P, List Q){
+		double dotProduct = 0;
+		for (moveFront(P); index(P) &gt;= 0; moveNext(P)){
+				Cell pC = (Cell)get(P);
+				for (moveFront(Q); index(Q) &gt;= 0; moveNext(Q)){
+						Cell qC = (Cell)get(Q);
+						if (pC-&gt;column == qC-&gt;column){
+								dotProduct += pC-&gt;value * qC-&gt;value;
+								break;
+						}
+				}
+		}
+		return dotProduct;
+</font>}
+</pre>
+
+
+
+</body></html>

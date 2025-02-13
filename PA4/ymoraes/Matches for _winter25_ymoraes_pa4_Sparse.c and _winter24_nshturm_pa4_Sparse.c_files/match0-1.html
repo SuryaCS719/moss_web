@@ -1,0 +1,146 @@
+
+<!-- saved from url=(0061)http://moss.stanford.edu/results/0/651133650421/match0-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/ymoraes/pa4/Sparse.c</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter24/nshturm/pa4/Sparse.c<p></p><pre>/**
+ * Sparse.c
+ *
+ * Nathan Shturm
+ * nshturm
+ * CSE101 Winter 2024 PA4
+ *
+ **/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#include "Matrix.h"
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/0/651133650421/match0-0.html#1" target="0"><img src="./tm_1_25.gif" alt="other" border="0" align="left"></a>
+
+int main(int argc, char *argv[]) {
+        if (argc != 3) {
+                printf("Usage: %s &lt;input file&gt; &lt;output file&gt;\n", argv[0]);
+                return 1;
+        }
+
+        const char* fIn = argv[1];
+        FILE* file = fopen(fIn, "r");
+        if (file == NULL) {
+                perror("error opening file");
+                return 1;
+        }
+
+        const char* fOut = argv[2];
+        FILE* output = fopen(fOut, "w");
+        if (output == NULL) {
+                perror("error opening file");
+                return 1;
+	}
+
+
+        int n, a, b;
+
+        fscanf(file, "%d %d %d\n", &amp;n, &amp;a, &amp;b);
+
+        Matrix mA = newMatrix(n);
+</font>        Matrix mB = newMatrix(n);
+
+        int row, col;
+        double value;
+
+        for (int i = 0; i &lt; a; i++) {
+                fscanf(file, "%d %d %lf\n",&amp;row, &amp;col, &amp;value);
+                changeEntry(mA, row, col, value);
+        }
+
+        fscanf(file, "\n");
+
+        for (int j = 0; j &lt; b; j++) {
+                fscanf(file, "%d %d %lf\n", &amp;row, &amp;col, &amp;value);
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/0/651133650421/match0-0.html#0" target="0"><img src="./tm_0_47.gif" alt="other" border="0" align="left"></a>
+
+                changeEntry(mB, row, col, value);
+        }
+
+        fclose(file);
+
+        fprintf(output, "A has %d non-zero entries: \n", NNZ(mA));
+        printMatrix(output, mA);
+
+        printf("\n");
+
+        fprintf(output, "B has %d non-zero entries: \n", NNZ(mB));
+        printMatrix(output, mB);
+
+        printf("\n");
+
+        Matrix scal = scalarMult(1.5, mA);
+        fprintf(output, "(1.5)*A =\n");
+        printMatrix(output, scal);
+
+        printf("\n");
+
+        Matrix s1 = sum(mA, mB);
+        fprintf(output, "A+B = \n");
+        printMatrix(output, s1);
+
+        printf("\n");
+
+        Matrix s2 = sum(mA, mA);
+        fprintf(output, "A+A = \n");
+        printMatrix(output, s2);
+
+        printf("\n");
+
+        Matrix d1 = diff(mB, mA);
+        fprintf(output, "B-A = \n");
+        printMatrix(output, d1);
+
+        printf("\n");
+
+        Matrix d2 = diff(mA, mA);
+        fprintf(output, "A-A = \n");
+        printMatrix(output, d2);
+
+        printf("\n");
+
+        Matrix trnsp = transpose(mA);
+        fprintf(output, "Transpose(A) = \n");
+        printMatrix(output, trnsp);
+
+        printf("\n");
+
+        Matrix p1 = product(mA, mB);
+        fprintf(output, "A*B = \n");
+        printMatrix(output, p1);
+
+        printf("\n");
+
+        Matrix p2 = product(mB, mB);
+        fprintf(output, "B*B = \n");
+        printMatrix(output, p2);
+
+
+        freeMatrix(&amp;mA);
+        freeMatrix(&amp;mB);
+	freeMatrix(&amp;scal);
+</font>	freeMatrix(&amp;s1);
+	freeMatrix(&amp;s2);
+	freeMatrix(&amp;d1);
+	freeMatrix(&amp;d2);
+	freeMatrix(&amp;trnsp);
+	freeMatrix(&amp;p1);
+	freeMatrix(&amp;p2);
+
+
+        return 0;
+}
+</pre>
+
+
+
+</body></html>

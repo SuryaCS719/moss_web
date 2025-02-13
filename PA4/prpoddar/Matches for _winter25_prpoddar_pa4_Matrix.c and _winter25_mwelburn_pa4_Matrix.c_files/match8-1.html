@@ -1,0 +1,350 @@
+
+<!-- saved from url=(0064)http://moss.stanford.edu/results/1/6334669604870/match8-1.html#6 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/prpoddar/pa4/Matrix.c</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/mwelburn/pa4/Matrix.c<p></p><pre>/***
+* Max Welburn
+* mwelburn
+* 2024 Fall CSE101 PA{4}
+* Matrix.c
+* Contains functions for the Matrix ADT
+***/
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include "Matrix.h"
+#include "List.h"
+
+<a name="8"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#8" target="0"><img src="./tm_3_3.gif" alt="other" border="0" align="left"></a>
+
+typedef struct EntryObj {
+    int col;
+    double val;
+} EntryObj;
+
+typedef struct MatrixObj {
+    int size;
+    int NNZ;
+    List *rows;
+} MatrixObj;
+
+typedef struct EntryObj *Entry;
+
+Entry newEntry(int col, double val) {
+    Entry E = malloc(sizeof(EntryObj));
+    E-&gt;col = col;
+    E-&gt;val = val;
+</font>    return E;
+}
+
+void freeEntry(Entry *pE) {
+    if (pE != NULL &amp;&amp; *pE != NULL) {
+        free(*pE);
+        *pE = NULL;
+    }
+}
+
+Matrix newMatrix(int n) {
+    Matrix M = malloc(sizeof(MatrixObj));
+    M-&gt;size = n;
+    M-&gt;NNZ = 0;
+    M-&gt;rows = calloc(n + 1, sizeof(List));
+    for (int i = 1; i &lt;= n; i++) {
+        M-&gt;rows[i] = newList();
+    }
+    return M;
+}
+
+void freeMatrix(Matrix *pM) {
+    if (pM != NULL &amp;&amp; *pM != NULL) {
+        makeZero(*pM);
+        Matrix M = *pM;
+        for (int i = 1; i &lt;= M-&gt;size; i++) {
+            freeList(&amp;M-&gt;rows[i]);
+        }
+        free(M-&gt;rows);
+        free(M);
+        *pM = NULL;
+    }
+}
+
+int size(Matrix M) {
+    return M-&gt;size;
+}
+
+int NNZ(Matrix M) {
+    return M-&gt;NNZ;
+}
+
+int equals(Matrix A, Matrix B) {
+    if (A == NULL || B == NULL) {
+        exit(EXIT_FAILURE);
+    }
+    if (size(A) != size(B)) {
+        return 0;
+    }
+    for (int i = 1; i &lt;= size(A); i++) {
+        if (length(A-&gt;rows[i]) != length(B-&gt;rows[i])) {
+            return 0;
+        }
+<a name="7"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#7" target="0"><img src="./tm_2_3.gif" alt="other" border="0" align="left"></a>
+
+        moveFront(A-&gt;rows[i]);
+        moveFront(B-&gt;rows[i]);
+        while (index(A-&gt;rows[i]) &gt;= 0) {
+            if (((Entry)get(A-&gt;rows[i]))-&gt;col != ((Entry)get(B-&gt;rows[i]))-&gt;col) {
+                return 0;
+</font>            }
+<a name="6"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#6" target="0"><img src="./tm_1_3.gif" alt="other" border="0" align="left"></a>
+
+            if (((Entry)get(A-&gt;rows[i]))-&gt;val != ((Entry)get(B-&gt;rows[i]))-&gt;val) {
+                return 0;
+            }
+            moveNext(A-&gt;rows[i]);
+            moveNext(B-&gt;rows[i]);
+        }
+    }
+    return 1;
+}
+
+void makeZero(Matrix M) {
+    for (int i = 1; i &lt;= size(M); i++) {
+        List row = M-&gt;rows[i];
+        if (row != NULL) {
+            moveFront(row);
+</font>            while (index(row) &gt;= 0) {
+                Entry E = (Entry)get(row);
+                freeEntry(&amp;E);
+                moveNext(row);
+            }
+
+            clear(row);
+        }
+    }
+    M-&gt;NNZ = 0;
+}
+
+void changeEntry(Matrix M, int i, int j, double x) {
+    if (M == NULL || i &lt; 1 || i &gt; M-&gt;size || j &lt; 1 || j &gt; M-&gt;size) {
+        exit(EXIT_FAILURE);
+    }
+    List L = M-&gt;rows[i];
+    moveFront(L);
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#1" target="0"><img src="./tm_1_6.gif" alt="other" border="0" align="left"></a>
+
+    while (index(L) &gt;= 0) {
+        Entry E = (Entry)get(L);
+        if (E-&gt;col == j) {
+            if (x == 0.0) {
+                delete(L);
+                M-&gt;NNZ--;
+                freeEntry(&amp;E);
+                return;
+            } else {
+                E-&gt;val = x;
+                return;
+            }
+        }
+        else if (E-&gt;col &gt; j) {
+            if (x != 0.0) {
+                insertBefore(L, newEntry(j, x));
+                M-&gt;NNZ++;
+                return;
+            } else {
+                return;
+            }
+        }
+        moveNext(L);
+    }
+    if (x != 0.0) {
+        append(L, newEntry(j, x));
+        M-&gt;NNZ++;
+    }
+}
+
+Matrix copy(Matrix A) {
+    Matrix B = newMatrix(A-&gt;size);
+    for (int i = 1; i &lt;= A-&gt;size; i++) {
+</font>        List row = A-&gt;rows[i];
+        moveFront(row);
+        while (index(row) != -1) {
+            Entry entry = (Entry)get(row);
+            changeEntry(B, i, entry-&gt;col, entry-&gt;val);
+            moveNext(row);
+        }
+    }
+    return B;
+}
+
+Matrix transpose(Matrix A) {
+    Matrix B = newMatrix(A-&gt;size);
+    for (int i = 1; i &lt;= A-&gt;size; i++) {
+        List row = A-&gt;rows[i];
+        moveFront(row);
+        while (index(row) != -1) {
+            Entry entry = (Entry)get(row);
+            changeEntry(B, entry-&gt;col, i, entry-&gt;val);
+            moveNext(row);
+        }
+    }
+    return B;
+}
+
+Matrix scalarMult(double x, Matrix A) {
+    Matrix B = newMatrix(A-&gt;size);
+    for (int i = 1; i &lt;= A-&gt;size; i++) {
+<a name="9"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#9" target="0"><img src="./tm_4_2.gif" alt="other" border="0" align="left"></a>
+
+        List row = A-&gt;rows[i];
+        moveFront(row);
+        while (index(row) != -1) {
+            Entry entry = (Entry)get(row);
+            changeEntry(B, i, entry-&gt;col, x * entry-&gt;val);
+            moveNext(row);
+        }
+    }
+    return B;
+}
+
+Matrix sum(Matrix A, Matrix B) {
+</font>    if (A == NULL || B == NULL || size(A) != size(B)) {
+        exit(EXIT_FAILURE);
+    }
+<a name="5"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#5" target="0"><img src="./tm_0_3.gif" alt="other" border="0" align="left"></a>
+
+    if (A == B) {
+        return scalarMult(2, A);
+    }
+    Matrix C = newMatrix(A-&gt;size);
+    List sL;
+    for (int i = 1; i &lt;= C-&gt;size; i++) {
+        sL = C-&gt;rows[i];
+        moveFront(A-&gt;rows[i]);
+        moveFront(B-&gt;rows[i]);
+        while (index(A-&gt;rows[i]) &gt;= 0 &amp;&amp; index(B-&gt;rows[i]) &gt;= 0) {
+</font>            Entry aE = (Entry)get(A-&gt;rows[i]);
+            Entry bE = (Entry)get(B-&gt;rows[i]);
+            if (aE-&gt;col &lt; bE-&gt;col) {
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#0" target="0"><img src="./tm_0_7.gif" alt="other" border="0" align="left"></a>
+
+                append(sL, newEntry(aE-&gt;col, aE-&gt;val));
+                C-&gt;NNZ++;
+                moveNext(A-&gt;rows[i]);
+            } else if (aE-&gt;col &gt; bE-&gt;col) {
+                append(sL, newEntry(bE-&gt;col, bE-&gt;val));
+                C-&gt;NNZ++;
+                moveNext(B-&gt;rows[i]);
+            } else {
+                if (aE-&gt;val + bE-&gt;val != 0) {
+                    append(sL, newEntry(aE-&gt;col, aE-&gt;val + bE-&gt;val));
+                    C-&gt;NNZ++;
+                }
+                moveNext(A-&gt;rows[i]);
+                moveNext(B-&gt;rows[i]);
+            }
+        }
+        while (index(A-&gt;rows[i]) &gt;= 0) {
+</font>            Entry aE = (Entry)get(A-&gt;rows[i]);
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#2" target="0"><img src="./tm_2_5.gif" alt="other" border="0" align="left"></a>
+
+            append(sL, newEntry(aE-&gt;col, aE-&gt;val));
+            C-&gt;NNZ++;
+            moveNext(A-&gt;rows[i]);
+        }
+        while (index(B-&gt;rows[i]) &gt;= 0) {
+            Entry bE = (Entry)get(B-&gt;rows[i]);
+            append(sL, newEntry(bE-&gt;col, bE-&gt;val));
+            C-&gt;NNZ++;
+            moveNext(B-&gt;rows[i]);
+        }
+    }
+    return C;
+}
+
+Matrix diff(Matrix A, Matrix B) {
+    if (A-&gt;size != B-&gt;size) {
+</font>        exit(EXIT_FAILURE);
+    }
+    Matrix temp = scalarMult(-1.0, B);
+    Matrix result = sum(A, temp);
+    freeMatrix(&amp;temp);
+    return result;
+}
+
+double vectorDot(List P, List Q) {
+    double dot_prod = 0.0;
+    moveFront(P);
+    moveFront(Q);
+    while (index(P) &gt;= 0 &amp;&amp; index(Q) &gt;= 0) {
+        Entry eP = (Entry)get(P);
+        Entry eQ = (Entry)get(Q);
+        if (eP-&gt;col == eQ-&gt;col) {
+            dot_prod += eP-&gt;val * eQ-&gt;val;
+            moveNext(P);
+            moveNext(Q);
+        } else if (eP-&gt;col &lt; eQ-&gt;col) {
+            moveNext(P);
+        } else {
+            moveNext(Q);
+        }
+    }
+    return dot_prod;
+}
+
+Matrix product(Matrix A, Matrix B) {
+    if (A == NULL || B == NULL || A-&gt;size != B-&gt;size) {
+        exit(EXIT_FAILURE);
+    }
+    Matrix P = newMatrix(A-&gt;size);
+<a name="10"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#10" target="0"><img src="./tm_0_1.gif" alt="other" border="0" align="left"></a>
+
+    if (A-&gt;NNZ == 0 || B-&gt;NNZ == 0) {
+        return P;
+    }
+    Matrix BT = transpose(B);
+    for (int i = 1; i &lt;= A-&gt;size; i++) {
+        List Prow = A-&gt;rows[i];
+</font>        if (length(Prow) &gt; 0) {
+            for (int j = 1; j &lt;= BT-&gt;size; j++) {
+<a name="4"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#4" target="0"><img src="./tm_4_4.gif" alt="other" border="0" align="left"></a>
+
+                List Qrow = BT-&gt;rows[j];
+                if (length(Qrow) &gt; 0) {
+                    double dp = vectorDot(Prow, Qrow);
+                    if (dp != 0) {
+                        Entry e = newEntry(j, dp);
+                        append(P-&gt;rows[i], e);
+                        P-&gt;NNZ++;
+                    }
+                }
+            }
+        }
+    }
+    freeMatrix(&amp;BT);
+    return P;
+}
+
+void printMatrix(FILE *out, Matrix M) {
+    if (out == NULL || M == NULL) {
+</font>        exit(EXIT_FAILURE);
+    }
+<a name="3"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/1/6334669604870/match8-0.html#3" target="0"><img src="./tm_3_4.gif" alt="other" border="0" align="left"></a>
+
+    for (int i = 1; i &lt;= size(M); i++) {
+        if (length(M-&gt;rows[i]) &gt; 0) {
+            fprintf(out, "%d: ", i);
+            for (moveFront(M-&gt;rows[i]); index(M-&gt;rows[i]) &gt;= 0; moveNext(M-&gt;rows[i])) {
+                Entry e = get(M-&gt;rows[i]);
+                fprintf(out, "(%d, %.1f) ", e-&gt;col, e-&gt;val);
+            }
+            fprintf(out, "\n");
+</font>        }
+    }
+}
+</pre>
+
+
+
+</body></html>
