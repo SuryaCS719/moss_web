@@ -3,8 +3,9 @@ from collections import Counter
 def find_repeated_usernames(file_path):
     try:
         with open(file_path, 'r') as file:
-            # Read lines, strip leading/trailing spaces, and filter out empty lines
-            usernames = [line.strip() for line in file.read().splitlines() if line.strip()]
+            # Read lines, strip leading/trailing spaces, and filter out empty lines and commented lines
+            usernames = [line.strip() for line in file.read().splitlines() 
+                         if line.strip() and not line.strip().startswith('#')]
 
         # Count occurrences of each username
         username_counts = Counter(usernames)
