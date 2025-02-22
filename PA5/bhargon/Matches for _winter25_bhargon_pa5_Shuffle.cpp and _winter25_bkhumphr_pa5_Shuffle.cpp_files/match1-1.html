@@ -1,0 +1,118 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/3/4101150139208/match1-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/bhargon/pa5/Shuffle.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/bkhumphr/pa5/Shuffle.cpp<p></p><pre>/***
+* Braden Humphrey
+* bkhumphr
+* 2025 Winter CSE101 PA5
+* Shuffle.cpp
+* Main client for PA5. Uses a List to perform a riffle
+* shuffle, keeping track of how many shuffles it takes
+* to return the list to its original order.
+***/
+#include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;stdexcept&gt;
+#include&lt;iomanip&gt;
+#include"List.h"
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/3/4101150139208/match1-0.html#1" target="0"><img src="./tm_1_20.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// Function prototypes --------------------------------------------------------
+
+void shuffle(List &amp;D);
+
+// maino()
+int main(int argc, char *argv[]) {
+	if (argc != 2 || stoi(argv[1]) &lt; 1) {
+		printf("Usage: ./Shuffle &lt;integer&gt;\n");
+		exit(1);
+	}
+
+	List D; // original deck
+	List S; // shuffled deck
+	int n = stoi(argv[1]); // deck size
+	
+	// header for output
+	cout &lt;&lt; "deck size       shuffle count\n";
+</font><a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/3/4101150139208/match1-0.html#0" target="0"><img src="./tm_0_75.gif" alt="other" border="0" align="left"></a>
+
+	cout &lt;&lt; "------------------------------\n";
+
+	for (int i = 1; i &lt;= n; i++) {
+		// count for the number of shuffles
+		int s = 1;
+
+		D.insertBefore(i); // fill the deck
+
+		// copy D into S
+		S = D;
+
+		// begin shuffling
+		shuffle(S);
+		
+		// keep shuffling until back in original order
+		while(!(D == S)) {
+			shuffle(S);
+			s++;
+		}
+
+		cout &lt;&lt; " " &lt;&lt; std::left &lt;&lt; std::setw(16) &lt;&lt; i &lt;&lt; s &lt;&lt; endl;
+	}
+
+	return 0;
+}
+
+// shuffle()
+// Shuffle the given list by splitting it in half,
+// then "merging" it by alternately adding one value
+// from each half, starting with the right half
+void shuffle(List &amp;D) {
+	if (D.length() &gt; 1) {
+		// midpoint of D
+		int mid = D.length() / 2;
+
+		// remainder if deck size is not even
+		int remain = D.length() % 2;
+
+		// Create Lists to simulate left and right halves of D
+		List L, R;
+		D.moveFront();
+
+		// Fill both halves, starting with the left half
+		for (int i = 0; i &lt; mid; i++) {
+			L.insertBefore(D.moveNext());
+		}
+		for (int i = mid; i &lt; D.length(); i++) {
+			R.insertBefore(D.moveNext());
+		}
+
+		// Empty D
+		D.clear();
+
+		// Simulate the perfect shuffle by alternating adding values
+		// from L and R, starting with R
+		L.moveFront();
+		R.moveFront();
+
+		for (int i = 0; i &lt; mid; i++) {
+			D.insertBefore(R.moveNext());
+			D.insertBefore(L.moveNext());
+		}
+
+		if (((mid * 2) + remain) % 2 != 0) {
+			D.insertBefore(R.moveNext());
+</font>		}
+	}
+}
+</pre>
+
+
+
+</body></html>

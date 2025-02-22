@@ -1,0 +1,125 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/3/4101150139208/match1-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/bhargon/pa5/Shuffle.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/bhargon/pa5/Shuffle.cpp<p></p><pre>/***
+ * Joe Hargon
+ * bhargon
+ * 2025 Winter CSE101 PA5
+ * Shuffle.cpp
+ * Client program; Shuffle.cpp performs a perfect shuffle on a list of integers
+ * representing a deck of cards. A perfect shuffle, AKA a riffle shuffle, 
+ * involves splitting the deck of cards evenly, then merging them into a single
+ * new deck by alternatively inserting cards from each half. Repeating this 
+ * shuffle enough times eventually returns the deck to its original order.
+ * This creates an order of s shuffles where applying it to any permutation
+ * of this list of integers will return it to its original order. The program
+ * reads a single command-line argument specifying the maximum number of cards 
+ * in the deck. For each n (n being the current number of cards in the deck) in 
+ * range 1 to n, the program performs shuffles until the list is brought back to 
+ * its original order, counting the number of shuffles as it goes. It then prints 
+ * a table giving this count for each n.
+ ***/ 
+
+ #include &lt;iostream&gt;
+ #include &lt;iomanip&gt;
+ #include &lt;string&gt;
+ #include &lt;stdexcept&gt;
+ #include "List.h"
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/3/4101150139208/match1-1.html#1" target="1"><img src="./tm_1_20.gif" alt="other" border="0" align="left"></a>
+
+ using namespace std;
+
+ // Function Prototypes -------------------------------------------------------
+
+ void shuffle(List &amp;D);
+
+ // Client Program ------------------------------------------------------------
+
+ int main(int argc, char *argv[]) {
+
+    // check for two command-line arguments and a card count of 1 or greater
+	if (argc != 2 || stoi(argv[1]) &lt; 1) {
+		printf("Usage: ./Shuffle &lt;integer&gt;\n");
+		exit(1);
+	}
+
+    List originalDeck;      // holds the original (unshuffled) deck
+    List shuffleDeck;       // holds the deck to be shuffled until it is matches
+                            // the original deck
+    int n = stoi(argv[1]);  // holds the deck size
+    
+    // print header
+    cout &lt;&lt; "deck size       shuffle count\n------------------------------\n"; 
+</font><a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/3/4101150139208/match1-1.html#0" target="1"><img src="./tm_0_77.gif" alt="other" border="0" align="left"></a>
+
+
+    for (int i = 1; i &lt;= n; i++) {
+        int count = 1;  // holds the shuffle count
+        
+        // put card i into the original deck
+        originalDeck.insertBefore(i);
+
+        // put the card(s) in the original deck into the shuffled deck
+        shuffleDeck = originalDeck;
+
+        // perform shuffles until shuffled deck is brought back to original deck
+        shuffle(shuffleDeck);
+        while (!(originalDeck == shuffleDeck)) {
+            shuffle(shuffleDeck);
+            count++;
+        }
+
+        cout &lt;&lt; " " &lt;&lt; std::left &lt;&lt; std::setw(16) &lt;&lt; i &lt;&lt; count &lt;&lt; endl;
+    }
+
+    return 0;
+ }
+
+
+ void shuffle(List &amp;D) {
+    // no need to shuffle if the deck is only one card
+    if (D.length() &gt; 1) {
+
+        // figure out how many cards there are/if deck size is even or odd
+        int half = D.length() / 2;          // holds the number of cards in
+                                            //  half of the deck
+        int remaining  = D.length() % 2;    // holds any remaining cards if 
+                                            // the deck size is odd
+
+        // add cards from D to each deck half
+        List half1;
+        List half2;
+        D.moveFront();
+
+        for (int i = 0; i &lt; half; i++) 
+            half1.insertBefore(D.moveNext());
+
+        for (int i = half; i &lt; D.length(); i++)
+            half2.insertBefore(D.moveNext());
+
+        // remove all cards from the deck
+        D.clear();
+
+        // perform perfect shuffle by inserting alternating cards from each
+        // deck half into D
+        half1.moveFront();
+        half2.moveFront();
+
+        for (int i = 0; i &lt; half; i++) {
+            D.insertBefore(half2.moveNext()); 
+            D.insertBefore(half1.moveNext());
+        }
+
+        if ((half * 2 + remaining) % 2 != 0)
+            D.insertBefore(half2.moveNext()); 
+</font>    }
+ }</pre>
+
+
+
+</body></html>

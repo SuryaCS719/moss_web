@@ -1,0 +1,130 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/3/4101150139208/match3-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/saasilbe/pa5/Shuffle.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/saasilbe/pa5/Shuffle.cpp<p></p><pre>/****************************************************************************************
+ * Sage Silberman
+ * @author saasilbe
+ * PA 5
+ * 
+ ****************************************************************************************/
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdexcept&gt;
+#include &lt;iomanip&gt;
+
+#include "List.h"
+
+using namespace std;
+
+//perfect shuffle
+    //three decks: 
+    //1 starting state of d
+    // 2 temps L (left) and R (right) (which you need to delete at end of shuffle function)
+    // shuffle 
+void shuffle(List&amp; D){
+    List L;
+    List R;
+    int x;
+    int y;
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/3/4101150139208/match3-1.html#2" target="1"><img src="./tm_2_17.gif" alt="other" border="0" align="left"></a>
+
+    int n = D.length();
+    
+    // split D into the L and R halves
+    D.moveFront();
+    while (D.position() &lt; n / 2) {
+        x = D.moveNext();
+        L.insertBefore(x);
+    }   
+    while (D.position() &lt; n) {
+        y = D.moveNext();
+        R.insertBefore(y);
+    }
+    // clear D and shuffle L and R back into D
+    D.clear();
+    L.moveFront();
+</font><a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/3/4101150139208/match3-1.html#1" target="1"><img src="./tm_1_18.gif" alt="other" border="0" align="left"></a>
+
+    R.moveFront();
+    D.moveFront();
+    while (L.position() &lt; L.length() &amp;&amp; R.position() &lt; R.length()) {
+        x = R.moveNext();
+        D.insertBefore(x);
+
+        y = L.moveNext();
+        D.insertBefore(y);
+    }
+
+    //edge case
+    while (L.position() &lt; L.length()) {
+</font>    D.insertBefore(L.moveNext());
+    }
+
+    while (R.position() &lt; R.length()) {
+        D.insertBefore(R.moveNext());
+    }
+
+
+    //erase L and R
+    L.clear();
+    R.clear();
+}
+
+//reads a single command line argument (a positive integer) 
+//specifying the maximum number of cards in a deck
+// make copy 
+// loop argc num of times
+// df
+int main(int argc, char **argv){
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/3/4101150139208/match3-1.html#0" target="1"><img src="./tm_0_40.gif" alt="other" border="0" align="left"></a>
+
+    int n, count, num;
+    List Deck, Temp;
+
+    // check num of args
+    if (argc != 2) {
+        throw invalid_argument("Incorrect number of arguments. Usage: Shuffle &lt;int&gt;");
+    }
+    // check input for the max number of cards
+    num = stoi(argv[1]);
+    if (num &lt;= 0) {
+        throw invalid_argument("Argument must be a positive integer.");
+    }
+
+    // header
+    cout &lt;&lt; "deck size\tshuffle count" &lt;&lt; endl;
+    string div(30, '-');
+    cout &lt;&lt; div &lt;&lt; endl;    
+
+    // iterate thru possible deck sizes
+    for (n = 1; n &lt;= num; n++) {
+        count = 0;
+        Deck.moveBack();
+        Deck.insertBefore(n - 1);    
+        
+        //start shuffle
+        Temp = Deck;
+        shuffle(Deck);
+        count++;
+
+        // shuffle until deck matches original
+        while (!(Temp == Deck)) {
+            shuffle(Deck);
+            count++;
+        }
+
+        // output
+        cout &lt;&lt; " " &lt;&lt; left &lt;&lt; setw(16) &lt;&lt; n &lt;&lt; count &lt;&lt; endl;
+</font>    }
+}
+</pre>
+
+
+
+</body></html>

@@ -1,0 +1,364 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/4/7951512929025/match0-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/ssriva16/pa5/List.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter23/ftria/pa5/List.cpp<p></p><pre>/*
+ * Feli Tria, ftria
+ * CSE 101 Winter 2023
+ * List.cpp
+ * Implementation of List ADT.
+ */
+
+#include "List.h"
+#include &lt;stdexcept&gt;
+
+using namespace std;
+
+// Node Constructor -----
+List::Node::Node(ListElement x) {
+    data = x;
+    next = nullptr;
+    prev = nullptr;
+}
+
+// List Constructor &amp; Destructor -----
+List::List() {
+    frontDummy = new Node(-1);
+    backDummy = new Node(-2);
+    frontDummy-&gt;next = backDummy;
+    backDummy-&gt;prev = frontDummy;
+    beforeCursor = frontDummy;
+    afterCursor = backDummy;
+    pos_cursor = 0;
+    num_elements = 0;
+}
+
+List::List(const List&amp; L) { 
+    frontDummy = new Node(-1);
+    backDummy = new Node(-2);
+    frontDummy-&gt;next = backDummy;
+    backDummy-&gt;prev = frontDummy;
+    beforeCursor = frontDummy;
+    afterCursor = backDummy;
+    pos_cursor = 0;
+    num_elements = 0;
+
+    Node *N = L.frontDummy-&gt;next;
+    while (N != L.backDummy) {
+        this-&gt;insertAfter(N-&gt;data);
+        moveNext();
+        N = N-&gt;next;
+    }
+    moveFront();
+}
+
+List::~List() {
+    clear();
+    delete frontDummy;
+    delete backDummy;
+}
+
+
+// Access Functions -----
+int List::length() const{
+    return num_elements;
+}
+
+ListElement List::front() const{
+    if (num_elements == 0) {
+        throw length_error("List: front(): empty list");
+    }
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/4/7951512929025/match0-0.html#2" target="0"><img src="./tm_2_5.gif" alt="other" border="0" align="left"></a>
+
+    return frontDummy-&gt;next-&gt;data;
+}
+
+ListElement List::back() const{
+    if (num_elements == 0) {
+        throw length_error("List: back(): empty list");
+    }
+    return backDummy-&gt;prev-&gt;data;
+}
+
+int List::position() const{
+    if (pos_cursor &lt; 0 || pos_cursor &gt; num_elements) {
+        throw range_error("List: position(): position underfined");
+    }
+    return pos_cursor;
+}
+
+ListElement List::peekNext() const{
+    if (position() &gt;= length()) {
+        throw range_error("List: peekNext(): cursor at back");
+    }
+    return afterCursor-&gt;data;
+}
+
+ListElement List::peekPrev() const{
+</font>    if (position() &lt;= 0) {
+        throw range_error("List: peekPrev(): cursor at front");
+    }
+    return beforeCursor-&gt;data;
+}
+
+
+// Manipulation Procedures -----
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/4/7951512929025/match0-0.html#0" target="0"><img src="./tm_0_50.gif" alt="other" border="0" align="left"></a>
+
+void List::clear() {
+    moveFront();
+    while (length() &gt; 0) {
+        eraseAfter();
+    }
+}
+
+void List::moveFront() {
+    beforeCursor = frontDummy;
+    afterCursor = frontDummy-&gt;next;
+    pos_cursor = 0;
+    return;
+}
+
+void List::moveBack() {
+    afterCursor = backDummy;
+    beforeCursor = backDummy-&gt;prev;
+    pos_cursor = num_elements;
+}
+
+ListElement List::moveNext() {
+    if (position() &gt;= length()) {
+        throw range_error("List: moveNext(): cursor at back");
+    }
+    beforeCursor = beforeCursor-&gt;next;
+    afterCursor = afterCursor-&gt;next;
+    pos_cursor++;
+    return beforeCursor-&gt;data;
+}
+
+ListElement List::movePrev() {
+    if (position() &lt;= 0) {
+        throw range_error("List: movePrev(): cursor at front");
+    }
+    beforeCursor = beforeCursor-&gt;prev;
+    afterCursor = afterCursor-&gt;prev;
+    pos_cursor--;
+    return afterCursor-&gt;data;
+}
+
+void List::insertAfter(ListElement x) {
+    if (position() &lt; 0) {
+        exit(EXIT_FAILURE);
+    }
+    if (afterCursor == nullptr || beforeCursor == nullptr) {
+        exit(EXIT_FAILURE);
+    }    
+    Node *temp = new Node(x);
+
+    temp-&gt;prev = beforeCursor;
+    beforeCursor-&gt;next = temp;
+    temp-&gt;next = afterCursor;
+    afterCursor-&gt;prev = temp;
+    afterCursor = temp;
+
+    num_elements++;
+}
+
+void List::insertBefore(ListElement x) {
+    if (position() &lt; 0) {
+        exit(EXIT_FAILURE);
+    }
+    if (afterCursor == nullptr || beforeCursor == nullptr) {
+        exit(EXIT_FAILURE);
+    }
+    Node *temp = new Node(x);
+
+    temp-&gt;prev = beforeCursor;
+    beforeCursor-&gt;next = temp;
+    temp-&gt;next = afterCursor;
+    afterCursor-&gt;prev = temp;
+    beforeCursor = temp;
+
+    pos_cursor++;
+    num_elements++;
+}
+
+void List::setAfter(ListElement x) {
+    if (position() &gt;= length()) {
+        throw range_error("List: setAfter(): cursor at back");
+    }
+    afterCursor-&gt;next-&gt;data = x;
+}
+
+void List::setBefore(ListElement x) {
+    if (position() &lt;= 0) {
+        throw range_error("List: setBefore(): cursor at front");
+    }
+    beforeCursor-&gt;prev-&gt;data=x;
+}
+
+void List::eraseAfter() {
+    if (position() &gt;= length()) {
+        throw range_error("List: eraseAfter(): cursor at back");
+    }
+    Node *N = afterCursor;
+    beforeCursor-&gt;next = afterCursor-&gt;next;
+    N-&gt;next-&gt;prev = beforeCursor;
+    afterCursor = N-&gt;next;
+    delete N;
+    num_elements--;
+}
+
+void List::eraseBefore() {
+    if (position() &lt;= 0) {
+        throw range_error("List: eraseBefore(): cursor at front");
+    }
+    Node *N = beforeCursor;
+    beforeCursor = beforeCursor-&gt;prev;
+    afterCursor-&gt;prev = beforeCursor;
+    beforeCursor-&gt;next = afterCursor;
+    delete N;
+    pos_cursor--;
+    num_elements--;
+}
+
+
+// Other Functions -----
+int List::findNext(ListElement x) {
+    bool found = false;
+    Node *N = afterCursor;
+    while (!found &amp;&amp; N != backDummy) {
+        found = (N-&gt;data == x);
+        if (!found) {
+            N = N-&gt;next;
+        }
+        pos_cursor++;
+    }
+    afterCursor = N-&gt;next;
+    beforeCursor = N;
+    if (found) {
+        return pos_cursor;
+    }
+    else {
+        return -1;
+    }
+}
+
+int List::findPrev(ListElement x) {
+    bool found = false;
+    do {
+        if (x == movePrev()) {
+            found = true;
+            break;
+        }
+    } while (pos_cursor &gt; 0);
+    return (found ? pos_cursor : -1);
+}
+
+void List::cleanup() {
+    int position = 0;
+    Node *cursor = frontDummy-&gt;next;
+    Node *current = nullptr;
+    Node *n = nullptr;
+    while (cursor != backDummy) {
+        current = cursor;
+        n = cursor-&gt;next;
+        position++;
+        while (n != backDummy) {
+            if (cursor-&gt;data == n-&gt;data) {
+                current-&gt;next = n-&gt;next;
+                n-&gt;next-&gt;prev = current;
+                delete n;
+                n = current-&gt;next;
+                num_elements--;
+                if (position &lt; pos_cursor) {
+                    pos_cursor--;
+                }
+            }
+            else {
+                current = n;
+                n = current-&gt;next;                
+            }
+        }
+        cursor = cursor-&gt;next;
+    }
+}
+
+List List::concat(const List&amp; L) const {
+    List newList;
+    Node *N = this-&gt;frontDummy-&gt;next;
+    Node *M = L.frontDummy-&gt;next;
+</font>
+    while (N != this-&gt;backDummy) {
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/4/7951512929025/match0-0.html#1" target="0"><img src="./tm_1_6.gif" alt="other" border="0" align="left"></a>
+
+        newList.insertAfter(N-&gt;data);
+        N = N-&gt;next;
+    }
+
+    while (M != L.backDummy) {
+        newList.insertAfter(M-&gt;data);
+        M = M-&gt;next;
+    }
+    return newList;
+}
+
+std::string List::to_string() const {
+    Node *N = nullptr;
+    string s = "";
+    for (N = frontDummy; N!= nullptr; N = N-&gt;next) {
+        s += std::to_string(N-&gt;data) + " ";
+</font>    }
+    return s;
+}
+
+bool List::equals(const List&amp; R) const {
+    bool eq = false;
+    Node *N = nullptr;
+    Node *M = nullptr;
+
+    eq = (this-&gt;num_elements == R.num_elements);
+
+    N = this-&gt;frontDummy;
+    M = R.frontDummy;
+
+    while (eq &amp;&amp; N != nullptr) {
+        eq = (N-&gt;data == M-&gt;data);
+        N = N-&gt;next;
+        M = M-&gt;next;
+    }
+    return eq;
+}
+
+
+// Overriden Operators -----
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; stream, const List&amp; L) {
+    return stream &lt;&lt; L.List::to_string();
+}
+
+bool operator==(const List&amp; A, const List&amp; B) {
+<a name="3"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/4/7951512929025/match0-0.html#3" target="0"><img src="./tm_3_4.gif" alt="other" border="0" align="left"></a>
+
+    return A.List::equals(B);
+}
+
+List&amp; List::operator=(const List&amp; L) {
+    if (this != &amp;L) {
+        List temp = L;
+    
+        swap(frontDummy, temp.frontDummy);
+        swap(backDummy, temp.backDummy);
+        swap(num_elements, temp.num_elements);
+        swap(beforeCursor, temp.beforeCursor);
+</font>        swap(afterCursor, temp.afterCursor);
+        swap(pos_cursor, temp.pos_cursor);
+    }
+    return *this;
+}
+</pre>
+
+
+
+</body></html>

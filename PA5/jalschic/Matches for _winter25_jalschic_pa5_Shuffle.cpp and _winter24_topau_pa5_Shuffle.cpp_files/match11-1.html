@@ -1,0 +1,98 @@
+
+<!-- saved from url=(0063)http://moss.stanford.edu/results/4/9633967709700/match11-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/jalschic/pa5/Shuffle.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter24/topau/pa5/Shuffle.cpp<p></p><pre>/****************************************************************************************
+*  Tony Pau
+*  topau
+*  CSE 101 pa5
+*  Shuffle.cpp
+*  Main function for List.cpp
+*****************************************************************************************/
+#include&lt;iostream&gt;
+#include&lt;fstream&gt;
+#include&lt;string&gt;
+#include &lt;sstream&gt;
+#include"List.h"
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/4/9633967709700/match11-0.html#0" target="0"><img src="./tm_0_75.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// prototype function for shuffle
+void shuffle(List&amp; D);
+
+
+int main(int argc, char * argv[]){
+    // input and output file stream objects
+    ifstream in;
+    ofstream out;
+    stringstream ss; // string stream for converting command line argument to integer
+
+    // checks if correct # of command line arguments is provided
+    if( argc != 2 ){
+        cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " &lt;size of deck&gt;" &lt;&lt; endl;
+        return(EXIT_FAILURE);
+    }
+    // displays header for the output
+    cout &lt;&lt; "size of deck       shuffle count" &lt;&lt; endl;
+    cout &lt;&lt; "------------------------------" &lt;&lt; endl;
+    
+    // reads the size of the deck from command line argument
+    int deck;
+    ss &lt;&lt; argv[1];
+    ss &gt;&gt; deck;
+
+    List L; // creates List L
+    // populates list with values from 1 to deck
+    for(int i = 1; i &lt;= deck; i++){
+        L.insertBefore(i-1);
+        List D(L);
+
+        int count = 0;
+        do{
+            shuffle(D);
+            count ++;
+        }while(! D.equals(L));
+
+        // Print the sullfle count
+        cout &lt;&lt; i &lt;&lt; "\t\t" &lt;&lt; count &lt;&lt; endl;
+    }
+    in.close();     // Close file stream
+    out.close();    // Close file stream
+
+    return(EXIT_SUCCESS);
+}
+
+// shuffles List D
+void shuffle(List&amp; D){
+    List temp; // temp List to store first half of List D
+    int split = D.length() / 2;
+    D.moveFront();
+
+    // moves first half of List D to temp List
+    for(int i = 0; i &lt; split; i++){
+</font>        int data = D.moveNext();
+        temp.insertBefore(data);
+        D.eraseBefore();
+    }
+
+    // resets positions of temp List and List D
+    temp.moveFront();
+    while(D.position() &lt; D.length()){
+        D.moveNext();
+
+        // if elements in temp List, inserts them into List D
+        if(temp.position() &lt; temp.length()){
+            D.insertAfter(temp.moveNext());
+            D.moveNext();
+        }
+
+    }
+}</pre>
+
+
+
+</body></html>

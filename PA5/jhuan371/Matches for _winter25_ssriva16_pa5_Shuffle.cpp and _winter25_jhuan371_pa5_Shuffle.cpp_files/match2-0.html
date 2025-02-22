@@ -1,0 +1,99 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/3/4101150139208/match2-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/ssriva16/pa5/Shuffle.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/ssriva16/pa5/Shuffle.cpp<p></p><pre>//Sara Srivastava, ssriva16, pa5
+#include "List.h"
+#include &lt;stdexcept&gt;
+#include &lt;iomanip&gt;
+#include &lt;iostream&gt;
+
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/3/4101150139208/match2-1.html#0" target="1"><img src="./tm_0_95.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// function prototype for the shuffle operation
+void shuffle(List&amp; D);
+
+int main(int argc, char* argv[]) {
+    int n, count, max;
+    List Deck, Temp;
+
+    // check for right number of arguments
+    if (argc != 2) {
+        throw invalid_argument("Error: Wrong number of arguments");
+    }
+
+    // get the input for the max number of cards
+    max = stoi(argv[1]);
+    if (max &lt;= 0) {
+        throw invalid_argument("Error: Input  must be a positive value.");
+    }
+
+    // print header
+    cout &lt;&lt; "deck size\tshuffle count" &lt;&lt; endl;
+    string div(30, '-');
+    cout &lt;&lt; div &lt;&lt; endl;
+
+    // iterate through potential deck sizes
+    for (n = 1; n &lt;= max; n++) {
+        count = 0;
+        Deck.moveBack();
+        Deck.insertBefore(n - 1);
+
+        // shuffle once to start
+        Temp = Deck;
+        shuffle(Deck);
+        count++;
+
+        // keep shuffling until deck matches the original order
+        while (!(Temp == Deck)) {
+            shuffle(Deck);
+            count++;
+        }
+
+        // output deck size and shuffle count
+        cout &lt;&lt; " " &lt;&lt; left &lt;&lt; setw(16) &lt;&lt; n &lt;&lt; count &lt;&lt; endl;
+    }
+}
+
+// performs one perfect shuffle
+void shuffle(List&amp; D) {
+    List A, B;
+    int a, b;
+    int x = D.length();
+
+    // split D into half
+    D.moveFront();
+    while (D.position() &lt; x / 2) {
+        a = D.moveNext();
+        A.insertBefore(a);
+    }
+    while (D.position() &lt; x) {
+        b = D.moveNext();
+        B.insertBefore(b);
+    }
+
+    // clear the og list and do  the shuffle
+    D.clear();
+    A.moveFront();
+    B.moveFront();
+
+    while (B.position() &lt; B.length()) {
+        x = B.moveNext();
+        D.insertBefore(x);
+        if (A.position() &lt; A.length()) {
+</font>            b = A.moveNext();
+            D.insertBefore(b);
+        }
+    }
+}
+
+</pre>
+
+
+
+</body></html>

@@ -21,6 +21,23 @@ PA_FILE_TYPES = {
         "Matrix.c": ["matrix"],
         "Sparse.c": ["sparse"],
         "List.c": ["list"],
+    },
+    "PA5": {
+        "Shuffle.cpp": ["shuffle"],
+        "List.cpp": ["list"],
+    },
+    "PA6": {
+        "Arithmetic.cpp": ["arithmetic"],
+        "BigInteger.cpp": ["biginteger"],
+    },
+    "PA7": {
+        "Dictionary.cpp": ["dictionary"],
+        "Order.cpp": ["order"],
+    },
+    "PA8": {
+        "WordFrequency.cpp": ["wordfrequency"],
+        "Dictionary.cpp": ["dictionary"],
+        # "Order.cpp": ["order"],
     }
 }
 

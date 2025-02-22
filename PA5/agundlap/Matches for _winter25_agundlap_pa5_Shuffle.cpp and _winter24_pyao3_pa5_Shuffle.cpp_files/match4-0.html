@@ -1,0 +1,113 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/5/8550344166319/match4-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/agundlap/pa5/Shuffle.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/agundlap/pa5/Shuffle.cpp<p></p><pre>/********************************************************************************* 
+* Adithya Gundlapalli
+* agundlap
+* Winter 2025 CSE 101 PA5
+* Shuffle.cpp
+* Shuffle function for List.cpp
+*********************************************************************************/ 
+
+#include &lt;stdexcept&gt;
+#include &lt;iomanip&gt;
+#include "List.h"
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/5/8550344166319/match4-1.html#1" target="1"><img src="./tm_1_10.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+void shuffle(List&amp; D) {
+    List A, B;
+    int x, y;
+    int n = D.length();
+    
+    // Split D into halves
+    D.moveFront();
+    while (D.position() &lt; n / 2) {
+</font>        x = D.moveNext();
+        A.insertBefore(x);
+    }   
+    while (D.position() &lt; n) {
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/5/8550344166319/match4-1.html#0" target="1"><img src="./tm_0_65.gif" alt="other" border="0" align="left"></a>
+
+        y = D.moveNext();
+        B.insertBefore(y);
+    }
+    
+    // Reset D and shuffle A and B back into D
+    D.clear();
+    A.moveFront();
+    B.moveFront();
+    
+    // Shuffle elements from A and B back into D
+    while (A.position() &lt; A.length() &amp;&amp; B.position() &lt; B.length()) {
+        x = B.moveNext();
+        D.insertBefore(x);
+
+        y = A.moveNext();
+        D.insertBefore(y);
+    }
+    
+    // Add remaining elements from A or B if any
+    while (A.position() &lt; A.length()) {
+        y = A.moveNext();
+        D.insertBefore(y);
+    }
+    while (B.position() &lt; B.length()) {
+        x = B.moveNext();
+        D.insertBefore(x);
+    }
+}
+
+int main(int argc, char* argv[]) {
+    int n, count, num;
+    List Deck, Temp;
+    
+    // Check for correct number of arguments
+    if (argc != 2) {
+        throw invalid_argument("Incorrect number of arguments. Usage: Shuffle &lt;int&gt;");
+    }
+    
+    // Input for max number of cards
+    num = stoi(argv[1]);
+    if (num &lt;= 0) {
+        throw invalid_argument("Argument must be a positive integer.");
+    }
+    
+    // Header
+    cout &lt;&lt; "deck size\tshuffle count" &lt;&lt; endl;
+    string div(30, '-');
+    cout &lt;&lt; div &lt;&lt; endl;    
+    
+    // Iterate through possible deck sizes
+    for (n = 1; n &lt;= num; n++) {
+        count = 0;
+        Deck.moveBack();
+        Deck.insertBefore(n - 1);    
+        
+        // Shuffle once to start
+        Temp = Deck;
+</font>        shuffle(Deck);
+        count++;
+        
+        // Shuffle until deck matches original
+        while (!(Temp == Deck)) {
+            shuffle(Deck);
+            count++;
+        }
+        
+        // Output
+        cout &lt;&lt; " " &lt;&lt; left &lt;&lt; setw(16) &lt;&lt; n &lt;&lt; count &lt;&lt; endl;
+    }    
+}
+
+</pre>
+
+
+
+</body></html>

@@ -1,0 +1,540 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/1/3760682308088/match4-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/kle268/pa5/List.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/kle268/pa5/List.cpp<p></p><pre>/***
+* Name: Kailyn Le
+* CruzID: kle268
+* 2025 Winter CSE101 PA5
+* List.cpp
+***/
+
+#include &lt;cassert&gt;	   // Provides assert
+#include &lt;cstdlib&gt;     // Provides size_t
+#include &lt;string&gt;	   // provides string type (C++ class)
+#include &lt;stdlib.h&gt;
+#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;climits&gt;
+#include &lt;stdexcept&gt;
+#include "List.h"
+
+using namespace std;
+
+// Class Constructors &amp; Destructors ----------------------------------------
+
+// Node Constructor
+List::Node::Node(ListElement x) {
+    data = x;
+    prev = nullptr;
+    next = nullptr;
+}
+
+// Default List Constructor
+List::List() {
+    frontDummy = new Node(INT_MIN);
+    backDummy = new Node(INT_MAX);
+
+    frontDummy-&gt;next = backDummy;
+    backDummy-&gt;prev = frontDummy;
+
+    beforeCursor = frontDummy;
+    afterCursor = backDummy;
+
+    pos_cursor = 0;
+    num_elements = 0;
+}
+
+// Copy List Constructor
+List::List(const List&amp; L) {
+    frontDummy = new Node(INT_MIN);
+    backDummy = new Node(INT_MAX);
+
+    frontDummy-&gt;next = backDummy;
+    backDummy-&gt;prev = frontDummy;
+
+    beforeCursor = frontDummy;
+    afterCursor = backDummy;
+
+    pos_cursor = 0;
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/1/3760682308088/match4-1.html#2" target="1"><img src="./tm_2_6.gif" alt="other" border="0" align="left"></a>
+
+    num_elements = 0;
+
+    Node* N = L.frontDummy-&gt;next;
+    while (N != L.backDummy) {
+        int x = N-&gt;data;
+        this-&gt;insertBefore(x);
+        N = N-&gt;next;
+    }
+
+    this-&gt;moveFront();
+    while (this-&gt;pos_cursor != L.pos_cursor) {
+        this-&gt;moveNext();
+    }
+}
+
+// List Destructor
+List::~List() {
+    this-&gt;clear();
+
+    delete this-&gt;frontDummy;
+    delete this-&gt;backDummy;
+}
+
+// Access functions --------------------------------------------------------
+
+// Function length()
+// Returns the length of this List.
+int List::length() const {
+    return this-&gt;num_elements;
+}
+
+// Function front()
+// Precondition: length() &gt; 0
+// Returns the front element in this List.
+ListElement List::front() const {
+</font>    if (!(this-&gt;length() &gt; 0)) {
+        cout &lt;&lt; "List Error: calling front() when precondition is not met" &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    return frontDummy-&gt;next-&gt;data;
+}
+
+// Function back()
+// Precondition: length() &gt; 0
+// Returns the back element in this List.
+ListElement List::back() const {
+    if (!(this-&gt;length() &gt; 0)) {
+        cout &lt;&lt; "List Error: calling back() when precondition is not met" &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    return backDummy-&gt;prev-&gt;data;
+}
+
+// Function position()
+// Returns the position of cursor in this List: 0 &lt;= position() &lt;= length().
+int List::position() const {
+    return this-&gt;pos_cursor;
+}
+
+// Function peekNext()
+// Precondition: position() &lt; length()
+// Returns the element after the cursor.
+ListElement List::peekNext() const {
+    if (!(position() &lt; length())) {
+        cout &lt;&lt; "List Error: calling peekNext() when precondition is not met" &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    return afterCursor-&gt;data;
+}
+
+// Function peekPrev()
+// Precondition: position()&gt;0
+// Returns the element before the cursor.
+ListElement List::peekPrev() const {
+    if (!(position() &gt; 0)) {
+        cout &lt;&lt; "List Error: calling peekPrev() when precondition is not me" &lt;&lt; endl;
+<a name="3"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/1/3760682308088/match4-1.html#3" target="1"><img src="./tm_3_4.gif" alt="other" border="0" align="left"></a>
+
+        return EXIT_FAILURE;
+    }
+
+    return beforeCursor-&gt;data;
+}
+
+// Manipulation procedures -------------------------------------------------
+
+// Function clear()
+// Deletes all elements in this List, setting it to the empty state.
+void List::clear() {
+    this-&gt;moveFront();
+
+    while (this-&gt;length() &gt; 0) {
+        this-&gt;eraseAfter();
+    }
+}
+
+// Function moveFront()
+// Moves cursor to position 0 in this List.
+void List::moveFront() {
+    beforeCursor = frontDummy;
+    afterCursor = beforeCursor-&gt;next;
+
+    this-&gt;pos_cursor = 0;
+}
+
+// Function moveBack()
+// Moves cursor to position length() in this List.
+void List::moveBack() {
+    afterCursor = backDummy;
+    beforeCursor = afterCursor-&gt;prev;
+
+    this-&gt;pos_cursor = this-&gt;length();
+}
+
+// Function moveNext()
+// Precondition: position() &lt; length()
+// Advances cursor to next higher position. Returns the List element that was passed over. 
+ListElement List::moveNext() {
+</font>    if (!(this-&gt;position() &lt; this-&gt;length())) {
+        cout &lt;&lt; "List Error: calling moveNext() when precondition is not met" &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    beforeCursor = beforeCursor-&gt;next;
+    afterCursor = afterCursor-&gt;next;
+
+    this-&gt;pos_cursor++;
+
+    return beforeCursor-&gt;data;
+}
+
+// Function movePrev()
+// Precondition: position()&gt;0
+// Advances cursor to next lower position. Returns the List element that was passed over.
+ListElement List::movePrev() {
+    if (!(this-&gt;position() &gt; 0)) {
+        cout &lt;&lt; "List Error: calling movePrev() when precondition is not met" &lt;&lt; endl;
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/1/3760682308088/match4-1.html#1" target="1"><img src="./tm_1_8.gif" alt="other" border="0" align="left"></a>
+
+        return EXIT_FAILURE;
+    }
+
+    beforeCursor = beforeCursor-&gt;prev;
+    afterCursor = afterCursor-&gt;prev;
+
+    this-&gt;pos_cursor--;
+
+    return afterCursor-&gt;data;
+}
+
+// Function insertAfter()
+// Inserts x after cursor.
+void List::insertAfter(ListElement x) {
+    Node* N = new Node(x);
+
+    N-&gt;prev = beforeCursor;
+    N-&gt;next = afterCursor;
+
+    beforeCursor-&gt;next = N;
+    afterCursor-&gt;prev = N;
+
+    afterCursor = N;
+
+    this-&gt;num_elements++;
+}
+
+// Function insertBefore()
+// Inserts x before cursor.
+void List::insertBefore(ListElement x) {
+    Node* N = new Node(x);
+
+    N-&gt;prev = beforeCursor;
+    N-&gt;next = afterCursor;
+
+    beforeCursor-&gt;next = N;
+    afterCursor-&gt;prev = N;
+
+    beforeCursor = N;
+
+    this-&gt;pos_cursor++;
+    this-&gt;num_elements++;
+}
+
+// Function setAfter()
+// Precondition: position() &gt; 0
+// Overwrites the List element after the cursor with x.
+void List::setAfter(ListElement x) {
+</font>    if (!(this-&gt;position() &gt; 0)) {
+        throw range_error("List Error: calling setAfter() when precondition is not met");
+    }
+
+    afterCursor-&gt;next-&gt;data = x;
+}
+
+// Function setBefore()
+// Precondition: position() &gt; 0
+// Overwrites the List element before the cursor with x.
+void List::setBefore(ListElement x) {
+    if (!(this-&gt;position() &gt; 0)) {
+        throw range_error("List Error: calling setBefore() when precondition is not met");
+    }
+    
+    beforeCursor-&gt;prev-&gt;data = x;
+}
+
+// Function eraseAfter()
+// Precondition: position()&lt;length()
+// Deletes element after cursor.
+void List::eraseAfter() {
+    if (!(this-&gt;position() &lt; this-&gt;length())) {
+        throw range_error("List Error: calling eraseAfter() when precondition is not met");
+    }
+
+    Node* N = afterCursor;
+
+    beforeCursor-&gt;next = afterCursor-&gt;next;
+    N-&gt;next-&gt;prev = beforeCursor;
+    afterCursor = N-&gt;next;
+
+    //afterCursor = afterCursor-&gt;next;
+    //beforeCursor-&gt;next = afterCursor;
+    //afterCursor-&gt;prev = beforeCursor;
+
+    this-&gt;num_elements--;
+
+    delete N;
+}
+
+// Function eraseBefore()
+// Precondition: position() &gt; 0
+// Deletes element before cursor.
+void List::eraseBefore() {
+    if (!(this-&gt;position() &gt; 0)) {
+        throw range_error("List Error: calling eraseBefore() when precondition is not met");
+    }
+
+<a name="4"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/1/3760682308088/match4-1.html#4" target="1"><img src="./tm_4_3.gif" alt="other" border="0" align="left"></a>
+
+    Node* N = beforeCursor;
+
+    beforeCursor = N-&gt;prev;
+    beforeCursor-&gt;next = afterCursor;
+    afterCursor-&gt;prev = beforeCursor;
+
+    //beforeCursor = beforeCursor-&gt;prev;
+    //beforeCursor-&gt;next = afterCursor;
+    //afterCursor-&gt;prev = beforeCursor;
+
+    this-&gt;num_elements--;
+    this-&gt;pos_cursor--;
+
+    delete N;
+}
+
+// Other Functions ---------------------------------------------------------
+
+// Function findNext()
+// Starting from the current cursor position, performs a linear search (in 
+// the direction front-to-back) for the first occurrence of element x. If x
+// is found, places the cursor immediately after the found element, then 
+// returns the final cursor position. If x is not found, places the cursor 
+// at position length(), and returns -1. 
+int List::findNext(ListElement x) {
+    Node* N = this-&gt;afterCursor;
+</font>
+    while (N != this-&gt;backDummy) {
+        if (N-&gt;data == x) {
+            this-&gt;beforeCursor = N;
+            this-&gt;afterCursor = N-&gt;next;
+            this-&gt;pos_cursor++;
+
+            return this-&gt;pos_cursor;
+        }
+
+        N = N-&gt;next;
+        this-&gt;pos_cursor++;
+    }
+
+    this-&gt;afterCursor = backDummy;
+    this-&gt;beforeCursor = afterCursor-&gt;prev;
+    this-&gt;pos_cursor = this-&gt;length();
+
+    return -1;
+}
+
+// Function findPrev()
+// Starting from the current cursor position, performs a linear search (in 
+// the direction back-to-front) for the first occurrence of element x. If x
+// is found, places the cursor immediately before the found element, then
+// returns the final cursor position. If x is not found, places the cursor 
+// at position 0, and returns -1. 
+int List::findPrev(ListElement x) {
+    Node* N = this-&gt;beforeCursor;
+
+    while (N != this-&gt;frontDummy) {
+        if (N-&gt;data == x) {
+            this-&gt;beforeCursor = N-&gt;prev;
+            this-&gt;afterCursor = N;
+            this-&gt;pos_cursor--;
+
+            return this-&gt;pos_cursor;
+        }
+
+        N = N-&gt;prev;
+        this-&gt;pos_cursor--;
+    }
+
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/1/3760682308088/match4-1.html#0" target="1"><img src="./tm_0_13.gif" alt="other" border="0" align="left"></a>
+
+    this-&gt;beforeCursor = frontDummy;
+    this-&gt;afterCursor = beforeCursor-&gt;next;
+    this-&gt;pos_cursor = 0;
+
+    return -1;
+}
+
+// Function cleanup()
+// Removes any repeated elements in this List, leaving only unique elements.
+// The order of the remaining elements is obtained by retaining the frontmost 
+// occurrance of each element, and removing all other occurances. The cursor 
+// is not moved with respect to the retained elements, i.e. it lies between 
+// the same two retained elements that it did before cleanup() was called.
+void List::cleanup() {
+    Node* N = this-&gt;frontDummy-&gt;next;
+    int outter_pos = 0;
+
+    while (N != this-&gt;backDummy) {
+        int x = N-&gt;data;
+        Node* temp = N-&gt;next;
+        int inner_pos = outter_pos + 1;
+
+        while (temp != this-&gt;backDummy) {
+            int y = temp-&gt;data;
+            Node* before = temp-&gt;prev;
+            Node* after = temp-&gt;next;
+            Node* del = temp;
+            temp = after;
+
+            if (x == y) {
+                before-&gt;next = after;
+                after-&gt;prev = before;
+
+                delete del;
+                this-&gt;num_elements--;
+
+                if (inner_pos &lt;= pos_cursor) {
+                    pos_cursor--;
+                }
+            }
+
+            inner_pos++;
+        }
+
+        outter_pos++;
+        N = N-&gt;next;
+    }
+
+    int n = this-&gt;pos_cursor;
+    this-&gt;moveFront();
+
+    while (this-&gt;position() != n) {
+        this-&gt;moveNext();
+    }
+}
+
+// Function concat()
+// Returns a new List consisting of the elements of this List, followed by
+// the elements of L. The cursor in the returned List will be at postion 0.
+List List::concat(const List&amp; L) const {
+    List newL;
+    newL.moveBack();
+</font>
+    Node* N = this-&gt;frontDummy-&gt;next;
+
+    while (N != this-&gt;backDummy) {
+        newL.insertBefore(N-&gt;data);
+
+        N = N-&gt;next;
+    }
+
+    N = L.frontDummy-&gt;next;
+
+    while (N != L.backDummy) {
+        newL.insertBefore(N-&gt;data);
+
+        N = N-&gt;next;
+    }
+
+    newL.beforeCursor = newL.frontDummy;
+    newL.afterCursor = newL.beforeCursor-&gt;next;
+    newL.pos_cursor = 0;
+
+    return newL;
+}
+
+// Function to_string()
+// Returns a string representation of this List consisting of a comma 
+// separated sequence of elements, surrounded by parentheses.
+std::string List::to_string() const {
+    Node* N;
+    string s = "";
+
+    s += "(";
+    for (N = frontDummy-&gt;next; N != this-&gt;backDummy; N = N-&gt;next) {
+        if (N-&gt;data != INT_MAX &amp;&amp; N-&gt;data != INT_MIN) {
+            s += std::to_string(N-&gt;data);
+        }
+
+        if (N-&gt;next != this-&gt;backDummy){
+            s += ", " ;
+        }
+    }
+    s += ")";
+
+    return s;
+}
+
+// Function equals()
+// Returns true if and only if this List is the same integer sequence as R.
+// The cursors in this List and in R are unchanged.
+bool List::equals(const List&amp; R) const {
+    if (this-&gt;num_elements != R.num_elements) {
+        return false;
+    }
+
+    Node* N = this-&gt;frontDummy;
+    Node* M = R.frontDummy;
+
+    while (N != this-&gt;backDummy &amp;&amp; M != R.backDummy) {
+        if (N-&gt;data != M-&gt;data) {
+            return false;
+        }
+
+        N = N-&gt;next;
+        M = M-&gt;next;
+    }
+
+    return true;
+}
+
+// Overriden Operators -----------------------------------------------------
+
+// Operator&lt;&lt; overloading
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; stream, const List&amp; L) {
+    return stream &lt;&lt; L.to_string();
+}
+
+// Operator== overloading
+bool operator==(const List&amp; A, const List&amp; B) {
+    return A.equals(B);
+}
+
+// Operator= overloading
+List&amp; List::operator=(const List&amp; L) {
+    if (this != &amp;L) {
+        List newL = L;
+
+        swap(frontDummy, newL.frontDummy);
+        swap(backDummy, newL.backDummy);
+
+        swap(beforeCursor, newL.beforeCursor);
+        swap(afterCursor, newL.afterCursor);
+
+        swap(pos_cursor, newL.pos_cursor);
+        swap(num_elements, newL.num_elements);
+    }
+
+    return *this;
+}</pre>
+
+
+
+</body></html>

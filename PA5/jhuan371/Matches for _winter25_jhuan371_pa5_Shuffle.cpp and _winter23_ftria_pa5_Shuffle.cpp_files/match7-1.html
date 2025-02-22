@@ -1,0 +1,102 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/0/4139892466805/match7-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/jhuan371/pa5/Shuffle.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter23/ftria/pa5/Shuffle.cpp<p></p><pre>/*
+ * Feli Tria, ftria
+ * CSE 101 Winter 2023
+ * Shuffle.cpp
+ * Client for List ADT.
+ */
+
+#include "List.h"
+#include &lt;stdexcept&gt;
+#include &lt;iomanip&gt;
+
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/0/4139892466805/match7-0.html#0" target="0"><img src="./tm_0_95.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// Thanks to tutor Ishika for helping debug!
+
+void shuffle(List&amp; D);
+
+int main(int argc, char* argv[]) {
+    int n, count, max;
+    List Deck, Temp;
+
+    //  check for correct number of arguments
+    if (argc != 2) {
+        throw invalid_argument("Incorrect number of arguments. Usage: Shuffle &lt;int&gt;");
+    }
+
+    // get input for max number of cards
+    max = stoi(argv[1]);
+    if (max &lt;= 0) {
+        throw invalid_argument("Argument must be a positive integer.");
+    }
+
+    // print header
+    cout &lt;&lt; "deck size\tshuffle count" &lt;&lt; endl;
+    string div(30, '-');
+    cout &lt;&lt; div &lt;&lt; endl;    
+
+    // iterate through possible deck sizes
+    for (n = 1; n &lt;= max; n++) {
+        count = 0;
+        Deck.moveBack();
+        Deck.insertBefore(n - 1);    
+        
+        // shuffle once to start
+        Temp = Deck;
+        shuffle(Deck);
+        count++;
+
+        // do shuffles until deck matches original
+        while (!(Temp == Deck)) {
+            shuffle(Deck);
+            count++;
+        }
+
+        // output num cards and shuffle count
+        cout &lt;&lt; " " &lt;&lt; left &lt;&lt; setw(16) &lt;&lt; n &lt;&lt; count &lt;&lt; endl;
+    }    
+}
+
+void shuffle(List&amp; D) {  
+    List A, B;
+    int x, y;
+    int n = D.length();
+
+    // split D into halves
+    D.moveFront();
+    while (D.position() &lt; n / 2) {
+        x = D.moveNext();
+        A.insertBefore(x);
+    }   
+    while (D.position() &lt; n) {
+        y = D.moveNext();
+        B.insertBefore(y);
+    }
+
+    // reset D and shuffle A and B back into D
+    D.clear();
+    A.moveFront();
+    B.moveFront();
+    while (B.position() &lt; B.length()) {
+        x = B.moveNext();
+        D.insertBefore(x);
+        if (A.position() &lt; A.length()) {
+</font>            y = A.moveNext();
+            D.insertBefore(y);
+        }
+    }
+}
+</pre>
+
+
+
+</body></html>
