@@ -145,6 +145,13 @@
             gap: 1.5rem;
         }
 
+        .pa-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem; /* Space between the button and the link */
+        }
+
         .pa-link {
             display: flex;
             align-items: center;
@@ -221,6 +228,23 @@
             font-size: 1.5rem;
         }
 
+        .pa-sheet-link {
+            color: #1a73e8; /* Google Blue, matching your theme */
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: rgba(26, 115, 232, 0.1); /* Light blue background for visibility */
+        }
+
+        .pa-sheet-link:hover {
+            color: #34a853; /* Google Green on hover */
+            background: rgba(52, 168, 83, 0.1); /* Light green background on hover */
+            text-decoration: underline;
+        }
+
         .footer {
             text-align: center;
             margin-top: 3rem;
@@ -294,15 +318,38 @@
         <div class="dashboard">
             <h2>📊 MOSS Reports Dashboard</h2>
             <div class="pa-links">
-                <a href="PA1/index.html" class="pa-link pa1"><i>📁</i> PA1 Reports</a>
-                <a href="PA2/index.html" class="pa-link pa2"><i>📁</i> PA2 Reports</a>
-                <a href="PA3/index.html" class="pa-link pa3"><i>📁</i> PA3 Reports</a>
-                <a href="PA4/index.html" class="pa-link pa4"><i>📁</i> PA4 Reports</a>
-                <a href="PA5/index.html" class="pa-link pa5"><i>📁</i> PA5 Reports</a>
-                <a href="PA6/index.html" class="pa-link pa6"><i>📁</i> PA6 Reports</a>
-                <a href="PA7/index.html" class="pa-link pa7"><i>📁</i> PA7 Reports</a>
-                <a href="PA8/index.html" class="pa-link pa8"><i>📁</i> PA8 Reports</a>
-                <!-- Add more PA links as needed -->
+                <div class="pa-container">
+                    <a href="PA1/index.html" class="pa-link pa1"><i>📁</i> PA1 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/12ONjyvhPTX3MDKerz0diegmK-NeWALU5T3BcWrFtAxo/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA1 Google Sheet</a>
+                </div>
+                <div class="pa-container">
+                    <a href="PA2/index.html" class="pa-link pa2"><i>📁</i> PA2 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1GEfiRr7n01MLunW1W0gCx_WzfyBxe_GRIvptL3L1seQ/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA2 Google Sheet</a>
+                </div>
+                <div class="pa-container">
+                    <a href="PA3/index.html" class="pa-link pa3"><i>📁</i> PA3 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1frtDwMJ0KOTS6Xx24cot21zl1UYn4dkvAGQUsBGCfgk/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA3 Google Sheet</a>
+                </div>
+                <div class="pa-container">
+                    <a href="PA4/index.html" class="pa-link pa4"><i>📁</i> PA4 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/19kWhLmBSBzeESAW7e3LWfR8TbjTNNWAvFP9vXw-Y1TI/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA4 Google Sheet</a>
+                </div>
+                <div class="pa-container">
+                    <a href="PA5/index.html" class="pa-link pa5"><i>📁</i> PA5 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1f017Mbp7zy2QbZ9Tc56qmjxbJDk78XL1k7SyW-Sfa5A/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA5 Google Sheet</a>
+                </div>
+                <div class="pa-container">
+                    <a href="PA6/index.html" class="pa-link pa6"><i>📁</i> PA6 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/194L6yLA_QQVXQ0VytNsZf3vDWLJAUo_D-0WBCPms9K4/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA6 Google Sheet</a>
+                </div>
+                <div class="pa-container">
+                    <a href="PA7/index.html" class="pa-link pa7"><i>📁</i> PA7 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/1xTQf-SODEYHdn38CTUM8O2UYw3JyzIMt17-5aE1bIZU/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA7 Google Sheet</a>
+                </div>
+                <div class="pa-container">
+                    <a href="PA8/index.html" class="pa-link pa8"><i>📁</i> PA8 Reports</a>
+                    <a href="https://docs.google.com/spreadsheets/d/11dMb-aRm9CenzEi1Fo_JCJjvdDs0Dg98DDCWqgNf_AQ/edit?usp=sharing" target="_blank" class="pa-sheet-link">View PA8 Google Sheet</a>
+                </div>
             </div>
         </div>
         <div class="footer">
