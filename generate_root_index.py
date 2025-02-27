@@ -4,9 +4,9 @@ html_content = """<!DOCTYPE html>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MOSS Reports-CSE101 W-25</title>
-    <link rel="icon" type="image/jpeg" href="faviconM.png">
-    <link rel="shortcut icon" type="image/jpeg" href="faviconM.png">
-    <link rel="apple-touch-icon" href="faviconM.png">
+    <link rel="icon" type="image/jpeg" href="faviconM.ico">
+    <link rel="shortcut icon" type="image/jpeg" href="faviconM.ico">
+    <link rel="apple-touch-icon" href="faviconM.ico">
     <style>
         :root {
             --background: #f8f9fa; /* Light Gray */
