@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSE101: MOSS Reports | Winter 25 </title>
+    <title>CSE101: MOSS Reports | Winter 25</title>
     <link rel="icon" type="image/jpeg" href="faviconM.png">
     <link rel="shortcut icon" type="image/jpeg" href="faviconM.png">
     <link rel="apple-touch-icon" href="faviconM.png">
@@ -32,7 +32,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            display: none; /* Hide main content by default */
+            display: block; /* Changed from 'none' to 'block' to show content by default */
         }
 
         .header {
@@ -45,85 +45,6 @@
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
             font-weight: 700;
-        }
-
-        .auth-modal {
-            display: flex;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .auth-box {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .auth-box h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.8rem;
-            color: #1a73e8; /* Google Blue */
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .auth-input:focus {
-            border-color: #1a73e8; /* Google Blue */
-            box-shadow: 0 0 8px rgba(26, 115, 232, 0.3);
-        }
-
-        .auth-button {
-            width: 100%;
-            padding: 0.8rem;
-            background: linear-gradient(135deg, #1a73e8, #4285f4); /* Google Blue Gradient */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .auth-button:hover {
-            background: linear-gradient(135deg, #34a853, #0f9d58); /* Google Green Gradient */
-            transform: translateY(-2px);
-        }
-
-        .error-message {
-            color: #fbbc05; /* Google Yellow */
-            text-align: center;
-            margin-top: 1rem;
         }
 
         .dashboard {
@@ -272,48 +193,9 @@
             cursor: pointer;
         }
     </style>
-    <script>
-        function checkCredentials() {
-            const enteredUser = document.getElementById('username').value;
-            const enteredPass = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMsg');
-
-            if (enteredUser === "cse101-admin-w25" && enteredPass === "admin@cse101-w25") {
-                // Store login state in session storage
-                sessionStorage.setItem('loggedIn', 'true');
-                // Show content and hide modal
-                document.querySelector('.container').style.display = 'block';
-                document.getElementById('authModal').style.display = 'none';
-            } else {
-                errorMsg.textContent = "Invalid username or password";
-            }
-        }
-
-        // Check login state on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            const isLoggedIn = sessionStorage.getItem('loggedIn');
-            if (isLoggedIn === 'true') {
-                document.querySelector('.container').style.display = 'block';
-                document.getElementById('authModal').style.display = 'none';
-            } else {
-                document.getElementById('authModal').style.display = 'flex';
-            }
-        });
-    </script>
 </head>
 <body>
-    <!-- Authentication Modal -->
-    <div id="authModal" class="auth-modal">
-        <div class="auth-box">
-            <h2>🔒 Admin Login</h2>
-            <input type="text" id="username" class="auth-input" placeholder="Username">
-            <input type="password" id="password" class="auth-input" placeholder="Password">
-            <button onclick="checkCredentials()" class="auth-button">Continue</button>
-            <p id="errorMsg" class="error-message"></p>
-        </div>
-    </div>
-
-    <!-- Main Content (hidden by default) -->
+    <!-- Main Content (visible by default) -->
     <div class="container">
         <div class="dashboard">
             <h2>📊 MOSS Reports Dashboard</h2>
