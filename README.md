@@ -9,10 +9,6 @@ You can access the MOSS Web Dashboard at the following URL:
 
 [**MOSS Web Dashboard**](https://cse101-pa-moss-reports-w25.netlify.app/)
 
-### Login Credentials
-
-- **Username**: `cse101-admin-w25`
-- **Password**: `admin@cse101-w25`
 ---
 
 ## Features
@@ -44,7 +40,7 @@ moss_web/
 ## Setup
 
 ### Prerequisites
-- Python 3.x
+- Python 3
 - Git
 - Netlify account (for deployment)
 
@@ -62,9 +58,22 @@ moss_web/
 3. Generate dashboards:
    Run the scripts to generate index.html files:
    ```bash
+   // to first generate index files for each PA folder. Run the below command.
+      
    python3 generate_pa_reports.py --pa PA1
    python3 generate_pa_reports.py --pa PA2
+
+   // to then generate a root index file to combine various PAs. Run the below command.
+   
    python3 generate_root_index.py
+
+   // to then organize all reports in folders with each respective cruzID. Run the below command.
+
+   python3 org_reports.py -d PA1
+
+   // to check 2 or more times flagged students, load flagged students cruzIDs into a txt file (e.g. flaggedStudentsPresent.txt) and run the below command.
+
+   python3 check_duplicate_usernames.py
    ```
 
 4. Deploy to Netlify:
