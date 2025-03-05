@@ -1,0 +1,98 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/9/4760125177885/match0-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/kamendon/pa6/Arithmetic.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/lmbetanc/pa6/Arithmetic.cpp<p></p><pre>//-----------------------------------------------------------------------------
+// Lizbeth Betancourt 
+// CSE 101 Winter 2025
+// CruzID: lmbetanc@ucsc.edu
+//
+// Arithmetic.cpp
+// Client function that uses both BigInteger and List ADT to implement 
+// arithmetic operations. This will read from an input file contatining
+// 3 lines.
+// Line 1 will take an optional sign character (1 or -) follewed by # of
+// decimal digits. Line 2 is blank. Line 3 will take an optional sign
+// chracter (+ or -) follewed by a # of decimal digits. 
+//-----------------------------------------------------------------------------
+
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include "BigInteger.h"
+#include "List.h"
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/9/4760125177885/match0-0.html#1" target="0"><img src="./tm_1_29.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// main function
+int main(int argc, char* argv[]){
+    if(argc != 3){
+        std::cout &lt;&lt; "Invalid number of arguments" &lt;&lt; std::endl;
+        return 1;
+    }
+
+    std::ifstream in(argv[1]); // Open input file
+    std::ofstream out(argv[2]); // Open output file
+
+    if(!in){
+        std::cout &lt;&lt; "Error opening input file" &lt;&lt; std::endl;
+        return 1;
+    }
+    if(!out){
+        std::cout &lt;&lt; "Error opening output file" &lt;&lt; std::endl;
+        return 1;
+    }
+
+    std::string line1, line2, line3;
+</font>
+    // Read first number (A)
+    getline(in, line1);
+
+    // Read blank line
+    getline(in, line2);
+
+    // Read second number (B)
+    getline(in, line3);
+
+    // Create BigInteger objects
+    BigInteger A(line1);
+    BigInteger B(line3);
+    
+    out &lt;&lt; A &lt;&lt; endl &lt;&lt; endl;
+    out &lt;&lt; B &lt;&lt; endl &lt;&lt; endl;
+
+
+    out&lt;&lt; (A + B) &lt;&lt; endl &lt;&lt; endl;
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/4760125177885/match0-0.html#0" target="0"><img src="./tm_0_48.gif" alt="other" border="0" align="left"></a>
+
+    out &lt;&lt; (A - B) &lt;&lt; endl &lt;&lt; endl;
+    out &lt;&lt; (A - A) &lt;&lt; endl &lt;&lt; endl;
+    
+    BigInteger three(3);
+    BigInteger two(2);
+    out &lt;&lt; ((A * three) - (B * two)) &lt;&lt; endl &lt;&lt; endl;
+
+    out &lt;&lt; (A * B) &lt;&lt; endl &lt;&lt; endl;
+    out &lt;&lt; (A * A) &lt;&lt; endl &lt;&lt; endl;
+    out &lt;&lt; (B * B) &lt;&lt; endl &lt;&lt; endl;
+
+    BigInteger nine(9);
+    BigInteger sixteen(16);
+    BigInteger A4 = A * A * A * A;
+    BigInteger B5 = B * B * B * B * B;
+    out &lt;&lt; ((A4 * nine) + (B5 * sixteen)) &lt;&lt; endl &lt;&lt; endl;
+ 
+    
+    in.close();
+    out.close();
+    return 0;
+</font>}</pre>
+
+
+
+</body></html>

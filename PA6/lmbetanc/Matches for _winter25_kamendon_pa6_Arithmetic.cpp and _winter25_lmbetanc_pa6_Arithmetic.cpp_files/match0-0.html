@@ -1,0 +1,81 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/9/4760125177885/match0-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/kamendon/pa6/Arithmetic.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/kamendon/pa6/Arithmetic.cpp<p></p><pre>/*
+* Kaush Mendonca
+* kamendon 
+* 2025 Winter CSE101 PA6
+* Arithmetic.cpp 
+* Big Integer ADT Arithmetic Client
+*/
+
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include "BigInteger.h"
+#include "List.h"
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/9/4760125177885/match0-1.html#1" target="1"><img src="./tm_1_30.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// main function
+int main(int argc, char* argv[]){
+    if(argc != 3){
+        std::cout &lt;&lt; "Invalid number of arguments" &lt;&lt; std::endl;
+        return 1;
+    }
+
+    std::ifstream inputFile(argv[1]);
+    std::ofstream outputFile(argv[2]);
+
+    if(!inputFile){
+        std::cout &lt;&lt; "Error opening input file" &lt;&lt; std::endl;
+        return 1;
+    }
+    if(!outputFile){
+        std::cout &lt;&lt; "Error opening output file" &lt;&lt; std::endl;
+        return 1;
+    }
+
+    std::string firstLine, secondLine;
+</font>    inputFile &gt;&gt; firstLine &gt;&gt; secondLine;
+
+    BigInteger numA(firstLine);
+    BigInteger numB(secondLine);
+
+    outputFile &lt;&lt; numA &lt;&lt; endl &lt;&lt; endl;
+    outputFile &lt;&lt; numB &lt;&lt; endl &lt;&lt; endl;
+
+    outputFile &lt;&lt; (numA + numB) &lt;&lt; endl &lt;&lt; endl;
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/4760125177885/match0-1.html#0" target="1"><img src="./tm_0_49.gif" alt="other" border="0" align="left"></a>
+
+    outputFile &lt;&lt; (numA - numB) &lt;&lt; endl &lt;&lt; endl;
+    outputFile &lt;&lt; (numA - numA) &lt;&lt; endl &lt;&lt; endl;
+
+    BigInteger three(3);
+    BigInteger two(2);
+    outputFile &lt;&lt; ((numA * three) - (numB * two)) &lt;&lt; endl &lt;&lt; endl;
+
+    outputFile &lt;&lt; (numA * numB) &lt;&lt; endl &lt;&lt; endl;
+    outputFile &lt;&lt; (numA * numA) &lt;&lt; endl &lt;&lt; endl;
+    outputFile &lt;&lt; (numB * numB) &lt;&lt; endl &lt;&lt; endl;
+
+    BigInteger nine(9);
+    BigInteger sixteen(16);
+    BigInteger A4 = numA * numA * numA * numA;
+    BigInteger B5 = numB * numB * numB * numB * numB;
+    outputFile &lt;&lt; ((A4 * nine) + (B5 * sixteen)) &lt;&lt; endl &lt;&lt; endl;
+
+    inputFile.close();
+    outputFile.close();
+    return 0;
+</font>}</pre>
+
+
+
+</body></html>

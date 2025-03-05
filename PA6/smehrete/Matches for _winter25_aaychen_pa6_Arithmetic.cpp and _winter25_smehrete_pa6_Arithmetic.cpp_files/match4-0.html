@@ -1,0 +1,73 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/9/4760125177885/match4-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/aaychen/pa6/Arithmetic.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/aaychen/pa6/Arithmetic.cpp<p></p><pre>/*
+ * Aaron Chen
+ * aaychen
+ * 2025 Winter CSE101 pa6
+ * Arithmetic.cpp
+ * Arithmetic entry file for BigIntegerADT
+*/
+
+#include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;fstream&gt;
+#include"BigInteger.h"
+
+using namespace std;
+
+int main(int argc, char* argv[]) {
+	ifstream in;
+	ofstream out;
+
+	if( argc != 3 ){
+		cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " &lt;input file&gt; &lt;output file&gt;" &lt;&lt; end1;
+		return(EXIT_FAILURE);
+	}
+
+	in.open(argv[1]);
+	if( !in.is_open() ){
+		cerr &lt;&lt; "Unable to open file " &lt;&lt; argv[1] &lt;&lt; " for reading" &lt;&lt; endl;
+		return(EXIT_FAILURE);
+	}
+
+	out.open(argv[2]);
+	if( !out.is_open() ){
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/4760125177885/match4-1.html#0" target="1"><img src="./tm_0_68.gif" alt="other" border="0" align="left"></a>
+
+		cerr &lt;&lt; "Unable to open file " &lt;&lt; argv[2] &lt;&lt; " for writing" &lt;&lt; endl;
+		return(EXIT_FAILURE);
+	}
+
+	string As, Bs;
+	in &gt;&gt; As &gt;&gt; Bs;
+
+	BigInteger A(As), B(Bs);
+	const BigInteger s3("3"), s2("2"), s9("9"), s16("16");
+
+	out &lt;&lt; A &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; B &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; A + B &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; A - B &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; A - A &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; A.mult(s3) - B.mult(s2) &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; A * B &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; A * A &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; B * B &lt;&lt; '\n' &lt;&lt; '\n'
+		&lt;&lt; s9 * A * A * A * A + s16 * B * B * B * B * B &lt;&lt; '\n';
+
+	in.close();
+	out.close();
+
+	return(EXIT_SUCCESS);
+</font>}
+
+</pre>
+
+
+
+</body></html>

@@ -1,0 +1,385 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/7/7834820277962/match0-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/ahern232/pa6/BigInteger.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/ahern232/pa6/BigInteger.cpp<p></p><pre>/****************************
+ * Author: Andrew Hernandez
+ * Cruz ID: 1721791
+ * Assignment Name: pa6
+ ***************************/
+// BigInteger.cpp
+#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;stdexcept&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;iomanip&gt;
+#include &lt;cctype&gt;
+#include "BigInteger.h"
+
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/7/7834820277962/match0-1.html#0" target="1"><img src="./tm_0_86.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// Global constants: for submission, power = 9 and base = 10^9.
+const int power = 9;
+const long base = 1000000000;
+
+// Helper Functions
+// Convert the List (digits) into a vector of long digits.
+vector&lt;long&gt; listToVector(const List &amp;L) {
+    vector&lt;long&gt; vec;
+    List temp = L;
+    temp.moveFront();
+    while (temp.position() &lt; temp.length()) {
+        vec.push_back(temp.peekNext());
+        temp.moveNext();
+    }
+    return vec;
+}
+
+// Convert a vector of digits (little-endian order) into the List.
+void vectorToList(const vector&lt;long&gt; &amp;vec, List &amp;L) {
+    L.clear();
+    for (long digit : vec) {
+        L.moveBack();
+        L.insertAfter(digit);
+    }
+}
+
+// Remove extra leading zeros from a vector representation.
+void removeLeadingZeros(vector&lt;long&gt;&amp; vec) {
+    while (vec.size() &gt; 1 &amp;&amp; vec.back() == 0)
+        vec.pop_back();
+}
+
+
+// Helper Arithmetic on Vectors
+// Adds two digit vectors.
+vector&lt;long&gt; addVectors(const vector&lt;long&gt;&amp; a, const vector&lt;long&gt;&amp; b) {
+    vector&lt;long&gt; result;
+    size_t n = max(a.size(), b.size());
+    long carry = 0;
+    for (size_t i = 0; i &lt; n; i++) {
+        long d1 = (i &lt; a.size() ? a[i] : 0);
+        long d2 = (i &lt; b.size() ? b[i] : 0);
+        long sum = d1 + d2 + carry;
+        result.push_back(sum % base);
+        carry = sum / base;
+    }
+    while (carry &gt; 0) {
+        result.push_back(carry % base);
+        carry /= base;
+    }
+    removeLeadingZeros(result);
+    return result;
+}
+
+// Subtracts vector b from vector a; assumes |a| &gt;= |b|.
+vector&lt;long&gt; subVectors(const vector&lt;long&gt;&amp; a, const vector&lt;long&gt;&amp; b) {
+    vector&lt;long&gt; result;
+    long borrow = 0;
+    for (size_t i = 0; i &lt; a.size(); i++) {
+        long d1 = a[i];
+        long d2 = (i &lt; b.size() ? b[i] : 0);
+        long diff = d1 - d2 - borrow;
+        if (diff &lt; 0) {
+            diff += base;
+            borrow = 1;
+        } 
+	else {
+            borrow = 0;
+        }
+        result.push_back(diff);
+    }
+    removeLeadingZeros(result);
+    return result;
+}
+
+// Multiplies two digit vectors.
+vector&lt;long&gt; multVectors(const vector&lt;long&gt;&amp; a, const vector&lt;long&gt;&amp; b) {
+    vector&lt;long&gt; result(a.size() + b.size(), 0);
+    for (size_t i = 0; i &lt; a.size(); i++) {
+        long carry = 0;
+        for (size_t j = 0; j &lt; b.size(); j++) {
+            long prod = a[i] * b[j] + result[i+j] + carry;
+            result[i+j] = prod % base;
+            carry = prod / base;
+        }
+        result[i + b.size()] += carry;
+    }
+    removeLeadingZeros(result);
+    return result;
+}
+
+// BigInteger Constructors and Methods
+// Default constructor: sets BigInteger to zero.
+BigInteger::BigInteger() {
+    signum = 0;
+    digits.clear();
+}
+
+// Constructor from long.
+BigInteger::BigInteger(long x) {
+    if (x == 0) {
+        signum = 0;
+    } 
+    else {
+        signum = (x &gt; 0) ? 1 : -1;
+        long absVal = (x &gt; 0) ? x : -x;
+        vector&lt;long&gt; vec;
+        while (absVal &gt; 0) {
+            vec.push_back(absVal % base);
+            absVal /= base;
+        }
+        removeLeadingZeros(vec);
+        vectorToList(vec, digits);
+    }
+}
+
+// Constructor from string.
+BigInteger::BigInteger(string s) {
+    if (s.empty()){
+        throw invalid_argument("BigInteger: Constructor: empty string");
+    }
+    size_t index = 0;
+    signum = 1;
+    if (s[index] == '+' || s[index] == '-') {
+        if (s[index] == '-')
+            signum = -1;
+        index++;
+    }
+    if (index == s.size()){
+        throw invalid_argument("BigInteger: Constructor: non-numeric string");
+    }
+    for (size_t i = index; i &lt; s.size(); i++){
+        if (!isdigit(s[i])){
+            throw invalid_argument("BigInteger: Constructor: non-numeric string");
+	}
+    }
+    while (index &lt; s.size() &amp;&amp; s[index] == '0'){
+        index++;
+    }
+    if (index == s.size()) {
+        signum = 0;
+        return;
+    }
+    string numStr = s.substr(index);
+    vector&lt;long&gt; vec;
+    int len = numStr.size();
+    for (int i = len; i &gt; 0; i -= power) {
+        int startIndex = max(0, i - power);
+        int count = i - startIndex;
+        string group = numStr.substr(startIndex, count);
+        long digit = stol(group);
+        vec.push_back(digit);
+    }
+    removeLeadingZeros(vec);
+    vectorToList(vec, digits);
+}
+
+// Copy constructor.
+BigInteger::BigInteger(const BigInteger&amp; N) {
+    signum = N.signum;
+    digits = N.digits;
+}
+
+// Access and Manipulation Functions
+// Returns the signum.
+int BigInteger::sign() const {
+    return signum;
+}
+
+// Compares this BigInteger with N.
+// Returns -1 if *this &lt; N, 0 if equal, 1 if *this &gt; N.
+int BigInteger::compare(const BigInteger&amp; N) const {
+    if (signum != N.signum){
+        return (signum &lt; N.signum) ? -1 : 1;
+    }
+    if (signum == 0){
+        return 0;
+    }
+    vector&lt;long&gt; a = listToVector(digits);
+    vector&lt;long&gt; b = listToVector(N.digits);
+    removeLeadingZeros(a);
+    removeLeadingZeros(b);    
+    if (a.size() != b.size()) {
+        if (signum &gt; 0){
+            return (a.size() &gt; b.size()) ? 1 : -1;
+	}
+        else{
+            return (a.size() &gt; b.size()) ? -1 : 1;
+	}
+    }
+    for (int i = a.size() - 1; i &gt;= 0; i--) {
+        if (a[i] != b[i]){
+            return (signum &gt; 0) ? (a[i] &gt; b[i] ? 1 : -1) : (a[i] &gt; b[i] ? -1 : 1);
+	}
+    }
+    return 0;
+}
+
+// Resets this BigInteger to zero.
+void BigInteger::makeZero() {
+    signum = 0;
+    digits.clear();
+}
+
+// Reverses the sign of this BigInteger (if nonzero).
+void BigInteger::negate() {
+    if (signum != 0){
+        signum = -signum;
+    }
+}
+
+// Arithmetic Operations
+// Addition.
+BigInteger BigInteger::add(const BigInteger&amp; N) const {
+    BigInteger result;
+    if (signum == 0){
+        return N;
+    }
+    if (N.signum == 0){
+        return *this;
+    }
+    vector&lt;long&gt; a = listToVector(digits);
+    vector&lt;long&gt; b = listToVector(N.digits);
+    if (signum == N.signum) {
+        vector&lt;long&gt; sum = addVectors(a, b);
+        result.signum = signum;
+        vectorToList(sum, result.digits);
+    } 
+    else {
+        BigInteger absThis = *this;
+        absThis.signum = 1;
+        BigInteger absN = N;
+        absN.signum = 1;
+        int cmp = absThis.compare(absN);
+        if (cmp == 0) {
+            result.makeZero();
+        } 
+	else if (cmp &gt; 0) {
+            vector&lt;long&gt; diff = subVectors(a, b);
+            result.signum = signum;
+            vectorToList(diff, result.digits);
+        } 
+	else {
+            vector&lt;long&gt; diff = subVectors(b, a);
+            result.signum = N.signum;
+            vectorToList(diff, result.digits);
+        }
+    }
+    vector&lt;long&gt; temp = listToVector(result.digits);
+    removeLeadingZeros(temp);
+    if (temp.size() == 1 &amp;&amp; temp[0] == 0){
+        result.signum = 0;
+    }
+    return result;
+}
+
+// Subtraction.
+BigInteger BigInteger::sub(const BigInteger&amp; N) const {
+    BigInteger negN = N;
+    negN.negate();
+    return this-&gt;add(negN);
+}
+
+// Multiplication.
+BigInteger BigInteger::mult(const BigInteger&amp; N) const {
+    BigInteger result;
+    if (signum == 0 || N.signum == 0) {
+        result.makeZero();
+        return result;
+    }
+    vector&lt;long&gt; a = listToVector(digits);
+    vector&lt;long&gt; b = listToVector(N.digits);
+    vector&lt;long&gt; prod = multVectors(a, b);
+    result.signum = signum * N.signum;
+    vectorToList(prod, result.digits);
+    vector&lt;long&gt; temp = listToVector(result.digits);
+    removeLeadingZeros(temp);
+    if (temp.size() == 1 &amp;&amp; temp[0] == 0){
+        result.signum = 0;
+    }
+    return result;
+}
+
+// to_string() Method
+// Returns a base-10 string representation of this BigInteger.
+string BigInteger::to_string() {
+    if (signum == 0){
+        return "0";
+    }
+    vector&lt;long&gt; vec = listToVector(digits);
+    removeLeadingZeros(vec);
+    ostringstream oss;
+    if (signum &lt; 0){
+        oss &lt;&lt; "-";
+    }
+    oss &lt;&lt; vec.back();
+    for (int i = static_cast&lt;int&gt;(vec.size()) - 2; i &gt;= 0; i--) {
+        oss &lt;&lt; setw(power) &lt;&lt; setfill('0') &lt;&lt; vec[i];
+    }
+    return oss.str();
+}
+
+// Overloaded Operators
+ostream&amp; operator&lt;&lt;(ostream&amp; stream, BigInteger N) {
+    stream &lt;&lt; N.to_string();
+    return stream;
+}
+
+bool operator==(const BigInteger&amp; A, const BigInteger&amp; B) {
+</font>    return A.compare(B) == 0;
+}
+
+bool operator&lt;(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.compare(B) &lt; 0;
+}
+
+bool operator&lt;=(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.compare(B) &lt;= 0;
+}
+
+bool operator&gt;(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.compare(B) &gt; 0;
+}
+
+bool operator&gt;=(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.compare(B) &gt;= 0;
+}
+
+BigInteger operator+(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.add(B);
+}
+
+BigInteger operator-(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.sub(B);
+}
+
+BigInteger operator*(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.mult(B);
+}
+
+BigInteger operator+=(BigInteger&amp; A, const BigInteger&amp; B) {
+    A = A.add(B);
+    return A;
+}
+
+BigInteger operator-=(BigInteger&amp; A, const BigInteger&amp; B) {
+    A = A.sub(B);
+    return A;
+}
+
+BigInteger operator*=(BigInteger&amp; A, const BigInteger&amp; B) {
+    A = A.mult(B);
+    return A;
+}
+</pre>
+
+
+
+</body></html>

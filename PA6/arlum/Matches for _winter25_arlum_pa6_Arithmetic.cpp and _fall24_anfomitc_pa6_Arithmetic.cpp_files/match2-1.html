@@ -1,0 +1,117 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/6/8257228975157/match2-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/arlum/pa6/Arithmetic.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/fall24/anfomitc/pa6/Arithmetic.cpp<p></p><pre>/***
+* Anna Fomitchev
+* anfomitc
+* 2024 Fall CSE101 PA6
+* Arithmetic.cpp
+* Reads a file and creates two BigIntegers then runs a set of calculations and prints them out to another file. 
+***/ 
+
+#include &lt;fstream&gt;
+#include "BigInteger.h"
+
+using namespace std;
+
+int main(int argc, char *argv[]) {
+    // if not given enough arguments (the input and output file) we fail program
+    // referenced from FileIO.cpp from professors example code
+    if (argc != 3) {
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/6/8257228975157/match2-0.html#2" target="0"><img src="./tm_2_10.gif" alt="other" border="0" align="left"></a>
+
+        cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " &lt;input file&gt; &lt;output file&gt;" &lt;&lt; endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // open files for reading and writing - referenced from FileIO.cpp from professors example code
+    ifstream in; 
+    ofstream out; 
+    in.open(argv[1]);
+    if( !in.is_open() ){
+        cerr &lt;&lt; "Unable to open file " &lt;&lt; argv[1] &lt;&lt; " for reading" &lt;&lt; endl;
+</font>        return(EXIT_FAILURE);
+    }
+
+    out.open(argv[2]);
+    if( !out.is_open() ){
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/6/8257228975157/match2-0.html#1" target="0"><img src="./tm_1_20.gif" alt="other" border="0" align="left"></a>
+
+        cerr &lt;&lt; "Unable to open file " &lt;&lt; argv[2] &lt;&lt; " for writing" &lt;&lt; endl;
+        return(EXIT_FAILURE);
+    }
+    
+    // get the information from the files
+    string line; 
+
+    // read first bigint 
+    getline(in,line);
+    BigInteger A(line);
+    
+    // read empty line and ignore
+    getline(in,line);
+
+    // read second big int 
+    getline(in,line);
+    BigInteger B(line);
+
+    // format output:
+    // A, B
+    out &lt;&lt; A &lt;&lt; endl;
+    out&lt;&lt;endl;
+    out &lt;&lt; B &lt;&lt; endl;
+    out&lt;&lt;endl;
+
+    // A+B
+    out &lt;&lt; A+B &lt;&lt; endl;
+</font>    out&lt;&lt;endl;
+
+    // A-B 
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/6/8257228975157/match2-0.html#0" target="0"><img src="./tm_0_45.gif" alt="other" border="0" align="left"></a>
+
+    out &lt;&lt; A-B &lt;&lt; endl;
+    out&lt;&lt;endl;
+
+    // A-A
+    out &lt;&lt; A-A &lt;&lt; endl;
+    out&lt;&lt;endl;
+
+    // 3A-2B
+    BigInteger three = BigInteger("3");
+    BigInteger two = BigInteger("2"); 
+    out &lt;&lt; three*A - two*B &lt;&lt; endl;
+    out&lt;&lt;endl;
+
+    // AB
+    out &lt;&lt; A*B &lt;&lt; endl;
+    out&lt;&lt;endl;
+
+    // A^2
+    out &lt;&lt; A*A &lt;&lt; endl;
+    out&lt;&lt;endl;
+
+    // B^2
+    out &lt;&lt; B*B &lt;&lt; endl;
+    out&lt;&lt;endl;
+
+    // 9A^4 + 16B^5
+    BigInteger nine = BigInteger("9");
+    BigInteger sixteen = BigInteger("16"); 
+    out &lt;&lt; nine*(A*A*A*A) + sixteen*(B*B*B*B*B) &lt;&lt; endl;
+    out&lt;&lt;endl; 
+    //out&lt;&lt;endl;
+
+    // close files 
+    in.close(); 
+    out.close(); 
+
+    return 0; 
+</font>}</pre>
+
+
+
+</body></html>

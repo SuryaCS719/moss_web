@@ -1,0 +1,517 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/5/4428486317369/match5-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/agnanase/pa6/BigInteger.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/agnanase/pa6/BigInteger.cpp<p></p><pre>/***
+* Arti Gnanasekar
+* agnanase 
+* 2025 Fall CSE101 PA6 
+* BigInteger.cpp
+* adt implementation
+***/ 
+
+#include&lt;iostream&gt;
+#include&lt;string&gt;
+#include&lt;stdexcept&gt;
+#include"BigInteger.h"
+using namespace std;
+
+const int power = 9;
+const long base = 1000000000; // 10^9, the base for biginteger operations
+
+void addNum(List&amp; S, List A, List B, int sgn); // function to add two lists with a sign modifier
+<a name="4"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#4" target="1"><img src="./tm_4_2.gif" alt="other" border="0" align="left"></a>
+
+void negateL(List&amp; L); // function to negate a list
+void List_shift(List&amp; L, int p); // function to shift a list by p places
+
+void normL(List&amp; L, int op); // function to normalize a list
+
+void list_scalarmult(List&amp; L, long m); // function to multiply a list by a scalar value
+
+BigInteger::BigInteger() {
+    signum = 0; // initializing signum to zero
+}
+
+
+BigInteger::BigInteger(long x) {
+    if (x == 0) {
+        signum = 0; // setting sign to zero if input is 0
+</font>        return;
+    }
+    
+    signum = (x &gt; 0) ? 1 : -1; // determining sign
+    if (x &lt; 0) {
+        x = -x; // converting to positive for processing
+    }
+    
+    std::string s = std::to_string(x);
+    size_t index = s.length(); // tracking position for parsing
+    
+    while (index &gt; 0) {
+        std::string val = "";
+        for (int j = 0; j &lt; power &amp;&amp; index &gt; 0; j++) {
+            val.insert(val.begin(), s[--index]); // inserting digits from back to front
+        }
+<a name="5"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#5" target="1"><img src="./tm_0_2.gif" alt="other" border="0" align="left"></a>
+
+        digits.insertAfter(std::stol(val)); // inserting parsed value into digits list
+    }
+}
+
+BigInteger::BigInteger(std::string s) {
+    if (s.empty()) {
+        throw std::invalid_argument("constructor, empty string"); // checking for empty input
+    }
+    
+    size_t index = 0; // starting index for number parsing
+    signum = 1; // default sign is positive
+    
+    if (s[0] == '+' || s[0] == '-') {
+        index = 1;
+</font>        signum = (s[0] == '-') ? -1 : 1; // setting sign based on the first character
+    }
+    
+    for (size_t i = index; i &lt; s.length(); i++) {
+        if (!std::isdigit(s[i])) {
+            throw std::invalid_argument("constructor, not a numeric string"); // checking for invalid characters
+        }
+    }
+    
+    if (s.length() == index + 1 &amp;&amp; s[index] == '0') {
+        signum = 0; // setting sign to zero if input is "0"
+        return;
+    }
+    
+    size_t pos = s.length(); // tracking position for parsing
+    while (pos &gt; index) {
+        std::string val = "";
+        for (int j = 0; j &lt; power &amp;&amp; pos &gt; index; j++) {
+            val.insert(val.begin(), s[--pos]); // inserting digits from back to front
+        }
+        digits.insertAfter(std::stol(val)); // inserting parsed value into digits list
+    }
+}
+
+BigInteger::BigInteger(const BigInteger&amp; N) {
+    signum = N.signum; // copying the signum value
+    digits = N.digits; // copying the digits list
+}
+
+int BigInteger::sign() const {
+    return signum; // returning the sign of the biginteger
+}
+
+
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#0" target="1"><img src="./tm_0_28.gif" alt="other" border="0" align="left"></a>
+
+int BigInteger::compare(const BigInteger&amp; N) const {
+    if (signum &lt; N.signum) {
+        return -1; // current number has a smaller sign value
+    }
+    if (signum &gt; N.signum) {
+        return 1; // current number has a greater sign value
+    }
+    if (digits.length() &lt; N.digits.length()) {
+        return -1 * signum; // current number has fewer digits
+    }
+    if (digits.length() &gt; N.digits.length()) {
+        return signum; // current number has more digits
+    }
+    if (digits.equals(N.digits)) {
+        return 0; // both numbers are identical
+    }
+
+    List l1 = this-&gt;digits; // creating a copy of the digits list
+    List l2 = N.digits; // creating a copy of the input digits list
+    l1.moveFront(); // moving cursor to the front
+    l2.moveFront(); // moving cursor to the front
+    while (l1.position() &lt; l1.length() &amp;&amp; l2.position() &lt; l2.length()) {
+        if (l1.peekNext() &lt; l2.peekNext()) {
+            return -1 * signum; // current digit is smaller
+        }
+        if (l1.peekNext() &gt; l2.peekNext()) {
+            return signum; // current digit is larger
+        }
+        l1.moveNext(); // moving to the next digit
+        l2.moveNext(); // moving to the next digit
+    }
+    return 0; // numbers are equal
+}
+
+void BigInteger::makeZero() {
+    signum = 0; // setting sign to zero
+    digits.clear(); // clearing all digits
+}
+
+void BigInteger::negate() {
+    signum *= -1; // flipping the sign of the number
+}
+
+
+
+BigInteger BigInteger::add(const BigInteger&amp; N) const {
+    
+    BigInteger A = *this; // creating a copy of the current biginteger
+    BigInteger B = N; // creating a copy of the input biginteger
+    BigInteger C(0); // initializing the result biginteger
+    C.signum = 1; // setting default sign to positive
+    
+    if ((A.signum == 1 &amp;&amp; B.signum == 1) || (A.signum == -1 &amp;&amp; B.signum == -1)) {
+        if (A.signum == 1 &amp;&amp; B.signum == 1) {
+            C.signum = 1; // both numbers are positive, result remains positive
+        } else {
+            A.signum = 1;
+            B.signum = 1;
+            C.signum = -1; // both numbers are negative, result is negative
+        }
+        addNum(C.digits, A.digits, B.digits, 1); // performing addition
+        normL(C.digits, 1); // normalizing the result
+        return C;
+    }
+    
+    if (A.signum == 1 &amp;&amp; B.signum == -1) {
+        B.signum = 1; // converting to subtraction when one number is negative
+        return A.sub(B);
+    }
+    
+    if (A.signum == -1 &amp;&amp; B.signum == 1) {
+        A.signum = 1; // converting to subtraction when one number is negative
+        return B.sub(A);
+    }
+    
+    return C; // returning the computed result
+}
+
+
+BigInteger BigInteger::sub(const BigInteger&amp; N) const {
+    BigInteger A = *this; // copy the current object
+    BigInteger B = N;     // copy the input BigInteger
+    BigInteger C(0);      // initialize the result to 0
+    C.signum = 1;         // default signum for positive result
+
+    // if A and B are equal, the result is zero
+    if (A == B) {
+        C.signum = 0;
+        return C;
+    }
+
+    // handle subtraction when both numbers have the same sign
+    if ((A.signum == 1 &amp;&amp; B.signum == 1) || (A.signum == -1 &amp;&amp; B.signum == -1)) {
+        if (A.signum != -1 || B.signum != -1) {
+            addNum(C.digits, A.digits, B.digits, -1); // subtract B from A
+        } else {
+            addNum(C.digits, B.digits, A.digits, -1); // subtract A from B
+        }
+
+        // handle negative results
+        if (C.digits.peekNext() &lt; 0) {
+            C.signum = -1;
+            negateL(C.digits); // negate the result if it's negative
+        }
+
+        normL(C.digits, -1); // normalize the result
+
+        // double-check for negative results
+        C.digits.moveFront();
+        if (C.digits.peekNext() &lt; 0) {
+            C.signum = -1;
+            negateL(C.digits);
+            normL(C.digits, -1);
+        }
+
+        return C;
+    }
+
+    // handle subtraction when the numbers have different signs
+    if ((A.signum == -1 &amp;&amp; B.signum == 1) || (A.signum == 1 &amp;&amp; B.signum == -1)) {
+        bool c_neg = false; // flag to track if the result should be negative
+
+        if (A.signum != -1 || B.signum != 1) {
+</font>            B.signum = 1; // ensure B is treated as positive
+            C.signum = 1;
+        } else {
+            A.signum = 1; // ensure A is treated as positive
+            c_neg = true; // result will be negative
+        }
+
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#1" target="1"><img src="./tm_1_15.gif" alt="other" border="0" align="left"></a>
+
+        C = A + B; // perform addition (since subtraction of opposite signs is addition)
+
+        if (c_neg) {
+            C.signum = -1; // set the result sign to negative if needed
+        }
+
+        return C;
+    }
+
+    return C; // return the result (defaults to 0 if no conditions are met)
+}
+
+BigInteger BigInteger::mult(const BigInteger&amp; N) const {
+    BigInteger A = *this; // copy the current object
+    BigInteger B = N;     // copy the input BigInteger
+    BigInteger C(0);      // initialize the result to 0
+    C.signum = 1;         // default signum for positive result
+
+    // determine the sign of the result
+    if (A.signum == B.signum) {
+        C.signum = 1; // result is positive if both numbers have the same sign
+    } else if (A.signum != B.signum &amp;&amp; A.signum != 0 &amp;&amp; B.signum != 0) {
+        C.signum = -1; // result is negative if signs are different
+    } else if (A.signum == 0 || B.signum == 0) {
+        C.signum = 0; // result is zero if either number is zero
+        return C;     // return immediately if one of the numbers is zero
+    }
+
+    // ensure A is the larger number for efficiency
+    if (digits.length() &lt; N.digits.length()) {
+        A = N;
+        B = *this;
+    }
+
+    // perform multiplication digit by digit
+    B.digits.moveBack(); // start from the least significant digit of B
+    int shift = 0;       // shift counter for positional multiplication
+    while (B.digits.position() &gt; 0) {
+        List temp = A.digits; // temporary list to store the current multiplication result
+        List currRes = C.digits; // current result list
+
+        // multiply A by the current digit of B
+        list_scalarmult(temp, B.digits.peekPrev());
+
+        // shift the result by the appropriate number of positions
+        List_shift(temp, shift);
+
+        // add the shifted result to the current result
+        C.digits.clear(); // clear the result list
+        addNum(C.digits, currRes, temp, 1); // add temp to currRes
+        normL(C.digits, 1); // normalize the result
+
+        B.digits.movePrev(); // move to the next digit of B
+        shift++; // increment the shift counter
+    }
+
+    return C; // return the final result
+}
+
+std::string BigInteger::to_string() {
+    string s = ""; // initialize an empty string to build the result
+
+    // handle the case where the number is zero
+    if (signum == 0) {
+        s += "0";
+        return s;
+    }
+
+    // throw an exception if the digits list is empty
+    if (digits.length() == 0) {
+        throw std::invalid_argument("digits is empty");
+    }
+
+    // add a negative sign if the number is negative
+    if (signum == -1) {
+        s += "-";
+    }
+
+    // skip leading zeros in the digits list
+    digits.moveFront();
+    while (digits.peekNext() == 0) {
+        digits.moveNext();
+    }
+
+    // build the string representation of the number
+    bool is_first = true; // flag to track the first non-zero digit
+    while (digits.position() &lt; digits.length()) {
+        string tempRes = std::to_string(digits.peekNext()); // convert current digit to string
+
+        // pad with leading zeros if necessary (except for the first digit)
+        if (!is_first &amp;&amp; tempRes.length() != power) {
+</font>            tempRes.insert(0, power - tempRes.length(), '0');
+        }
+
+        s += tempRes; // append the digit to the result string
+<a name="7"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#7" target="1"><img src="./tm_2_1.gif" alt="other" border="0" align="left"></a>
+
+        is_first = false; // mark that the first digit has been processed
+        digits.moveNext(); // move to the next digit
+    }
+
+    return s; // return the final string representation
+}
+
+// overload the &lt;&lt; operator to print a BigInteger object
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; stream, BigInteger N) {
+    return stream &lt;&lt; N.to_string(); // convert BigInteger to string and write to the stream
+</font>}
+
+// overload the == operator to compare two BigInteger objects
+bool operator==(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.compare(B) == 0; // return true if A and B are equal
+}
+
+// overload the &lt; operator to check if A is less than B
+<a name="3"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#3" target="1"><img src="./tm_3_5.gif" alt="other" border="0" align="left"></a>
+
+bool operator&lt;(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.compare(B) == -1; // return true if A is less than B
+}
+
+// overload the &lt;= operator to check if A is less than or equal to B
+bool operator&lt;=(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A &lt; B || A == B; // return true if A is less than or equal to B
+}
+
+// overload the &gt; operator to check if A is greater than B
+bool operator&gt;(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.compare(B) == 1; // return true if A is greater than B
+}
+
+// overload the &gt;= operator to check if A is greater than or equal to B
+bool operator&gt;=(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A &gt; B || A == B; // return true if A is greater than or equal to B
+}
+
+// overload the + operator to add two BigInteger objects
+BigInteger operator+(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.add(B); // return the result of adding A and B
+}
+
+// overload the += operator to add B to A and assign the result to A
+BigInteger operator+=(BigInteger&amp; A, const BigInteger&amp; B) {
+</font>    A = A.add(B); // add B to A and assign the result back to A
+    return A; // return the modified A
+}
+
+// overload the - operator to subtract B from A
+BigInteger operator-(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.sub(B); // return the result of subtracting B from A
+}
+
+// overload the -= operator to subtract B from A and assign the result to A
+BigInteger operator-=(BigInteger&amp; A, const BigInteger&amp; B) {
+    A = A.sub(B); // subtract B from A and assign the result back to A
+    return A; // return the modified A
+}
+
+// overload the * operator to multiply two BigInteger objects
+BigInteger operator*(const BigInteger&amp; A, const BigInteger&amp; B) {
+    return A.mult(B); // return the result of multiplying A and B
+}
+
+// overload the *= operator to multiply A by B and assign the result to A
+<a name="6"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#6" target="1"><img src="./tm_1_1.gif" alt="other" border="0" align="left"></a>
+
+BigInteger operator*=(BigInteger&amp; A, const BigInteger&amp; B) {
+    A = A.mult(B); // multiply A by B and assign the result back to A
+    return A; // return the modified A
+}
+
+void negateL(List&amp; L) {
+    L.moveFront(); // move cursor to the front of the list
+    while (L.position() &lt; L.length()) { // iterate through the list
+</font>        ListElement currentValue = L.peekNext(); // get the current value
+        L.setAfter(currentValue * -1); // negate the value and set it
+        L.moveNext(); // move to the next position
+    }
+}
+
+void addNum(List&amp; S, List A, List B, int sgn) {
+    // move cursors to the end of all lists
+    S.moveBack();
+    A.moveBack();
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/5/4428486317369/match5-1.html#2" target="1"><img src="./tm_2_12.gif" alt="other" border="0" align="left"></a>
+
+    B.moveBack();
+
+    // add corresponding elements from A and B
+    while (A.position() &gt; 0 &amp;&amp; B.position() &gt; 0) {
+        S.insertAfter(A.peekPrev() + sgn * B.peekPrev());
+        A.movePrev();
+        B.movePrev();
+    }
+
+    // add remaining elements from A
+    while (A.position() &gt; 0) {
+        S.insertAfter(A.peekPrev());
+        A.movePrev();
+    }
+
+    // add remaining elements from B, applying the sign
+    while (B.position() &gt; 0) {
+        S.insertAfter(sgn * B.peekPrev());
+        B.movePrev();
+    }
+}
+
+void normL(List&amp; L, int op) {
+    if (op == 1) {
+        // normalize for positive values
+        L.moveBack();
+        ListElement carry = 0;
+        while (L.position() &gt; 0) {
+            ListElement val = L.peekPrev() + carry;
+            int digits = 0;
+            do {
+                val /= 10;
+                digits++;
+            } while (val != 0);
+            val = L.peekPrev() + carry; // recalculate val after digit count
+            if (digits &gt; power) {
+                L.setBefore(val % base);
+                carry = val / base;
+            } else {
+                if (carry != 0) {
+                    L.setBefore(val);
+                    carry = 0;
+                }
+            }
+            L.movePrev();
+        }
+        if (carry != 0) {
+            L.insertBefore(carry);
+        }
+    } else {
+        // normalize for negative values
+        L.moveBack();
+        ListElement carry = 0;
+        while (L.position() &gt; 0) {
+            ListElement val = L.peekPrev() + carry;
+            carry = 0;
+            if (val &lt; 0) {
+                carry = -1;
+                L.setBefore(val + base);
+            } else {
+                L.setBefore(val + carry);
+                carry = 0;
+            }
+            L.movePrev();
+        }
+    }
+}
+
+void List_shift(List&amp; L, int p) {
+</font>    for (int i = 0; i &lt; p; i++) {
+        L.moveBack(); // move the cursor to the back of the list
+        L.insertAfter(0); // insert a zero after the cursor
+    }
+}
+
+void list_scalarmult(List&amp; L, long m) {
+    L.moveFront(); // move the cursor to the front of the list
+    while (L.position() &lt; L.length()) { // iterate through the list
+        long currentValue = L.peekNext(); // get the value at the current position
+        L.setAfter(currentValue * m); // multiply the value by m and set it
+        L.moveNext(); // move to the next position
+    }
+}
+
+</pre>
+
+
+
+</body></html>

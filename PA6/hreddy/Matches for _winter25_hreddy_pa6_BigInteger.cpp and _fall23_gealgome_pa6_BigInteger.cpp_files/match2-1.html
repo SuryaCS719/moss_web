@@ -1,0 +1,423 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/9/7006589333500/match2-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/hreddy/pa6/BigInteger.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/fall23/gealgome/pa6/BigInteger.cpp<p></p><pre>//-----------------------------------------------------------------------------
+//  BigInterger.cpp
+//  George Gomez
+//  1755012
+//  pa6
+//-----------------------------------------------------------------------------
+#include&lt;string&gt;
+#include&lt;sstream&gt;
+#include"BigInteger.h"
+
+// BASE = 10^POWER, 0 &lt;= POWER &lt;= 9
+<a name="4"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#4" target="0"><img src="./tm_4_6.gif" alt="other" border="0" align="left"></a>
+
+const long BASE = 1000000000;   // 1 billion
+const int POWER = 9;
+
+
+void normalize(BigInteger&amp; N){
+    while(N.digits.length() &gt; 0 &amp;&amp; N.digits.front() == 0){
+        N.digits.moveFront();
+        N.digits.eraseAfter();
+    }
+    if(N.digits.length() == 0){
+        N.signum = 0;
+        return;
+    }
+    
+    N.digits.moveBack();
+    while(N.digits.position() &gt; 0){
+        long carry = 0;
+        long elem = N.digits.movePrev();
+        if(elem &lt; 0){
+            if(N.digits.position() == 0){
+                N.digits.setAfter(-elem);
+                N.signum *= -1;
+</font>                break;
+            }
+<a name="13"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#13" target="0"><img src="./tm_3_1.gif" alt="other" border="0" align="left"></a>
+
+            for(carry = -1; elem + -carry * BASE &lt; 0; carry--) ;
+            N.digits.setAfter(elem + -carry * BASE);
+        }else if(elem &gt;= BASE){
+            carry = 1;
+</font><a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#1" target="0"><img src="./tm_1_9.gif" alt="other" border="0" align="left"></a>
+
+            for(carry = 1; elem + -carry * BASE &gt;= BASE; carry++) ;
+            N.digits.setAfter(elem + -carry * BASE);
+        }
+        if(N.digits.position() &gt; 0){
+            long prev_elem = N.digits.movePrev();
+            N.digits.setAfter(prev_elem + carry);
+            N.digits.moveNext();
+        }else if(carry &lt;= -1){
+            N.digits.setAfter(- N.digits.front());
+            N.signum = -1;
+            if(N.digits.front() &lt; 0){
+                N.digits.setAfter(BASE + N.digits.front());
+                N.digits.moveNext();
+                while(N.digits.position() &lt; N.digits.length()){
+                    long n = N.digits.moveNext();
+                    N.digits.setBefore(BASE - n);
+                }
+                break;
+            }
+            
+        }else if (carry &gt;= 1){
+            N.digits.insertAfter(carry);
+        }
+    }
+    N.digits.moveFront();
+}
+
+BigInteger::BigInteger(){
+    signum = 0;
+    digits = List();
+}
+
+BigInteger::BigInteger(std::string s){
+</font><a name="12"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#12" target="0"><img src="./tm_2_1.gif" alt="other" border="0" align="left"></a>
+
+    if(s.length() == 0){
+        throw std::invalid_argument("BigInteger: Constructor: empty string");
+    }
+    if((s[0] != '-' &amp;&amp; s[0] != '+') &amp;&amp; (s[0] &gt; '9' || s[0] &lt; '0')){
+</font>        throw std::invalid_argument("BigInteger: Constructor: non-numeric string");
+    }
+    for(int i = s.length() - 1; i &gt; 0; i--){
+        if(s[i] &gt; '9' || s[i] &lt; '0'){
+            throw std::invalid_argument("BigInteger: Constructor: non-numeric string");
+        }
+    }
+    if(s == "0"){
+        return;
+    }
+    // eg: s = "-1234" -&gt; s = "1234"
+    if(s.substr(0,1) == "-" || s.substr(0,1) == "+"){
+        if(s.substr(0,1) == "-"){
+<a name="6"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#6" target="0"><img src="./tm_1_4.gif" alt="other" border="0" align="left"></a>
+
+            this-&gt;signum = -1;
+        }else{
+            this-&gt;signum = 1;
+        }
+        s = s.substr(1);
+    }else{
+        this-&gt;signum = 1;
+    }
+
+    int length = s.length();
+    for(int i = 1; length - i * POWER &gt; - POWER; i++){
+        // pos and cnt is passed to function substr()
+        int pos = length - i * POWER;
+        int cnt = POWER;
+        // Cut s ito separate POWER length string, 
+        // and convert the cutted string to a long number.
+        std::string num_str;
+        if(pos &gt; 0){
+            num_str = s.substr(pos, cnt);
+</font>        }else{
+            num_str = s.substr(0, pos + POWER);
+        }
+<a name="5"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#5" target="0"><img src="./tm_0_4.gif" alt="other" border="0" align="left"></a>
+
+        long num = std::stol(num_str);
+        this-&gt;digits.insertAfter(num);
+    }
+}
+
+BigInteger::BigInteger(const BigInteger&amp; N){
+    this-&gt;signum = N.signum;
+    // Use copy constructor
+    this-&gt;digits = List(N.digits);
+}
+
+int BigInteger::sign() const{
+    return signum;
+}
+
+int BigInteger::compare(const BigInteger&amp; N) const{
+    BigInteger ret = this-&gt;sub(N);
+    return ret.sign();
+}
+
+void BigInteger::makeZero(){
+    this-&gt;signum = 0;
+    this-&gt;digits.clear();
+}
+
+void BigInteger::negate(){
+</font>    this-&gt;signum *= -1;
+}
+
+<a name="11"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#11" target="0"><img src="./tm_1_2.gif" alt="other" border="0" align="left"></a>
+
+BigInteger BigInteger::add(const BigInteger&amp; N) const{
+    BigInteger newM(*this);
+    BigInteger newN(N);
+    if(newM.sign() != newN.sign()){
+        if(newN.sign() &gt; 0){
+            return newN.add(newM);
+        }
+        // return newM - (- newN)
+        newN.signum *= -1;
+</font><a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#2" target="0"><img src="./tm_2_8.gif" alt="other" border="0" align="left"></a>
+
+        return newM.sub(newN);
+    }
+    // perform A = newM + newN
+    BigInteger A;
+    A.signum = signum;  // *this-&gt;signum is equal to N.signum
+    List digitsM = newM.digits;
+    List digitsN = newN.digits;
+    List digitsA;
+    digitsM.moveBack();
+    digitsN.moveBack();
+    while(digitsM.position() &gt; 0 &amp;&amp; digitsN.position() &gt; 0){
+        long m = digitsM.movePrev();
+        long n = digitsN.movePrev();
+        digitsA.insertAfter(m + n);
+    }
+    // Insert rest ListElement in digitsM or digitsN into digitsA
+    while(digitsM.position() &gt; 0){
+        long m = digitsM.movePrev();
+        digitsA.insertAfter(m);
+    }
+    while(digitsN.position() &gt; 0){
+        long n = digitsN.movePrev();
+        digitsA.insertAfter(n);
+    }
+    A.digits = digitsA;
+    normalize(A);
+    return A;
+}
+
+BigInteger BigInteger::sub(const BigInteger&amp; N) const{
+    BigInteger newM(*this);
+    BigInteger newN(N);
+
+    // eg: 100 - (-20) = 100 + 20
+    if(newM.sign() != newN.sign()){
+        // return newM + (- newN )
+        newN.signum *= -1;
+</font>        return newM.add(newN);
+    }
+    // make the bigone minus the littleone
+    if(newN.digits.length() &gt; newM.digits.length()){
+        BigInteger temp = newN - newM;
+        temp.signum *= -1;
+        return temp;
+    }
+    // Make sure front() function is used under pre-condition
+<a name="9"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#9" target="0"><img src="./tm_4_2.gif" alt="other" border="0" align="left"></a>
+
+    if( newN.digits.length() == newM.digits.length() ){
+        if(newN.digits.length() &gt; 0){
+            if(newN.digits.front() &gt; newM.digits.front()){
+                BigInteger temp = newN - newM;
+</font>                temp.signum *= -1;
+                return temp;
+            }
+        }
+    }
+    // perform A = newM + newN
+<a name="3"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#3" target="0"><img src="./tm_3_7.gif" alt="other" border="0" align="left"></a>
+
+    BigInteger A;
+    A.signum = newM.signum;
+    List digitsM = newM.digits;
+    List digitsN = newN.digits;
+    List digitsA;
+    digitsM.moveBack();
+    digitsN.moveBack();
+    while(digitsM.position() &gt; 0 &amp;&amp; digitsN.position() &gt; 0){
+        long m = digitsM.movePrev();
+        long n = digitsN.movePrev();
+        digitsA.insertAfter(m - n);
+        
+    }
+    // Insert rest ListElement in digitsM or digitsN into digitsA
+    while(digitsM.position() &gt; 0){
+        long m = digitsM.movePrev();
+        digitsA.insertAfter(m);
+    }
+    while(digitsN.position() &gt; 0){
+        long n = digitsN.movePrev();
+        digitsA.insertAfter(-n);
+    }
+    A.digits = digitsA;
+    normalize(A);
+    return A;
+}
+
+
+
+void shift(BigInteger&amp; N, int s){
+    // Record the origin position in N.digits
+    int pos = N.digits.position();
+    N.digits.moveBack();
+</font>    for(int i = 0; i &lt; s; i++){
+        N.digits.insertBefore(0);
+    }
+
+    // Recovery to origin position.
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#0" target="0"><img src="./tm_0_15.gif" alt="other" border="0" align="left"></a>
+
+    while(N.digits.position() != pos){
+        if(N.digits.position() &lt; pos){
+            N.digits.moveNext();
+        }else{
+            N.digits.moveFront();
+        }
+    }
+}
+
+BigInteger BigInteger::mult(const BigInteger&amp; N) const{
+    BigInteger newM(*this);
+    BigInteger newN(N);
+    BigInteger A;
+    if(newM.sign() != newN.sign()){
+        A.signum = -1;
+    }else{
+        A.signum = 1;
+    }
+    List digitsM = newM.digits;
+    List digitsN = newN.digits;
+    List digitsA;
+    digitsM.moveBack();
+    int SHIFT = 0;
+    while(digitsM.position() &gt; 0){
+        BigInteger scalerMult;
+        scalerMult.signum = A.signum;
+        long m = digitsM.movePrev();
+        digitsN.moveBack();
+        while(digitsN.position() &gt; 0){
+            long n = digitsN.movePrev();
+            scalerMult.digits.insertAfter(m * n);
+            scalerMult.digits.moveFront();
+            // Shift N with i position, and padding with 0;
+        }
+        shift(scalerMult, SHIFT);
+        // A += scalerMult;    // TODO: rewrite the add operation, do not use add function.
+        // int pos = scalerMult.digits.position();
+        A.digits.moveBack();
+        scalerMult.digits.moveBack();
+        while(A.digits.position() &gt; 0 &amp;&amp; scalerMult.digits.position() &gt; 0){
+            long a = A.digits.movePrev();
+            long b = scalerMult.digits.movePrev();
+            A.digits.setAfter(a + b);
+        }
+        while(scalerMult.digits.position() &gt; 0){
+            long b = scalerMult.digits.movePrev();
+            A.digits.moveFront();
+            A.digits.insertAfter(b);
+        }
+        SHIFT ++;
+    }
+    normalize(A);
+
+    return A;
+}
+
+std::string BigInteger::to_string(){
+    if(this-&gt;signum == 0){
+        return "0";
+    }
+    std::string s = "";
+    if(this-&gt;signum == -1){
+        s += '-';
+</font>        // Add some space between sign and digits.
+        // +-------------------------------+ DEBUG USE +-------------------------------+ //
+        // s += ' ';
+        // +-------------------------------+ DEBUG END +-------------------------------+ //
+    }
+    digits.moveFront();
+<a name="10"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#10" target="0"><img src="./tm_0_2.gif" alt="other" border="0" align="left"></a>
+
+    while(digits.position() &lt; digits.length()){
+        long elem = digits.moveNext();
+        std::string elem_str = std::to_string(elem);
+
+        // Padding with 0.
+        while(digits.position() != 1 &amp;&amp; elem_str.length() &lt; POWER){
+            elem_str = '0' + elem_str;
+        }
+        s += elem_str;
+</font>        
+        
+    }
+    return s;
+}
+
+<a name="7"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#7" target="0"><img src="./tm_2_3.gif" alt="other" border="0" align="left"></a>
+
+std::ostream&amp; operator&lt;&lt;( std::ostream&amp; stream, BigInteger N ){
+    return stream &lt;&lt; N.to_string();
+}
+
+bool operator==( const BigInteger&amp; A, const BigInteger&amp; B ){
+    BigInteger ret = A.sub(B);
+    return ret.sign() == 0 ? true : false;
+}
+
+bool operator&lt;( const BigInteger&amp; A, const BigInteger&amp; B ){
+    BigInteger ret = A.sub(B);
+</font>    return ret.sign() &lt; 0 ? true : false;
+}
+
+bool operator&lt;=( const BigInteger&amp; A, const BigInteger&amp; B ){
+    BigInteger ret = A.sub(B);
+    return ret.sign() &lt;= 0 ? true : false;
+}
+
+bool operator&gt;( const BigInteger&amp; A, const BigInteger&amp; B ){
+    BigInteger ret = A.sub(B);
+    return ret.sign() &gt; 0 ? true : false;
+}
+
+<a name="8"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#8" target="0"><img src="./tm_3_2.gif" alt="other" border="0" align="left"></a>
+
+bool operator&gt;=( const BigInteger&amp; A, const BigInteger&amp; B ){
+    BigInteger ret = A.sub(B);
+    return ret.sign() &gt;= 0 ? true : false;
+}
+
+BigInteger operator+( const BigInteger&amp; A, const BigInteger&amp; B ){
+    return A.add(B);
+}
+
+BigInteger operator+=( BigInteger&amp; A, const BigInteger&amp; B ){
+</font>    A = A.add(B);
+    return A;
+}
+
+BigInteger operator-( const BigInteger&amp; A, const BigInteger&amp; B ){
+    return A.sub(B);
+}
+
+BigInteger operator-=( BigInteger&amp; A, const BigInteger&amp; B ){
+    A = A.sub(B);
+    return A;
+}
+
+BigInteger operator*( const BigInteger&amp; A, const BigInteger&amp; B ){
+<a name="14"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/9/7006589333500/match2-0.html#14" target="0"><img src="./tm_4_1.gif" alt="other" border="0" align="left"></a>
+
+    return A.mult(B);
+}
+
+BigInteger operator*=( BigInteger&amp; A, const BigInteger&amp; B ){
+    A = A.mult(B);
+    return A.mult(B);
+</font>}</pre>
+
+
+
+</body></html>
