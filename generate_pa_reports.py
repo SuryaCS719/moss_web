@@ -138,7 +138,7 @@ def generate_student_index(student_folder, pa_folder, reports):
         <div class="report-list">
             {"".join([
                 f'''<div class="report-item">
-                    <h3>Report {i + 1}: {os.path.basename(report).split("_")[-1].split(".")[0]}.c</h3>
+                    <h3>Report {i + 1}: {os.path.basename(report).split("_")[-1].split(".")[0]} file</h3>
                     <a class="report-link" href="{os.path.basename(report)}">View Full Report</a>
                 </div>'''
                 for i, report in enumerate(reports)
