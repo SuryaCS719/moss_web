@@ -1,0 +1,99 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/4/7574297171990/match4-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/lmysliwc/pa8/WordFrequency.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/lmysliwc/pa8/WordFrequency.cpp<p></p><pre>/*
+    WordFrequency.cpp
+    Assignment: pa8
+    Author: Lucas Mysliwczyk
+    CruzID: lmysliwc
+*/
+
+
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;cctype&gt;
+#include "Dictionary.h"
+
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/4/7574297171990/match4-1.html#0" target="1"><img src="./tm_0_97.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// Helper function to convert a string to lowercase
+string toLowercase(const string&amp; word) {
+    string result;
+    for (char ch : word) {
+        result += tolower(ch);
+    }
+    return result;
+}
+
+int main(int argc, char* argv[]) {
+    // Check for correct number of arguments
+    if (argc != 3) {
+        cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " &lt;input file&gt; &lt;output file&gt;" &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    ifstream inFile(argv[1]);
+    ofstream outFile(argv[2]);
+
+    // Check if input file opened successfully
+    if (!inFile.is_open()) {
+        cerr &lt;&lt; "Unable to open input file: " &lt;&lt; argv[1] &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    // Check if output file opened successfully
+    if (!outFile.is_open()) {
+        cerr &lt;&lt; "Unable to open output file: " &lt;&lt; argv[2] &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    // Create an empty Dictionary
+    Dictionary wordFreq;
+
+    string line;
+    string delim = " \t\\\"\',&lt;.&gt;/?;:[{]}|`~!@#$%^&amp;*()-_=+0123456789";
+
+    // Read the input file line by line
+    while (getline(inFile, line)) {
+        size_t begin = line.find_first_not_of(delim);
+        while (begin != string::npos) {
+            size_t end = line.find_first_of(delim, begin);
+            string word = line.substr(begin, end - begin);
+            word = toLowercase(word);  // Convert word to lowercase
+
+            if (word != "") {
+                // If word is already in dictionary, increment its frequency
+                if (wordFreq.contains(word)) {
+                    wordFreq.getValue(word) += 1;
+                } else {
+                    // If word is new, insert it with a frequency of 1
+                    wordFreq.setValue(word, 1);
+                }
+            }
+
+            // Move to next word
+            begin = line.find_first_not_of(delim, end);
+        }
+    }
+
+    // Output the dictionary to the output file
+    outFile &lt;&lt; wordFreq.to_string();
+
+    // Clean up and close files
+    inFile.close();
+</font>    outFile.close();
+
+    return EXIT_SUCCESS;
+}
+</pre>
+
+
+
+</body></html>

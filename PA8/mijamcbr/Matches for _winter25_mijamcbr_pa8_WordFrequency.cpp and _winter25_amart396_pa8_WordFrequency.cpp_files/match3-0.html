@@ -1,0 +1,76 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/4/7574297171990/match3-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/mijamcbr/pa8/WordFrequency.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/mijamcbr/pa8/WordFrequency.cpp<p></p><pre>// ---------------------
+// Michael McBride
+// mijamcbr@ucsc.edu
+// pa8
+// ---------------------
+
+#include &lt;algorithm&gt;
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include "Dictionary.h"
+
+using namespace std;
+
+int main (int argc, char** argv) {
+    ifstream IN;
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/4/7574297171990/match3-1.html#0" target="1"><img src="./tm_0_91.gif" alt="other" border="0" align="left"></a>
+
+    ofstream OUT;
+    string line;
+    if (argc != 3)
+    {
+        cerr &lt;&lt; "Usage: &lt;input file&gt; &lt;output file&gt;\n";
+        return (EXIT_FAILURE);
+    }
+    // open files for reading and writing 
+    IN.open(argv[1]);
+    if( !IN.is_open() ){
+        cerr &lt;&lt; "Unable to open file for reading\n";
+        return(EXIT_FAILURE);
+    }
+    OUT.open(argv[2]);
+    if( !OUT.is_open() ){
+        cerr &lt;&lt; "Unable to open file or writing\n";
+        return(EXIT_FAILURE);
+    }
+    Dictionary D;
+    while (getline(IN, line)) {
+        istringstream iss (line);
+        string delim = " \t\\\"\',&lt;.&gt;/?;:[{]}|`~!@#$%^&amp;*()-_=+0123456789";
+        string word;
+        size_t start = min(line.find_first_not_of(delim, 0), line.length());
+        size_t end = min(line.find_first_of(delim, start), line.length());
+        word = line.substr(start, end - start);
+        while (word != "") {
+            transform(word.begin(), word.end(), word.begin(), ::tolower);
+            if (D.contains(word)) {
+                D.setValue(word, D.getValue(word) + 1);
+            } else {
+                D.setValue(word, 1);
+            }
+            start = min(line.find_first_not_of(delim, end+1), line.length());
+            end = min(line.find_first_of(delim, start), line.length());
+            word = line.substr(start, end - start);
+        }
+    } 
+    OUT &lt;&lt; endl &lt;&lt; D.to_string() &lt;&lt; endl;
+    IN.close();
+    OUT.close();
+</font>    return 0;
+
+}
+</pre>
+
+
+
+</body></html>

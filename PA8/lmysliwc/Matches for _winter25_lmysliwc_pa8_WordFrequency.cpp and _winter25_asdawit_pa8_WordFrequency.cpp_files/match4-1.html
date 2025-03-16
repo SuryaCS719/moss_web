@@ -1,0 +1,88 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/4/7574297171990/match4-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/lmysliwc/pa8/WordFrequency.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/asdawit/pa8/WordFrequency.cpp<p></p><pre>//-----------------------------------------------------------------------------
+// Name: Abrham Dawit
+// CruzID: asdawit
+// Winter 25 - 101
+// Assignment: pa8
+// WordFrequency.cpp
+// A top-level client that counts word frequencies using a Red-Black Tree (RBT)
+//-----------------------------------------------------------------------------
+
+#include "Dictionary.h"
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;cctype&gt;      
+#include &lt;cstdlib&gt;     
+
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/4/7574297171990/match4-0.html#0" target="0"><img src="./tm_0_97.gif" alt="other" border="0" align="left"></a>
+
+using namespace std;
+
+// Convert string to all lowercase
+string toLowerCase(const string&amp; word) {
+    string result;
+    for (char ch : word) {
+        result += tolower(ch);
+    }
+    return result;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 3) {
+        cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " &lt;input file&gt; &lt;output file&gt;" &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    ifstream inFile(argv[1]);
+    ofstream outFile(argv[2]);
+
+    if (!inFile.is_open()) {
+        cerr &lt;&lt; "Error: Cannot open input file " &lt;&lt; argv[1] &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    if (!outFile.is_open()) {
+        cerr &lt;&lt; "Error: Cannot open output file " &lt;&lt; argv[2] &lt;&lt; endl;
+        return EXIT_FAILURE;
+    }
+
+    Dictionary dict;
+
+    string line;
+    string delim = " \t\\\"',&lt;.&gt;/?;:[{]}|`~!@#$%^&amp;*()-_=+0123456789";
+
+    while (getline(inFile, line)) {
+        size_t begin = line.find_first_not_of(delim);
+        while (begin != string::npos) {
+            size_t end = line.find_first_of(delim, begin);
+            string word = line.substr(begin, end - begin);
+            word = toLowerCase(word);
+            if (word != "") {
+                if (dict.contains(word)) {
+                    dict.getValue(word) += 1;
+                } else {
+                    dict.setValue(word, 1);
+                }
+            }
+            begin = line.find_first_not_of(delim, end);
+        }
+    }
+
+    outFile &lt;&lt; dict.to_string();
+
+    inFile.close();
+</font>    outFile.close();
+
+    return EXIT_SUCCESS;
+}</pre>
+
+
+
+</body></html>

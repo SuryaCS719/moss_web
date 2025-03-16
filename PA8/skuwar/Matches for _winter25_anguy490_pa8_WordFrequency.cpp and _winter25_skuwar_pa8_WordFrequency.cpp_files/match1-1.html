@@ -1,0 +1,100 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/4/7574297171990/match1-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/anguy490/pa8/WordFrequency.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/skuwar/pa8/WordFrequency.cpp<p></p><pre>/************************
+* Siddhant Kuwar
+* skuwar
+* 2025 Winter CSE101 PA #8
+* WordFrequency.cpp
+* Second main client file
+************************/
+
+#include "Dictionary.h"
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+#include &lt;string&gt;
+#include &lt;algorithm&gt;
+
+// Function to convert a string to lowercase
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/4/7574297171990/match1-0.html#0" target="0"><img src="./tm_0_40.gif" alt="other" border="0" align="left"></a>
+
+std::string toLowercase(const std::string&amp; str) {
+    std::string lowerStr = str;
+    std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(), ::tolower);
+    return lowerStr;
+}
+
+int main(int argc, char* argv[]) {
+    // Check for correct number of arguments
+    if (argc != 3) {
+        std::cerr &lt;&lt; "Usage: " &lt;&lt; argv[0] &lt;&lt; " &lt;input file&gt; &lt;output file&gt;" &lt;&lt; std::endl;
+        return 1;
+    }
+
+    // Open input file
+    std::ifstream inFile(argv[1]);
+    if (!inFile.is_open()) {
+        std::cerr &lt;&lt; "Unable to open file " &lt;&lt; argv[1] &lt;&lt; " for reading" &lt;&lt; std::endl;
+        return 1;
+</font>    }
+
+    // Create a Dictionary to store word frequencies
+    Dictionary wordFreq;
+
+    // Define the delimiter for tokenizing the input file
+    std::string delim = " \t\\\"\',&lt;.&gt;/?;:[{]}|`~!@#$%^&amp;*()-_=+0123456789";
+
+    // Read the input file line by line
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/4/7574297171990/match1-0.html#1" target="0"><img src="./tm_1_31.gif" alt="other" border="0" align="left"></a>
+
+    std::string line;
+    while (std::getline(inFile, line)) {
+        size_t start = line.find_first_not_of(delim, 0);
+        size_t end = line.find_first_of(delim, start);
+
+        while (start != std::string::npos || end != std::string::npos) {
+            std::string word = line.substr(start, end - start);
+            word = toLowercase(word);
+
+            // If the word is already in the dictionary, increment its frequency
+            if (wordFreq.contains(word)) {
+                wordFreq.getValue(word)++;
+            } else {
+                // Otherwise, add the word to the dictionary with a frequency of 1
+                wordFreq.setValue(word, 1);
+            }
+
+            start = line.find_first_not_of(delim, end);
+</font>            end = line.find_first_of(delim, start);
+        }
+    }
+
+    // Close the input file
+    inFile.close();
+
+    // Open output file
+    std::ofstream outFile(argv[2]);
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/4/7574297171990/match1-0.html#2" target="0"><img src="./tm_2_9.gif" alt="other" border="0" align="left"></a>
+
+    if (!outFile.is_open()) {
+        std::cerr &lt;&lt; "Unable to open file " &lt;&lt; argv[2] &lt;&lt; " for writing" &lt;&lt; std::endl;
+        return 1;
+</font>    }
+
+    // Write the word frequencies to the output file
+    outFile &lt;&lt; wordFreq.to_string();
+
+    // Close the output file
+    outFile.close();
+
+    return 0;
+}
+</pre>
+
+
+
+</body></html>

@@ -1,0 +1,80 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/4/7574297171990/match3-1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/mijamcbr/pa8/WordFrequency.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/amart396/pa8/WordFrequency.cpp<p></p><pre>//-----------------------------------------------------------------------------
+// Name: Anthony Martinez 
+//  WordFrequency.cpp is the file that implicitly calls 
+//  and uses the functions written in Dictionary.cpp &amp; Order.cpp!
+//  cruzid:amart396@ucsc.edu
+//---------------------------------------------------------------------------
+#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;fstream&gt;
+#include &lt;sstream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+
+#include "Dictionary.h"
+
+using namespace std;
+int main(int argc, char *argv[]) {
+    ifstream inputFile1;
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/4/7574297171990/match3-0.html#0" target="0"><img src="./tm_0_90.gif" alt="other" border="0" align="left"></a>
+
+    ofstream inputFile2;
+    string currLine;
+    //Heavily templated from Claude AI
+    if (argc != 3)
+    {
+        cerr &lt;&lt; "Usage: input file&gt; &lt;output file&gt;\n";
+        return (EXIT_FAILURE);
+    }
+    
+    //Now open files for reading and writing
+    inputFile1.open(argv[1]);
+    if(!inputFile1.is_open() ){ //check error
+        cerr &lt;&lt; "Unable to open file for reading\n";
+        return(EXIT_FAILURE); }
+    inputFile2.open(argv[2]);
+    if( !inputFile2.is_open() ){ //check error
+        cerr &lt;&lt; "Unable to open file or writing\n";
+        return(EXIT_FAILURE); }
+        
+    //Now begin checking Frequency!!
+    Dictionary F;
+    while (getline(inputFile1, currLine)) {
+        istringstream iss (currLine);
+        //format from given functoin in p8
+        string delim = " \t\\\"\',&lt;.&gt;/?;:[{]}|`~!@#$%^&amp;*()-_=+0123456789";
+        string word;
+        size_t start = min(currLine.find_first_not_of(delim, 0), currLine.length());
+        size_t end = min(currLine.find_first_of(delim, start), currLine.length());
+        word = currLine.substr(start, end - start);
+        
+        while (word != "") {
+            transform(word.begin(), word.end(), word.begin(), ::tolower);
+            if (F.contains(word)) {
+                F.setValue(word, F.getValue(word) + 1);
+            } else {
+                F.setValue(word, 1);
+            }
+            start = min(currLine.find_first_not_of(delim, end+1), currLine.length());
+            end = min(currLine.find_first_of(delim, start), currLine.length());
+            word = currLine.substr(start, end - start); 
+        }
+    } 
+    inputFile2 &lt;&lt; endl &lt;&lt; F.to_string() &lt;&lt; endl;
+    inputFile2.close();
+    inputFile1.close();
+</font>    
+    return 0;
+}
+</pre>
+
+
+
+</body></html>

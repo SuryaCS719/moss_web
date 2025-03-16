@@ -1,0 +1,692 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/8/8949662305853/match0-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/xli449/pa8/Dictionary.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/xli449/pa8/Dictionary.cpp<p></p><pre>/*
+* Dictionary.cpp
+* Desc:    Implementation file for Dictionary ADT
+* Author : Xinyang Li
+* CruzID : xli449
+* Assignment : pa8
+*/
+
+//-----------------------------------------------------------------------------
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;cassert&gt;
+
+#include "Dictionary.h"
+
+// Node constructor
+<a name="4"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/8/8949662305853/match0-1.html#4" target="1"><img src="./tm_4_1.gif" alt="other" border="0" align="left"></a>
+
+Dictionary::Node::Node(keyType k, valType v) {
+    key = k;
+    val = v;
+    parent = NULL;
+    left = NULL;
+    right = NULL;
+    color = 'R';
+</font>}
+
+
+
+// inOrderString()
+// Appends a string representation of the tree rooted at R to string s. The
+// string appended consists of: "key : value \n" for each key-value pair in
+// tree R, arranged in order by keys.
+void Dictionary::inOrderString(std::string&amp; s, Node* R) const {
+    if (R != nil) {
+        inOrderString(s, R-&gt;left);
+        s += R-&gt;key + " : " + std::to_string(R-&gt;val) + "\n";
+        inOrderString(s, R-&gt;right);
+    }
+}
+
+// preOrderString()
+// Appends a string representation of the tree rooted at R to s. The appended
+// string consists of keys only, separated by "\n", with the order determined
+// by a pre-order tree walk.
+void Dictionary::preOrderString(std::string&amp; s, Node* R) const {
+    if (R != nil) {
+        s += R-&gt;key;
+        if (R-&gt;color == 'R')
+            s += " (RED)";
+        s += "\n";
+        preOrderString(s, R-&gt;left);
+        preOrderString(s, R-&gt;right);
+    }
+}
+
+
+// BST_insert()
+// Inserts a copy of the Node *M into this Dictionary. Used by preOrderCopy().
+void Dictionary::BST_insert(Node* M) {
+    Node* z = new Node(M-&gt;key, M-&gt;val);
+    z-&gt;color = M-&gt;color;
+
+    z-&gt;left = nil;
+    z-&gt;right = nil;
+
+    Node* y = nil;
+    Node* x = root;
+    while (x != nil) {
+        y = x;
+        if (z-&gt;key &lt; x-&gt;key) {
+            x = x-&gt;left;
+        } else if (z-&gt;key &gt; x-&gt;key) {
+            x = x-&gt;right;
+        } else {
+            assert(0);
+        }
+    }
+    z-&gt;parent = y;
+    if (y == nil) {
+        root = z;
+    } else if (z-&gt;key &lt; y-&gt;key)
+        y-&gt;left = z;
+    else
+        y-&gt;right = z;
+
+    num_pairs++;
+}
+
+
+// preOrderCopy()
+// Recursively inserts a deep copy of the subtree rooted at R into this 
+// Dictionary. Recursion terminates at N.
+void Dictionary::preOrderCopy(Node* R, Node* N) {
+    if (R != N) {
+        // setValue(R-&gt;key, R-&gt;val);
+        BST_insert(R);
+        preOrderCopy(R-&gt;left, N);
+        preOrderCopy(R-&gt;right, N);
+    }
+}
+
+
+// postOrderDelete()
+// Deletes all Nodes in the subtree rooted at R.
+void Dictionary::postOrderDelete(Node* R) {
+    if (R != nil) {
+        postOrderDelete(R-&gt;left);
+        postOrderDelete(R-&gt;right);
+        delete R;
+    }
+}
+
+// search()
+// Searches the subtree rooted at R for a Node with key==k. Returns
+// the address of the Node if it exists, returns nil otherwise.
+Dictionary::Node* Dictionary::search(Node* R, keyType k) const {
+    if (R == nil || R-&gt;key == k) {
+        return R;
+    } else if (R-&gt;key &gt; k) {
+        return search(R-&gt;left, k);
+    } else {
+        return search(R-&gt;right, k);
+    }
+}
+
+// findMin()
+// If the subtree rooted at R is not empty, returns a pointer to the 
+// leftmost Node in that subtree, otherwise returns nil.
+Dictionary::Node* Dictionary::findMin(Node* R) {
+    if (R == nil)
+        return nil;
+    while (R-&gt;left != nil) {
+        R = R-&gt;left;
+    }
+    return R;
+}
+
+// findMax()
+// If the subtree rooted at R is not empty, returns a pointer to the 
+// rightmost Node in that subtree, otherwise returns nil.
+Dictionary::Node* Dictionary::findMax(Node* R) {
+    if (R == nil)
+        return nil;
+    while (R-&gt;right != nil) {
+        R = R-&gt;right;
+    }
+    return R;
+}
+
+// findNext()
+// If N does not point to the rightmost Node, returns a pointer to the
+// Node after N in an in-order tree walk.  If N points to the rightmost 
+// Node, or is nil, returns nil. 
+Dictionary::Node* Dictionary::findNext(Node* x) {
+    if (x-&gt;right != nil) {
+        return findMin(x-&gt;right);
+    }
+    Node* y = x-&gt;parent;
+    while (y != nil &amp;&amp; x == y-&gt;right) {
+        x = y;
+        y = y-&gt;parent;
+    }
+    return y;
+}
+
+// findPrev()
+// If N does not point to the leftmost Node, returns a pointer to the
+// Node before N in an in-order tree walk.  If N points to the leftmost 
+// Node, or is nil, returns nil.
+Dictionary::Node* Dictionary::findPrev(Node* x) {
+    if (x-&gt;left != nil) {
+        return findMax(x-&gt;left);
+    }
+    Node* y = x-&gt;parent;
+    while (y != nil &amp;&amp; x == y-&gt;left) {
+        x = y;
+        y = y-&gt;parent;
+    }
+    return y;
+}
+
+// LeftRotate()
+void Dictionary::LeftRotate(Node* x) {
+    // set y
+    Node* y = x-&gt;right;
+
+    // turn y's left subtree into x's right subtree
+    x-&gt;right = y-&gt;left;
+    if (y-&gt;left != nil)     // not necessary if using sentinal nil node
+        y-&gt;left-&gt;parent = x;
+
+    // link y's parent to x
+    y-&gt;parent = x-&gt;parent;
+    if (x-&gt;parent == nil)
+        root = y;
+    else if (x == x-&gt;parent-&gt;left)
+        x-&gt;parent-&gt;left = y;
+    else
+        x-&gt;parent-&gt;right = y;
+    // put x on y's left
+    y-&gt;left = x;
+    x-&gt;parent = y;
+}
+
+// RightRotate()
+void Dictionary::RightRotate(Node* x) {
+    // set y
+    Node* y = x-&gt;left;
+
+    // turn y's right subtree into x's left subtree
+    x-&gt;left = y-&gt;right;
+    if (y-&gt;right != nil) // not necessary if using sentinal nil node
+        y-&gt;right-&gt;parent = x;
+
+    // link y's parent to x
+    y-&gt;parent = x-&gt;parent;
+    if (x-&gt;parent == nil)
+        root = y;
+    else if (x == x-&gt;parent-&gt;right)
+        x-&gt;parent-&gt;right = y;
+    else
+        x-&gt;parent-&gt;left = y;
+
+    // put x on y's right
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/8/8949662305853/match0-1.html#1" target="1"><img src="./tm_1_12.gif" alt="other" border="0" align="left"></a>
+
+    y-&gt;right = x;
+    x-&gt;parent = y;
+}
+
+// RB_InsertFixUP()
+void Dictionary::RB_InsertFixUp(Node* z) {
+    while (z-&gt;parent-&gt;color == 'R') {
+        if (z-&gt;parent == z-&gt;parent-&gt;parent-&gt;left) {
+            Node* y = z-&gt;parent-&gt;parent-&gt;right;
+            if (y-&gt;color == 'R') {
+                z-&gt;parent-&gt;color = 'B';         // case 1
+                y-&gt;color = 'B';                 // case 1
+                z-&gt;parent-&gt;parent-&gt;color = 'R'; // case 1
+                z = z-&gt;parent-&gt;parent;          // case 1
+            } else {
+                if (z == z-&gt;parent-&gt;right) {
+                    z = z-&gt;parent;              // case 2
+                    LeftRotate(z);              // case 2
+                }
+                z-&gt;parent-&gt;color = 'B';         // case 3
+                z-&gt;parent-&gt;parent-&gt;color = 'R'; // case 3
+                RightRotate(z-&gt;parent-&gt;parent); // case 3
+            }
+        } else {
+            Node* y = z-&gt;parent-&gt;parent-&gt;left;
+            if (y-&gt;color == 'R') {
+                z-&gt;parent-&gt;color = 'B';         // case 4
+                y-&gt;color = 'B';                 // case 4
+                z-&gt;parent-&gt;parent-&gt;color = 'R'; // case 4
+                z = z-&gt;parent-&gt;parent;          // case 4
+            } else {
+                if (z == z-&gt;parent-&gt;left) {
+                    z = z-&gt;parent;              // case 5
+                    RightRotate(z);             // case 5
+                }
+                z-&gt;parent-&gt;color = 'B';         // case 6
+                z-&gt;parent-&gt;parent-&gt;color = 'R'; // case 6
+                LeftRotate(z-&gt;parent-&gt;parent);  // case 6
+            }
+        }
+    }
+    root-&gt;color = 'B';
+}
+// RB_Transplant()
+void Dictionary::RB_Transplant(Node* u, Node* v) {
+    if (u-&gt;parent == nil)
+        root = v;
+    else if (u == u-&gt;parent-&gt;left)
+</font>        u-&gt;parent-&gt;left = v;
+    else
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/8/8949662305853/match0-1.html#0" target="1"><img src="./tm_0_15.gif" alt="other" border="0" align="left"></a>
+
+        u-&gt;parent-&gt;right = v;
+    v-&gt;parent = u-&gt;parent;
+}
+
+// RB_DeleteFixUp()
+void Dictionary::RB_DeleteFixUp(Node* x) {
+    while (x != root &amp;&amp; x-&gt;color == 'B') {
+        if (x == x-&gt;parent-&gt;left) {
+            Node* w = x-&gt;parent-&gt;right;
+            if (w-&gt;color == 'R') {
+                w-&gt;color = 'B';                 // case 1
+                x-&gt;parent-&gt;color = 'R';         // case 1
+                LeftRotate(x-&gt;parent);          // case 1
+                w = x-&gt;parent-&gt;right;           // case 1
+            }
+            if (w-&gt;left-&gt;color == 'B' &amp;&amp; w-&gt;right-&gt;color == 'B') {
+                w-&gt;color = 'R';                 // case 2
+                x = x-&gt;parent;                  // case 2
+            } else {
+                if (w-&gt;right-&gt;color == 'B') {
+                    w-&gt;left-&gt;color = 'B';       // case 3
+                    w-&gt;color = 'R';             // case 3
+                    RightRotate(w);             // case 3
+                    w = x-&gt;parent-&gt;right;       // case 3
+                }
+                w-&gt;color = x-&gt;parent-&gt;color;    // case 4
+                x-&gt;parent-&gt;color = 'B';         // case 4
+                w-&gt;right-&gt;color = 'B';          // case 4
+                LeftRotate(x-&gt;parent);          // case 4
+                x = root;                       // case 4
+            }
+        } else {
+            Node* w = x-&gt;parent-&gt;left;
+            if (w-&gt;color == 'R') {
+                w-&gt;color = 'B';                 // case 5
+                x-&gt;parent-&gt;color = 'R';         // case 5
+                RightRotate(x-&gt;parent);         // case 5
+                w = x-&gt;parent-&gt;left;            // case 5
+            }
+            if (w-&gt;right-&gt;color == 'B' &amp;&amp; w-&gt;left-&gt;color == 'B') {
+                w-&gt;color = 'R';                 // case 6
+                x = x-&gt;parent;                  // case 6
+            } else {
+                if (w-&gt;left-&gt;color == 'B') {
+                    w-&gt;right-&gt;color = 'B';      // case 7
+                    w-&gt;color = 'R';             // case 7
+                    LeftRotate(w);              // case 7
+                    w = x-&gt;parent-&gt;left;        // case 7
+                }
+                w-&gt;color = x-&gt;parent-&gt;color;    // case 8
+                x-&gt;parent-&gt;color = 'B';         // case 8
+                w-&gt;left-&gt;color = 'B';           // case 8
+                RightRotate(x-&gt;parent);         // case 8
+                x = root;                       // case 8
+            }
+        }
+    }
+    x-&gt;color = 'B';
+}
+
+// RB_Delete()
+void Dictionary::RB_Delete(Node* N) {
+</font>
+}
+
+// Class Constructors &amp; Destructors ----------------------------------------
+
+// Creates new Dictionary in the empty state. 
+Dictionary::Dictionary() {
+    nil = new Node("", 0);
+    nil-&gt;color = 'B';
+    root = nil;
+    current = nil;
+    num_pairs = 0;
+}
+
+// Copy constructor.
+Dictionary::Dictionary(const Dictionary&amp; D) {
+    nil = new Node("", 0);
+    nil-&gt;color = 'B';
+    root = nil;
+    current = nil;
+    num_pairs = 0;
+    preOrderCopy(D.root, D.nil);
+
+    begin();
+    if (D.hasCurrent())
+        while (currentKey() != D.currentKey())
+            next();
+}
+
+// Destructor
+Dictionary::~Dictionary() {
+    clear();
+    delete nil;
+}
+
+
+// Access functions --------------------------------------------------------
+
+// size()
+// Returns the size of this Dictionary.
+int Dictionary::size() const {
+    return this-&gt;num_pairs;
+}
+
+// contains()
+// Returns true if there exists a pair such that key==k, and returns false
+// otherwise.
+bool Dictionary::contains(keyType k) const {
+    return search(root, k) != nil;
+}
+
+// getValue()
+// Returns a reference to the value corresponding to key k.
+// Pre: contains(k)
+valType&amp; Dictionary::getValue(keyType k) const {
+    if (!contains(k))
+        throw std::logic_error("Dictionary: getValue(): key \"" + k + "\" does not exist");
+    return search(root, k)-&gt;val;
+}
+
+// hasCurrent()
+// Returns true if the current iterator is defined, and returns false 
+// otherwise.
+bool Dictionary::hasCurrent() const {
+    return current != nil;
+}
+
+// currentKey()
+// Returns the current key.
+// Pre: hasCurrent() 
+keyType Dictionary::currentKey() const {
+    if (!hasCurrent())
+        throw std::logic_error("Dictionary: currentKey(): current undefined");
+    return current-&gt;key;
+}
+
+// currentVal()
+// Returns a reference to the current value.
+// Pre: hasCurrent()
+valType&amp; Dictionary::currentVal() const {
+    if (!hasCurrent())
+        throw std::logic_error("Dictionary: currentVal(): current undefined");
+    return current-&gt;val;
+}
+
+
+// Manipulation procedures -------------------------------------------------
+
+// clear()
+// Resets this Dictionary to the empty state, containing no pairs.
+void Dictionary::clear() {
+    postOrderDelete(root);
+    root = nil;
+    current = nil;
+    num_pairs = 0;
+}
+//
+//void Dictionary::verify(Node* R, int&amp; size) {
+//    if (R == nil) {
+//        assert(R-&gt;left == NULL);
+//        assert(R-&gt;right == NULL);
+//        assert(R-&gt;parent == NULL);
+//    } else {
+//        size++;
+//        assert(R-&gt;left);
+//        assert(R-&gt;right);
+//        assert(R-&gt;parent);
+//        if (R-&gt;parent == nil) {
+//            assert(R == root);
+//        } else {
+//            assert(R-&gt;parent-&gt;left == R || R-&gt;parent-&gt;right == R);
+//        }
+//
+//        assert(R-&gt;left == nil || R-&gt;left-&gt;key &lt; R-&gt;key);
+//        assert(R-&gt;right == nil || R-&gt;right-&gt;key &gt; R-&gt;key);
+//
+//        verify(R-&gt;left, size);
+//        verify(R-&gt;right, size);
+//    }
+//}
+
+//void Dictionary::verify() {
+//    int size = 0;
+//    verify(root, size);
+//    assert(size == num_pairs);
+//
+//    std::string s;
+//
+//    s = "";
+//    this-&gt;begin();
+//    while (this-&gt;hasCurrent()) {
+//        s = s + this-&gt;currentKey() + " : " + std::to_string(this-&gt;currentVal()) + "\n";
+//        this-&gt;next();
+//        if (this-&gt;hasCurrent()) {
+//            this-&gt;prev();
+//            this-&gt;next();
+//        }
+//    }
+//    assert(s == this-&gt;to_string());
+//
+//    s = "";
+//    this-&gt;end();
+//    while (this-&gt;hasCurrent()) {
+//        s = this-&gt;currentKey() + " : " + std::to_string(this-&gt;currentVal()) + "\n" + s;
+//        this-&gt;prev();
+//        if (this-&gt;hasCurrent()) {
+//            this-&gt;next();
+//            this-&gt;prev();
+//        }
+//    }
+//    assert(s == this-&gt;to_string());
+//}
+
+// setValue()
+// If a pair with key==k exists, overwrites the corresponding value with v, 
+// otherwise inserts the new pair (k, v).
+void Dictionary::setValue(keyType k, valType v) {
+    Node* N = search(root, k);
+    if (N == nil) {
+        // (1) do not exist
+
+        Node* z = new Node(k, v);
+
+        Node* y = nil;
+        Node* x = root;
+        while (x != nil) {
+            y = x;
+            if (k &lt; x-&gt;key)
+                x = x-&gt;left;
+            else
+                x = x-&gt;right;
+        }
+        z-&gt;parent = y;
+        if (y == nil)
+            root = z;
+        else if (z-&gt;key &lt; y-&gt;key)
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/8/8949662305853/match0-1.html#2" target="1"><img src="./tm_2_1.gif" alt="other" border="0" align="left"></a>
+
+            y-&gt;left = z;
+        else
+            y-&gt;right = z;
+        z-&gt;left = nil;
+        z-&gt;right = nil;
+        z-&gt;color = 'R';
+        RB_InsertFixUp(z);
+</font>        num_pairs++;
+    } else {
+        // (2) exists 
+        N-&gt;val = v;
+    }
+}
+
+// remove()
+// Deletes the pair for which key==k. If that pair is current, then current
+// becomes undefined.
+// Pre: contains(k).
+void Dictionary::remove(keyType k) {
+    if (!contains(k))
+        throw std::logic_error("Dictionary: remove(): key \"" + k + "\" does not exist");
+    Node* z = search(root, k);
+    assert(z != nil);
+
+    Node* x;
+    Node* y = z;
+    int y_original_color = y-&gt;color;
+    if (z-&gt;left == nil) {
+        x = z-&gt;right;
+        RB_Transplant(z, z-&gt;right);
+    } else if (z-&gt;right == nil) {
+        x = z-&gt;left;
+        RB_Transplant(z, z-&gt;left);
+    } else {
+        y = findMin(z-&gt;right);
+        y_original_color = y-&gt;color;
+        x = y-&gt;right;
+        if (y-&gt;parent == z)
+            x-&gt;parent = y;
+        else {
+            RB_Transplant(y, y-&gt;right);
+            y-&gt;right = z-&gt;right;
+            y-&gt;right-&gt;parent = y;
+        }
+        RB_Transplant(z, y);
+<a name="3"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/8/8949662305853/match0-1.html#3" target="1"><img src="./tm_3_1.gif" alt="other" border="0" align="left"></a>
+
+        y-&gt;left = z-&gt;left;
+        y-&gt;left-&gt;parent = y;
+        y-&gt;color = z-&gt;color;
+    }
+    if (y_original_color == 'B')
+        RB_DeleteFixUp(x);
+</font>    this-&gt;num_pairs--;
+    if (z == current)
+        current = nil;
+    delete z;
+}
+
+// begin()
+// If non-empty, places current iterator at the first (key, value) pair
+// (as defined by the order operator &lt; on keys), otherwise does nothing. 
+void Dictionary::begin() {
+    if (root != nil) {
+        current = findMin(root);
+    }
+}
+
+// end()
+// If non-empty, places current iterator at the last (key, value) pair
+// (as defined by the order operator &lt; on keys), otherwise does nothing. 
+void Dictionary::end() {
+    if (root != nil) {
+        current = findMax(root);
+    }
+}
+
+// next()
+// If the current iterator is not at the last pair, advances current 
+// to the next pair (as defined by the order operator &lt; on keys). If 
+// the current iterator is at the last pair, makes current undefined.
+// Pre: hasCurrent()
+void Dictionary::next() {
+    if (!hasCurrent())
+        throw std::logic_error("Dictionary: next(): current undefined");
+    current = findNext(current);
+}
+
+// prev()
+// If the current iterator is not at the first pair, moves current to  
+// the previous pair (as defined by the order operator &lt; on keys). If 
+// the current iterator is at the first pair, makes current undefined.
+// Pre: hasCurrent()
+void Dictionary::prev() {
+    if (!hasCurrent())
+        throw std::logic_error("Dictionary: prev(): current undefined");
+    current = findPrev(current);
+}
+
+
+// Other Functions ---------------------------------------------------------
+
+// to_string()
+// Returns a string representation of this Dictionary. Consecutive (key, value)
+// pairs are separated by a newline "\n" character, and the items key and value 
+// are separated by the sequence space-colon-space " : ". The pairs are arranged 
+// in order, as defined by the order operator &lt;.
+std::string Dictionary::to_string() const {
+    std::string s;
+    inOrderString(s, root);
+    return s;
+}
+
+// pre_string()
+// Returns a string consisting of all keys in this Dictionary. Consecutive
+// keys are separated by newline "\n" characters. The key order is given
+// by a pre-order tree walk.
+std::string Dictionary::pre_string() const {
+    std::string s;
+    preOrderString(s, root);
+    return s;
+}
+
+// equals()
+// Returns true if and only if this Dictionary contains the same (key, value)
+// pairs as Dictionary D.
+bool Dictionary::equals(const Dictionary&amp; D) const {
+    return this-&gt;to_string() == D.to_string();
+}
+
+
+// Overloaded Operators ----------------------------------------------------
+
+// operator&lt;&lt;()
+// Inserts string representation of Dictionary D into stream, as defined by
+// member function to_string().
+std::ostream&amp; operator&lt;&lt;(std::ostream&amp; stream, Dictionary&amp; D) {
+    stream &lt;&lt; D.to_string();
+    return stream;
+}
+
+// operator==()
+// Returns true if and only if Dictionary A equals Dictionary B, as defined
+// by member function equals(). 
+bool operator==(const Dictionary&amp; A, const Dictionary&amp; B) {
+    return A.equals(B);
+}
+
+// operator=()
+// Overwrites the state of this Dictionary with state of D, and returns a
+// reference to this Dictionary.
+Dictionary&amp; Dictionary::operator=(const Dictionary&amp; D) {
+    clear();
+    preOrderCopy(D.root, D.nil);
+    begin();
+    if (D.hasCurrent())
+        while (currentKey() != D.currentKey())
+            next();
+    return *this;
+}
+
+</pre>
+
+
+
+</body></html>

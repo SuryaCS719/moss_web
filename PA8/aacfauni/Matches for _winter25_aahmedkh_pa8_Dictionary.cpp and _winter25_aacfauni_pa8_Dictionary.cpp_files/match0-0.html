@@ -1,0 +1,617 @@
+
+<!-- saved from url=(0062)http://moss.stanford.edu/results/7/3201679867665/match0-0.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>/winter25/aahmedkh/pa8/Dictionary.cpp</title>
+<script id="simplify-jobs-page-script" src="chrome-extension://pbanhockgagggenencehbnadejlgchfc/js/pageScript.bundle.js"></script></head>
+<body bgcolor="white">
+<hr>
+/winter25/aahmedkh/pa8/Dictionary.cpp<p></p><pre>/*
+Created by Ayman Ahmed Khan on 6:32 PM on 3/15/2025
+CRUZID: aahmedkh
+Assignment: PA8
+*/
+
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;stdexcept&gt;
+#include "Dictionary.h"
+
+#define BLACK 0
+#define RED 1
+
+//node noder
+Dictionary::Node::Node(keyType k, valType v){
+    key = k;
+    val = v;
+    left = nullptr;
+    right = nullptr;
+    parent = nullptr;
+    color = RED;
+}
+
+//private helper functions
+Dictionary::Node* Dictionary::search(Node* R, keyType k) const{
+    //printf("in da search %d\n", R-&gt;val);
+    if (R == nil) {
+        return nil;
+    }
+    if (R-&gt;key == k){
+        return R;
+    } else if (k &lt; R-&gt;key) {
+        return this-&gt;search(R-&gt;left, k);
+    } else {
+        return this-&gt;search(R-&gt;right, k);
+    }
+}
+
+Dictionary::Node* Dictionary::findMin(Node* R){
+    Node* minNode = R;
+    while (minNode-&gt;left != nil){
+        minNode = minNode-&gt;left;
+    }
+    return minNode;
+}
+
+Dictionary::Node* Dictionary::findMax(Node* R){
+    Node* maxNode = R;
+    while (maxNode-&gt;right != nil){
+        maxNode = maxNode-&gt;right;
+    }
+    return maxNode;
+}
+
+Dictionary::Node* Dictionary::findNext(Node* N){
+    /*Node* nextNode = N;
+    if (nextNode == nil || nextNode == this-&gt;findMax(N)){
+        return nil;
+    }
+    if (N-&gt;right != nil){
+        nextNode = this-&gt;findMin(N-&gt;right);
+        return nextNode;
+    } else {
+        Node* parentNode = nextNode-&gt;parent;
+        while (parentNode-&gt;left != nextNode){
+            nextNode = parentNode;
+            parentNode = parentNode-&gt;parent;
+        }
+        return parentNode;
+    }*/
+    if (N-&gt;right != nil) {
+        return findMin(N-&gt;right);
+    }
+    Node* parentNode = N-&gt;parent;
+    while (parentNode != nil &amp;&amp; N == parentNode-&gt;right) {
+        N = parentNode;
+        parentNode = parentNode-&gt;parent;
+    }
+    return parentNode;
+}
+
+Dictionary::Node* Dictionary::findPrev(Node* N){
+    /*Node* prevNode = N;
+    if (prevNode == nil || prevNode == this-&gt;findMin(N)){
+        return nil;
+    }
+    if (N-&gt;left != nil){
+        prevNode = this-&gt;findMax(N-&gt;left);
+        return prevNode;
+    } else {
+        Node* parentNode = prevNode-&gt;parent;
+        while (parentNode-&gt;right != prevNode){
+            prevNode = parentNode;
+            parentNode = parentNode-&gt;parent;
+        }
+        return parentNode;
+    }*/
+    if (N-&gt;left != nil) {
+        return findMax(N-&gt;left);
+    }
+    Node* parentNode = N-&gt;parent;
+    while (parentNode != nil &amp;&amp; N == parentNode-&gt;left) {
+        N = parentNode;
+        parentNode = parentNode-&gt;parent;
+    }
+    return parentNode;
+}
+
+void Dictionary::preOrderString(std::string&amp; s, Node* R) const{
+    if (R-&gt;color == BLACK) {
+        s += R-&gt;key + "\n";
+    }
+    if (R-&gt;color == RED) {
+        s += R-&gt;key + " (RED)\n";
+    }
+    if (R-&gt;left != nil){
+        this-&gt;preOrderString(s, R-&gt;left);
+    }
+    if (R-&gt;right != nil){
+        this-&gt;preOrderString(s, R-&gt;right);
+    }
+
+    /*
+    s.append(R-&gt;key);
+    Node* currNode = R;
+    Node* parentNode = R;
+    bool doneOrder = false;
+    while (!doneOrder){
+        if (currNode-&gt;left != nil){
+            parentNode = currNode;
+            currNode = currNode-&gt;left;
+        } else if (currNode-&gt;right != nil){
+            parentNode = currNode;
+            currNode = currNode-&gt;right;
+        } else {
+            if (parentNode-&gt;left == currNode){
+                if (parentNode-&gt;right != nil){
+                    currNode = parentNode-&gt;right;
+                } else {
+                    currNode = parentNode;
+                    while (parentNode-&gt;ri)
+                }
+            }
+        }
+    }*/
+}
+
+void Dictionary::preOrderCopy(Node* R, Node* N) {
+    if (R != N) {
+<a name="6"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#6" target="1"><img src="./tm_1_1.gif" alt="other" border="0" align="left"></a>
+
+        this-&gt;setValue(R-&gt;key, R-&gt;val);
+        this-&gt;preOrderCopy(R-&gt;left, N);
+        this-&gt;preOrderCopy(R-&gt;right, N);
+    }
+}
+
+void Dictionary::postOrderDelete(Node* R) {
+</font>    if (R != nil) {
+        this-&gt;postOrderDelete(R-&gt;left);
+        this-&gt;postOrderDelete(R-&gt;right);
+        delete R;
+    }
+}
+
+void Dictionary::inOrderString(std::string&amp; s, Node* R) const{
+    if (R != nil) {
+<a name="7"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#7" target="1"><img src="./tm_2_1.gif" alt="other" border="0" align="left"></a>
+
+        if (R-&gt;left != nil){
+            this-&gt;inOrderString(s, R-&gt;left);
+        }
+        s += R-&gt;key + " : " + std::to_string(R-&gt;val) + "\n";
+</font>        if (R-&gt;right != nil){
+            this-&gt;inOrderString(s, R-&gt;right);
+        }
+    }
+}
+
+//bread rack tree functions
+void Dictionary::LeftRotate(Node* N) {
+    Node* tempNode = N-&gt;right;
+    N-&gt;right = tempNode-&gt;left;
+    if (tempNode-&gt;left != nil){
+        tempNode-&gt;left-&gt;parent = N;
+    }
+    tempNode-&gt;parent = N-&gt;parent;
+    if (N-&gt;parent == nil){
+        this-&gt;root = tempNode;
+    }
+    else if (N == N-&gt;parent-&gt;left){
+        N-&gt;parent-&gt;left = tempNode;
+    }
+    else {
+        N-&gt;parent-&gt;right = tempNode;
+    }
+    tempNode-&gt;left = N;
+    N-&gt;parent = tempNode;
+
+}
+
+void Dictionary::RightRotate(Node* N) {
+    Node* tempNode = N-&gt;left;
+    N-&gt;left = tempNode-&gt;right;
+    if (tempNode-&gt;right != nil){
+        tempNode-&gt;right-&gt;parent = N;
+    }
+    tempNode-&gt;parent = N-&gt;parent;
+    if (N-&gt;parent == nil){
+        this-&gt;root = tempNode;
+    }
+    else if (N == N-&gt;parent-&gt;right){
+        N-&gt;parent-&gt;right = tempNode;
+    }
+    else {
+        N-&gt;parent-&gt;left = tempNode;
+    }
+    tempNode-&gt;right = N;
+    N-&gt;parent = tempNode;
+
+}
+
+void Dictionary::RB_InsertFixUp(Node* N) {
+    while (N-&gt;parent-&gt;color == RED) {
+        if (N-&gt;parent == N-&gt;parent-&gt;parent-&gt;left) {
+            Node* y = N-&gt;parent-&gt;parent-&gt;right;
+            if (y-&gt;color == RED) {
+                N-&gt;parent-&gt;color = BLACK;              // case 1
+                y-&gt;color = BLACK;                     // case 1
+<a name="3"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#3" target="1"><img src="./tm_3_3.gif" alt="other" border="0" align="left"></a>
+
+                N-&gt;parent-&gt;parent-&gt;color = RED;         // case 1
+                N = N-&gt;parent-&gt;parent;                 // case 1
+            }
+            else {
+                if (N == N-&gt;parent-&gt;right) {
+                    N = N-&gt;parent;                     // case 2
+                    this-&gt;LeftRotate(N);                 // case 2
+                }
+                N-&gt;parent-&gt;color = BLACK;              // case 3
+                N-&gt;parent-&gt;parent-&gt;color = RED;         // case 3
+                this-&gt;RightRotate(N-&gt;parent-&gt;parent);     // case 3
+            }
+        }
+        else {
+            Node* y = N-&gt;parent-&gt;parent-&gt;left;
+            if (y-&gt;color == RED) {
+</font>                N-&gt;parent-&gt;color = BLACK;              // case 4
+                y-&gt;color = BLACK;                     // case 4
+<a name="4"></a><font color="#FF00FF"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#4" target="1"><img src="./tm_4_3.gif" alt="other" border="0" align="left"></a>
+
+                N-&gt;parent-&gt;parent-&gt;color = RED;         // case 4
+                N = N-&gt;parent-&gt;parent;                 // case 4
+            }
+            else {
+                if (N == N-&gt;parent-&gt;left) {
+                    N = N-&gt;parent;                     // case 5
+                    this-&gt;RightRotate(N);                // case 5
+                }
+                N-&gt;parent-&gt;color = BLACK;              // case 6
+                N-&gt;parent-&gt;parent-&gt;color = RED;         // case 6
+                this-&gt;LeftRotate(N-&gt;parent-&gt;parent);    // case 6
+            }
+        }
+    }
+    this-&gt;root-&gt;color = BLACK;
+}
+
+void Dictionary::BST_insert(Node* M){
+</font>    Node* tempNode = nil;
+    Node* x = this-&gt;root;
+    while (x != nil) {
+        tempNode = x;
+        //printf(" assigned tempnode\n");
+        if (M-&gt;key &lt; x-&gt;key) {
+            x = x-&gt;left;
+        }
+        else {
+            x = x-&gt;right;
+        }
+    }
+    //printf(" traversed da tree\n");
+    M-&gt;parent = tempNode;
+    if (tempNode == nil) {
+        this-&gt;root = M;
+    }
+    else if (M-&gt;key &lt; tempNode-&gt;key) {
+        tempNode-&gt;left = M;
+    }
+    else {
+        tempNode-&gt;right = M;
+    }
+    //printf(" after them ifs\n");
+    M-&gt;left = nil;
+    M-&gt;right = nil;
+    M-&gt;color = RED;
+    this-&gt;RB_InsertFixUp(M);
+}
+
+void Dictionary::RB_Transplant(Node* u, Node* v){
+    if (u-&gt;parent == nil){
+        this-&gt;root = v;
+    }
+    else if (u == u-&gt;parent-&gt;left){
+        u-&gt;parent-&gt;left = v;
+    }
+    else {
+        u-&gt;parent-&gt;right = v;
+    }
+    v-&gt;parent = u-&gt;parent;
+}
+
+void Dictionary::RB_DeleteFixUp(Node* N) {
+<a name="2"></a><font color="#0000FF"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#2" target="1"><img src="./tm_2_3.gif" alt="other" border="0" align="left"></a>
+
+    Node* x = N;
+    while (x != this-&gt;root &amp;&amp; x-&gt;color == BLACK) {
+        if (x == x-&gt;parent-&gt;left) {
+            Node* w = x-&gt;parent-&gt;right;
+            if (w-&gt;color == RED) {
+                w-&gt;color = BLACK;                        // case 1
+                x-&gt;parent-&gt;color = RED;                   // case 1
+                this-&gt;LeftRotate(x-&gt;parent);                // case 1
+                w = x-&gt;parent-&gt;right;                     // case 1
+            }
+            if (w-&gt;left-&gt;color == BLACK &amp;&amp; w-&gt;right-&gt;color == BLACK) {
+</font>                w-&gt;color = RED;                          // case 2
+<a name="1"></a><font color="#00FF00"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#1" target="1"><img src="./tm_1_5.gif" alt="other" border="0" align="left"></a>
+
+                x = x-&gt;parent;                           // case 2
+            }
+            else {
+                if (w-&gt;right-&gt;color == BLACK) {
+                    w-&gt;left-&gt;color = BLACK;                // case 3
+                    w-&gt;color = RED;                       // case 3
+                    this-&gt;RightRotate(w);                   // case 3
+                    w = x-&gt;parent-&gt;right;                  // case 3
+                }
+                w-&gt;color = x-&gt;parent-&gt;color;               // case 4
+                x-&gt;parent-&gt;color = BLACK;                 // case 4
+                w-&gt;right-&gt;color = BLACK;                  // case 4
+                this-&gt;LeftRotate(x-&gt;parent);                // case 4
+                x = this-&gt;root;                             // case 4
+            }
+        }
+        else {
+            Node* w = x-&gt;parent-&gt;left;
+            if (w-&gt;color == RED) {
+                w-&gt;color = BLACK;                        // case 5
+                x-&gt;parent-&gt;color = RED;                   // case 5
+                this-&gt;RightRotate(x-&gt;parent);               // case 5
+                w = x-&gt;parent-&gt;left;                      // case 5
+            }
+            if (w-&gt;right-&gt;color == BLACK &amp;&amp; w-&gt;left-&gt;color == BLACK) {
+</font>                w-&gt;color = RED;                          // case 6
+<a name="0"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#0" target="1"><img src="./tm_0_10.gif" alt="other" border="0" align="left"></a>
+
+                x = x-&gt;parent;                           // case 6
+            }
+            else {
+                if (w-&gt;left-&gt;color == BLACK) {
+                    w-&gt;right-&gt;color = BLACK;               // case 7
+                    w-&gt;color = RED;                       // case 7
+                    this-&gt;LeftRotate(w);                    // case 7
+                    w = x-&gt;parent-&gt;left;                   // case 7
+                }
+                w-&gt;color = x-&gt;parent-&gt;color;               // case 8
+                x-&gt;parent-&gt;color = BLACK;                 // case 8
+                w-&gt;left-&gt;color = BLACK;                   // case 8
+                this-&gt;RightRotate(x-&gt;parent);               // case 8
+                x = this-&gt;root;                             // case 8
+            }
+        }
+    }
+    x-&gt;color = BLACK;
+}
+
+void Dictionary::RB_Delete(Node* N) {
+    Node* tempNode = N;
+    Node* x;
+    int ogColor = tempNode-&gt;color;
+    if (N-&gt;left == nil) {
+        x = N-&gt;right;
+        this-&gt;RB_Transplant(N, N-&gt;right);
+    }
+    else if (N-&gt;right == nil) {
+        x = N-&gt;left;
+        this-&gt;RB_Transplant(N, N-&gt;left);
+    }
+    else {
+        tempNode = this-&gt;findMin(N-&gt;right);
+        ogColor = tempNode-&gt;color;
+        x = tempNode-&gt;right;
+        if (tempNode-&gt;parent == N) {
+            x-&gt;parent = tempNode;
+        }
+        else {
+            this-&gt;RB_Transplant(tempNode, tempNode-&gt;right);
+            tempNode-&gt;right = N-&gt;right;
+            tempNode-&gt;right-&gt;parent = tempNode;
+        }
+        this-&gt;RB_Transplant(N, tempNode);
+        tempNode-&gt;left = N-&gt;left;
+        tempNode-&gt;left-&gt;parent = tempNode;
+        tempNode-&gt;color = N-&gt;color;
+    }
+    if (ogColor == BLACK) {
+        this-&gt;RB_DeleteFixUp(x);
+    }
+    delete N;
+</font>}
+
+//dictikonaryh constructuor
+Dictionary::Dictionary(){
+    nil = new Node("", -1);
+    nil-&gt;color = BLACK;
+    root = nil;
+    current = nil;
+    num_pairs = 0;
+}
+
+//copy constructuor
+Dictionary::Dictionary(const Dictionary&amp; D){
+    this-&gt;nil = D.nil;
+    this-&gt;num_pairs = D.num_pairs;
+    this-&gt;root = D.root;
+    this-&gt;current = D.current;
+    preOrderCopy(D.root, D.nil);
+    //finish later can't 'thing rn
+}
+
+Dictionary::~Dictionary(){
+    this-&gt;clear();
+    delete this-&gt;nil;
+    //use delete root function later idk
+}
+
+//access functioniaria
+int Dictionary::size() const{
+    return num_pairs;
+}
+
+bool Dictionary::contains(keyType k) const{
+    if (this-&gt;search(this-&gt;root, k) != nil){
+        return true;
+    }
+    return false;
+}
+
+valType&amp; Dictionary::getValue(keyType k) const{
+    if (this-&gt;contains(k)){
+        Node* returnNode = this-&gt;search(this-&gt;root, k);
+        return returnNode-&gt;val;
+    }
+}
+
+bool Dictionary::hasCurrent() const{
+    //printf("checking current\n");
+    if (this-&gt;current != nil){
+        return true;
+    }
+    return false;
+}
+
+keyType Dictionary::currentKey() const{
+    if (this-&gt;hasCurrent() == false) {
+        throw std::logic_error("Dictionary: currentKey(): current undefined");
+    }
+    if (this-&gt;hasCurrent()){
+        return this-&gt;current-&gt;key;
+    }
+}
+
+valType&amp; Dictionary::currentVal() const{
+    if (this-&gt;hasCurrent() == false) {
+        throw std::logic_error("Dictionary: currentVal(): current undefined");
+    }
+    if (this-&gt;hasCurrent()){
+        return this-&gt;current-&gt;val;
+    }
+}
+
+//manipulative toxic things
+
+void Dictionary::clear(){
+<a name="8"></a><font color="#00FFFF"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#8" target="1"><img src="./tm_3_1.gif" alt="other" border="0" align="left"></a>
+
+    postOrderDelete(this-&gt;root);
+    this-&gt;root = nil;
+    this-&gt;current = nil;
+    this-&gt;num_pairs = 0;
+}
+
+void Dictionary::setValue(keyType k, valType v){
+</font>    if (this-&gt;contains(k)){ //exists and replace
+        //printf("replacing current node");
+        Node* returnNode = this-&gt;search(this-&gt;root, k);
+        returnNode-&gt;val = v;
+    } else {
+        //printf("making a new node\n");
+        Node* newNode = new Node(k, v);
+        this-&gt;BST_insert(newNode);
+        num_pairs += 1;
+    }
+}
+
+void Dictionary::remove(keyType k){
+    if (this-&gt;contains(k) == 0) {
+        throw std::logic_error("Dictionary: remove(): key \"" + k + "\" does not exist");
+    }
+    if (this-&gt;contains(k)){
+        Node* currNode = this-&gt;search(this-&gt;root, k);
+        if (this-&gt;current == currNode) {
+            current = nil;
+        }
+        this-&gt;RB_Delete(currNode);
+        this-&gt;num_pairs -= 1;
+    }
+}
+
+void Dictionary::begin(){
+    if (this-&gt;num_pairs){
+        this-&gt;current = this-&gt;findMin(this-&gt;root);
+    }
+}
+
+void Dictionary::end(){
+    if (this-&gt;num_pairs){
+        this-&gt;current = this-&gt;findMax(this-&gt;root);
+    }
+}
+
+void Dictionary::next(){
+    if (this-&gt;hasCurrent() == 0) {
+        throw std::logic_error("Dictionary: next(): current undefined");
+    }
+    if (this-&gt;hasCurrent()){
+        if (this-&gt;findMax(this-&gt;current) == nil){
+            this-&gt;current = nil;
+        } else {
+            this-&gt;current = this-&gt;findNext(this-&gt;current);
+        }
+    }
+}
+
+void Dictionary::prev(){
+    if (this-&gt;hasCurrent() == 0) {
+        throw std::logic_error("Dictionary: prev(): current undefined");
+    }
+    if (this-&gt;hasCurrent()){
+        if (this-&gt;findMin(this-&gt;current) == nil){
+            this-&gt;current = nil;
+        } else {
+            this-&gt;current = this-&gt;findPrev(this-&gt;current);
+        }
+    }
+}
+
+std::string Dictionary::to_string() const{
+    std::string s = "";
+<a name="5"></a><font color="#FF0000"><a href="http://moss.stanford.edu/results/7/3201679867665/match0-1.html#5" target="1"><img src="./tm_0_1.gif" alt="other" border="0" align="left"></a>
+
+    this-&gt;inOrderString(s, this-&gt;root);
+    return s;
+}
+
+std::string Dictionary::pre_string() const{
+    std::string s;
+    this-&gt;preOrderString(s, this-&gt;root);
+    return s;
+}
+
+bool Dictionary::equals(const Dictionary&amp; D) const{
+    if (this-&gt;num_pairs == D.num_pairs) {
+</font>        std::string s1;
+        std::string s2;
+        s1 = this-&gt;to_string();
+        s2 = D.to_string();
+        if (s1 == s2){
+            return true;
+        }
+    }
+    return false;
+}
+
+//its overlodin time
+
+std::ostream&amp; operator&lt;&lt;( std::ostream&amp; stream, Dictionary&amp; D ){
+    return stream &lt;&lt; D.to_string();
+}
+
+bool operator==( const Dictionary&amp; A, const Dictionary&amp; B ){
+    return A.equals(B);
+}
+
+Dictionary&amp; Dictionary::operator=( const Dictionary&amp; D ){
+    if (this != &amp;D){
+        Dictionary copy = D;
+        this-&gt;nil = copy.nil;
+        this-&gt;current = copy.current;
+        this-&gt;root = copy.root;
+        this-&gt;num_pairs = copy.num_pairs;
+    }
+    return *this;
+}</pre>
+
+
+
+</body></html>
