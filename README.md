@@ -3,6 +3,10 @@
 A web-based dashboard for viewing MOSS (Measure of Software Similarity) reports for programming assignments (PAs). This project automates the generation of HTML reports and provides a centralized interface for accessing them.
 ---
 
+### Backend Scripts
+
+Access it from here: [.yaml scripts](https://github.com/SuryaCS719/moss)
+
 ### Access the Dashboard
 
 You can access the MOSS Web Dashboard at the following URL:
