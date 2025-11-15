@@ -1,6 +1,17 @@
 # MOSS Web Dashboard
 
 A web-based dashboard for viewing MOSS (Measure of Software Similarity) reports for programming assignments (PAs). This project automates the generation of HTML reports and provides a centralized interface for accessing them.
+
+---
+
+## 📚 Documentation for Everyone
+
+- 📘 **[Beginner's Guide](BEGINNER_GUIDE.md)** - Complete, high-school-friendly explanation of the entire project
+- 🔄 **[Workflow Diagrams](WORKFLOW_DIAGRAM.md)** - Visual flowcharts and system architecture
+- ⚡ **[Quick Reference](QUICK_REFERENCE.md)** - Cheat sheet for common commands and troubleshooting
+
+**New to coding?** Start with the Beginner's Guide! It explains everything from scratch.
+
 ---
 
 ### Backend Scripts
